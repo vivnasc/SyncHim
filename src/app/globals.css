@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html, body {
+    background: #0A0A0A;
+    color: #F5F1EA;
+  }
+  body {
+    font-family: 'Spectral', 'Lora', Georgia, serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+  }
+  a {
+    color: #B8956A;
+    text-decoration: none;
+  }
+  a:hover {
+    color: #F5F1EA;
+  }
+  ::selection {
+    background: #B8956A;
+    color: #0A0A0A;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-block border border-gold text-bone px-7 py-3 font-serif text-lg tracking-wider transition-colors;
+  }
+  .btn:hover {
+    background: rgba(184, 149, 106, 0.08);
+  }
+  .btn-primary {
+    @apply bg-gold text-ink border-gold;
+  }
+  .btn-primary:hover {
+    background: #c8a378;
+    color: #0A0A0A;
+  }
+  .btn-ghost {
+    @apply border-ash text-ash;
+  }
+  .prose-mv {
+    @apply max-w-prose font-body text-bone leading-relaxed text-lg;
+  }
+  .prose-mv h1 {
+    @apply font-serif text-4xl md:text-5xl mb-8 leading-tight;
+  }
+  .prose-mv h2 {
+    @apply font-serif text-2xl md:text-3xl mt-12 mb-4;
+  }
+  .prose-mv h3 {
+    @apply font-serif text-xl mt-8 mb-3;
+  }
+  .prose-mv p {
+    @apply mb-5;
+  }
+  .prose-mv blockquote {
+    @apply border-l-2 border-gold pl-5 italic text-bone/90 my-6;
+  }
+  .prose-mv strong {
+    @apply text-bone font-semibold;
+  }
+  .prose-mv em {
+    @apply italic text-bone/90;
+  }
+  .prose-mv ul, .prose-mv ol {
+    @apply pl-6 mb-5;
+  }
+  .prose-mv li {
+    @apply mb-2;
+  }
+  .prose-mv hr {
+    @apply border-ash/30 my-10;
+  }
+}
+
+.input {
+  background: transparent;
+  border: 1px solid #888880;
+  color: #F5F1EA;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 16px;
+  width: 100%;
+}
+.input:focus {
+  outline: none;
+  border-color: #B8956A;
+}
+textarea.input {
+  min-height: 140px;
+  resize: vertical;
+}

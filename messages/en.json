@@ -1,0 +1,126 @@
+{
+  "nav": {
+    "diagnostic": "Diagnostic",
+    "account": "Account",
+    "enter": "Enter",
+    "logout": "Sign out"
+  },
+  "common": {
+    "loading": "Loading.",
+    "continue": "Continue",
+    "back": "Back",
+    "save": "Save",
+    "free": "Free"
+  },
+  "landing": {
+    "heroLine1": "Your husband has pulled away.",
+    "heroLine2": "And nothing you've tried has worked.",
+    "subhead": "SyncHim is the quiet 21-day process for him to start looking for you again — without chasing, without fighting, without him knowing you're doing anything.",
+    "cta": "Start the diagnostic — Free",
+    "subCta": "No payment. No card. In 8 minutes you'll know the knot that is choking your marriage."
+  },
+  "diagnostic": {
+    "start": "Begin",
+    "next": "Next",
+    "previous": "Back",
+    "submit": "See my knot",
+    "scale": {
+      "0": "Never",
+      "1": "Sometimes",
+      "2": "Often",
+      "3": "Always"
+    },
+    "emailPrompt": "Leave your email so I can save your diagnostic.",
+    "emailLabel": "Email",
+    "namePrompt": "What should I call you?",
+    "nameLabel": "First name",
+    "consent": "I agree to the terms and privacy policy.",
+    "errorAllRequired": "Answer all 21 situations before continuing."
+  },
+  "result": {
+    "title": "Your knot.",
+    "subtitle": "It is the old pattern pulling your marriage out of sync. Seeing it is the first step.",
+    "scoresTitle": "Your scores",
+    "history": "{months} months ago your knot was {previous}. Today it is {current}. The knots shift as you shift.",
+    "upgradeTitle": "This is your knot. You've seen it. But seeing is not dissolving.",
+    "upgradeBody": "If you want to go beneath — the origin, what it is doing to your marriage, and how to undo it — there is one path.",
+    "upgradeCta": "Cross this knot — US$ 39",
+    "upgradeNotReady": "This knot isn't open yet. Leave your email and I'll tell you when it is.",
+    "upgradeNotifyCta": "Notify me",
+    "redo": "Redo the diagnostic",
+    "or": "Or come back when you're ready. The diagnostic stays here, and it is yours to redo whenever you need."
+  },
+  "checkout": {
+    "title": "Crossing your knot",
+    "summary": "Sessions 3 to 7 for your dominant knot, plus 5 practices. Lifetime access. 7-day guarantee.",
+    "price": "US$ 39",
+    "payWith": "Pay with PayPal",
+    "processing": "Processing.",
+    "errorGeneric": "Something went wrong. Try again in a moment."
+  },
+  "success": {
+    "title": "Received.",
+    "body": "You'll get an email with a sign-in link. It can take a minute. Check spam, just in case.",
+    "openMail": "Open mail"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Type your email. I'll send a link.",
+    "emailLabel": "Email",
+    "cta": "Send link",
+    "sent": "Sent. Check your email.",
+    "errorGeneric": "I couldn't send it. Try again."
+  },
+  "dashboard": {
+    "title": "Your crossing",
+    "tier0Lock": "Buy the crossing to open sessions 3 to 7.",
+    "sessionLabel": "Session {n}",
+    "locked": "Opens on {date}.",
+    "lockedTier": "Available after the crossing.",
+    "open": "Open",
+    "completed": "Completed",
+    "redoDiagnostic": "Redo the diagnostic"
+  },
+  "session": {
+    "complete": "Mark as completed",
+    "completed": "Session completed.",
+    "next": "Next session opens {date}.",
+    "saveAnswer": "Saved.",
+    "writePlaceholder": "Write here. Only you see this."
+  },
+  "account": {
+    "title": "Your account",
+    "email": "Email",
+    "tier": "Access",
+    "tier0": "Diagnostic (free)",
+    "tier1": "Crossing of the {no} knot",
+    "tier2": "Full library",
+    "historyTitle": "Diagnostic history",
+    "noHistory": "No diagnostics yet.",
+    "deleteTitle": "Delete my account",
+    "deleteBody": "Erases all your data, permanently. There is no undo.",
+    "deleteCta": "Delete everything",
+    "deleteConfirm": "Are you sure? Type DELETE to confirm.",
+    "deleteConfirmWord": "DELETE",
+    "deleted": "Your account has been deleted."
+  },
+  "no": {
+    "fome": "Hunger",
+    "controlo": "Grip",
+    "inferioridade": "Smallness",
+    "desconfianca": "Suspicion",
+    "salvadora": "Rescuer",
+    "abandono": "Abandonment",
+    "invisibilidade": "Vanishing"
+  },
+  "footer": {
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "guarantee": "Guarantee",
+    "signature": "Marina Vale"
+  },
+  "meta": {
+    "title": "SyncHim — Sync him to you",
+    "description": "A quiet 21-day method for women in marriages that are quietly fading."
+  }
+}
