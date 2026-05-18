@@ -5,6 +5,7 @@ import {
   noDominante,
   noSecundario,
   questionIds,
+  QUESTIONS_PER_NO,
   type Respostas,
   type Locale
 } from '@/lib/diagnostic';
@@ -118,11 +119,20 @@ export async function POST(req: NextRequest) {
     ok: true,
     redirect: `/${locale}/resultado`
   });
+  const [qA, qB, qC] = QUESTIONS_PER_NO[dominante];
+  const respostasDominante = {
+    [qA]: respostas[qA],
+    [qB]: respostas[qB],
+    [qC]: respostas[qC]
+  };
+
   res.cookies.set('synchim_result', JSON.stringify({
     user_id: userId,
+    nome: payload.name || null,
     dominante,
     secundario,
     pontuacoes,
+    respostas_dominante: respostasDominante,
     is_repeat: (count ?? 0) > 0
   }), {
     httpOnly: true,
