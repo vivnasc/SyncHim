@@ -52,7 +52,7 @@ export async function sendMagicLink(email: string, locale: Locale, nome?: string
     email,
     options: {
       redirectTo: `${siteUrl}/${locale}/dashboard`,
-      data: { locale, nome }
+      data: { app: 'synchim', locale, nome }
     }
   });
   if (error) throw new Error(error.message);

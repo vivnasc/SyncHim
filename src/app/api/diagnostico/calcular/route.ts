@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     const { data: created, error } = await admin.auth.admin.createUser({
       email: payload.email,
       email_confirm: true,
-      user_metadata: { nome: payload.name, locale, tier: 0 }
+      user_metadata: { app: 'synchim', nome: payload.name, locale, tier: 0 }
     });
     if (error || !created.user) {
       return NextResponse.json({ error: 'auth_create_failed', detail: error?.message }, { status: 500 });

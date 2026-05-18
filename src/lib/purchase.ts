@@ -79,7 +79,7 @@ export async function applyPurchase(orderId: string, capture: CaptureRaw) {
     const { data: created } = await admin.auth.admin.createUser({
       email,
       email_confirm: true,
-      user_metadata: { locale, tier }
+      user_metadata: { app: 'synchim', locale, tier }
     });
     userId = created.user?.id ?? null;
   }

@@ -51,13 +51,28 @@ The dev server runs on `http://localhost:3000` and redirects `/` to `/en` by def
 
 ## Database
 
-```bash
-# Supabase CLI
-supabase db reset --linked
-# or paste supabase/schema.sql into the Supabase SQL editor
-```
+This app is designed to **live inside an existing Supabase project** without
+colliding with other apps. Everything goes into a dedicated schema called
+`synchim` (tables, functions, the trigger). To remove the app completely later:
+`drop schema synchim cascade;`.
 
-The schema creates the auth-user → public.users trigger and the RLS policies. Service-role inserts bypass RLS, which is how the diagnostic and PayPal webhook write user data.
+### Setup
+
+1. **Apply the schema.** Open Supabase SQL editor and paste
+   `supabase/schema.sql`. This creates `synchim.users`, `synchim.diagnosticos`,
+   the trigger on `auth.users`, and the RLS policies.
+2. **Expose the schema to PostgREST.** Go to
+   *Project Settings → API → Exposed schemas* and add `synchim` to the list
+   (typically `public, synchim`). Without this the supabase-js client gets
+   `schema "synchim" not found` errors.
+3. **Auth coexistence.** The trigger only fires for users whose
+   `raw_user_meta_data.app = 'synchim'`. Every signup this app performs sets
+   that marker, so users from your other apps in the same project never get
+   a row in `synchim.users`. The opposite is also true: SyncHim users only
+   show up in this app's queries.
+
+Service-role inserts bypass RLS, which is how the diagnostic and PayPal
+webhook write user data on the server.
 
 ## PayPal setup
 
