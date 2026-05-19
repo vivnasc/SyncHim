@@ -5,9 +5,6 @@ import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { NOS } from '@/lib/diagnostic';
 import { trackEvent } from '@/lib/events';
 import { sendOnce } from '@/lib/resend';
-
-export const runtime = 'edge';
-
 const Body = z.object({
   no: z.string(),
   sessao: z.number().int().min(1).max(7),

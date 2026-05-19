@@ -5,9 +5,6 @@ import { NOS, NOS_VENDAVEIS, type No } from '@/lib/diagnostic';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { trackEvent } from '@/lib/events';
 import { PayPalCheckout } from '@/components/PayPalCheckout';
-
-export const runtime = 'edge';
-
 export default async function CheckoutPage({
   params,
   searchParams

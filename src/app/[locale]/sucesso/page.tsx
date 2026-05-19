@@ -1,7 +1,4 @@
 import { getTranslations } from 'next-intl/server';
-
-export const runtime = 'edge';
-
 export default async function SuccessPage() {
   const t = await getTranslations('success');
   return (

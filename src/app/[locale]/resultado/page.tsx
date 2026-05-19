@@ -14,9 +14,6 @@ import { noContent } from '@/lib/no-content';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { trackEvent } from '@/lib/events';
 import { NotifyForm } from '@/components/NotifyForm';
-
-export const runtime = 'edge';
-
 interface ResultCookie {
   user_id: string;
   nome: string | null;

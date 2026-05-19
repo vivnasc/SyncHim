@@ -1,9 +1,6 @@
 import { LEGAL } from '@/lib/content';
 import { SessionMarkdown } from '@/components/SessionMarkdown';
 import type { Locale } from '@/lib/diagnostic';
-
-export const runtime = 'edge';
-
 export default function TermsPage({ params }: { params: { locale: string } }) {
   const raw = LEGAL.termos[params.locale as Locale] ?? LEGAL.termos.en;
   return (
