@@ -1,123 +1,147 @@
-# SYNCHIM — PACOTE COMPLETO DE ENTREGA
+# SyncHim
 
-> Pacote pronto para Claude Code construir a aplicação completa.
-> Última actualização: 16 de Maio de 2026
+Quiet 21-day process. Next.js 14 + Supabase + PayPal + Resend + next-intl, deployed on Cloudflare Pages.
 
------
+Product brief lives in **`PRODUCT.md`** and **`BRIEFING MESTRE.pdf`**.
 
-## ESTRUTURA DO PACOTE
+---
+
+## Stack
+
+- Next.js 14 (App Router)
+- next-intl (PT / EN, routes `/pt` and `/en`)
+- TailwindCSS
+- Supabase (auth + Postgres + RLS)
+- PayPal (Smart Buttons + Orders API v2, USD only)
+- Resend (transactional email)
+- Cloudflare Pages via `@cloudflare/next-on-pages`
+- Cloudflare Turnstile (anti-bot)
+
+## Local setup
+
+```bash
+cp .env.example .env.local
+# fill in the values, see "Required env vars" below
+npm install
+npm run dev
+```
+
+The dev server runs on `http://localhost:3000` and redirects `/` to `/en` by default. Country detection uses the `CF-IPCountry` header, which is absent in local dev — the cookie / fallback (EN) takes over.
+
+### Required env vars
+
+| Var | Where to get it |
+|---|---|
+| `NEXT_PUBLIC_SITE_URL` | Your site origin (e.g. `https://synchim.pages.dev`) |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server only) |
+| `PAYPAL_MODE` | `sandbox` or `live` |
+| `PAYPAL_CLIENT_ID` | From PayPal Developer dashboard |
+| `PAYPAL_CLIENT_SECRET` | From PayPal Developer dashboard |
+| `PAYPAL_WEBHOOK_ID` | Webhook ID from PayPal Developer (after creating webhook) |
+| `NEXT_PUBLIC_PAYPAL_CLIENT_ID` | Same as `PAYPAL_CLIENT_ID`, exposed to the browser |
+| `RESEND_API_KEY` | From resend.com |
+| `RESEND_FROM` | `Marina <marina@your-verified-domain>` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key (optional in dev) |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret (optional in dev) |
+| `PRICE_TIER1_USD` | `39.00` |
+| `PRICE_TIER2_USD` | `87.00` (Tier 2 disabled at launch — kept for forward compat) |
+| `PRICE_UPGRADE_NO_USD` | `19.00` |
+
+## Database
+
+This app is designed to **live inside an existing Supabase project** without
+colliding with other apps. Everything goes into a dedicated schema called
+`synchim` (tables, functions, the trigger). To remove the app completely later:
+`drop schema synchim cascade;`.
+
+### Setup
+
+1. **Apply the schema.** Open Supabase SQL editor and paste
+   `supabase/schema.sql`. This creates `synchim.users`, `synchim.diagnosticos`,
+   the trigger on `auth.users`, and the RLS policies.
+2. **Expose the schema to PostgREST.** Go to
+   *Project Settings → API → Exposed schemas* and add `synchim` to the list
+   (typically `public, synchim`). Without this the supabase-js client gets
+   `schema "synchim" not found` errors.
+3. **Auth coexistence.** The trigger only fires for users whose
+   `raw_user_meta_data.app = 'synchim'`. Every signup this app performs sets
+   that marker, so users from your other apps in the same project never get
+   a row in `synchim.users`. The opposite is also true: SyncHim users only
+   show up in this app's queries.
+
+Service-role inserts bypass RLS, which is how the diagnostic and PayPal
+webhook write user data on the server.
+
+## PayPal setup
+
+1. Create a **Business** app in https://developer.paypal.com/dashboard/applications.
+2. Copy `Client ID` and `Secret` into `.env.local`.
+3. In the same dashboard, register a **webhook** pointing to `https://<your-domain>/api/paypal/webhook` with the event `PAYMENT.CAPTURE.COMPLETED`. Copy the webhook ID into `PAYPAL_WEBHOOK_ID`.
+4. Test the full sandbox flow before switching `PAYPAL_MODE=live`.
+
+## Resend setup
+
+1. Verify a sending domain in Resend.
+2. Set `RESEND_FROM` to a verified address (e.g. `Marina <marina@your-domain>`).
+3. The first email a user receives is a Supabase magic link rendered through Resend's API.
+
+## Cloudflare Pages deploy
+
+```bash
+npm run build:cf       # produces .vercel/output/static
+npx wrangler pages deploy .vercel/output/static
+```
+
+Set every env var from the table above in **Pages → Settings → Environment variables** (both Production and Preview). Mark anything starting with `NEXT_PUBLIC_` as public.
+
+All API routes run on the **Node runtime** (`runtime = 'nodejs'`) because they call PayPal and Supabase admin from the server — Cloudflare Pages will translate this to the Edge-compatible runtime via `@cloudflare/next-on-pages`. The PayPal helper uses native `fetch` so it works edge-side.
+
+## Phase 1 scope (what is live)
+
+- Landing PT / EN
+- Diagnostic (sessions 1 and 2, 21 questions, scoring + tiebreak)
+- Result page with knot reveal + repeat-history comparison + upgrade CTA
+- Tier 1 PayPal checkout for the **Hunger** knot only (US$ 39)
+- Hunger sessions 3-5 + common sessions 6 + 7 with 3-day gating
+- Dashboard, account, history, delete-my-data
+- 8 transactional emails (Resend)
+- Magic-link sign-in
+- Legal pages (terms, privacy, guarantee) — USD/PayPal only
+
+**Deferred to Phase 2:**
+
+- Tier 2 (full library) — not sold until the other 6 knots are written.
+- Hunger practices file is loaded by the session viewer but not surfaced as a separate page yet.
+- Knot upgrade purchase (Tier 1 → another knot at US$ 19) — schema supports it via `nos_comprados_adicionais`; UI not exposed.
+
+## File layout
 
 ```
-pacote/
-├── 00-leia-primeiro/      ← Este ficheiro + ordem de execução
-├── 01-briefing/           ← Briefing técnico mestre (o documento principal)
-├── 02-persona/            ← Marina Vale: voz, identidade visual, vocabulário
-├── 03-conteudo-pt/        ← Conteúdo PT: sessões 1-7 + práticas
-├── 04-conteudo-en/        ← Conteúdo EN: sessões 1-7 + práticas
-├── 05-landing/            ← Landing page PT + EN
-├── 06-emails/             ← Emails transaccionais PT + EN
-├── 07-anuncios/           ← Criativos Meta Ads + copy
-├── 08-instagram/          ← Carrosséis de pré-lançamento
-└── 09-legal/              ← Termos, privacidade, garantia
+.
+├── content/
+│   ├── pt/{sessao-01,02,06,07}.md
+│   ├── pt/nos/fome/{sessao-03,04,05}.md
+│   ├── pt/praticas/fome/index.md
+│   ├── pt/legal/{termos,privacidade,garantia}.md
+│   └── en/... (mirror, knots/hunger, practices/hunger)
+├── messages/{pt,en}.json
+├── middleware.ts
+├── src/
+│   ├── i18n.ts
+│   ├── app/
+│   │   ├── layout.tsx, page.tsx
+│   │   └── [locale]/...
+│   ├── api/
+│   │   ├── diagnostico/calcular
+│   │   ├── paypal/{create-order,capture-order,webhook}
+│   │   ├── auth/{magic-link,signout}
+│   │   ├── sessao/responder
+│   │   ├── conta/apagar
+│   │   └── notify
+│   ├── components/...
+│   └── lib/{supabase,paypal,resend,emails,turnstile,events,content,diagnostic,purchase}
+├── supabase/schema.sql
+└── PRODUCT.md (briefing-derived spec)
 ```
-
------
-
-## ORDEM DE EXECUÇÃO PARA CLAUDE CODE
-
-**Semana 1 — Infraestrutura**
-
-1. Ler `01-briefing/BRIEFING_MESTRE.md` integralmente
-1. Setup Next.js 14 + Cloudflare Pages + Supabase + Stripe + Resend + next-intl + Tailwind
-1. Criar schema da BD (SQL em `01-briefing/SCHEMA_BD.sql`)
-1. Configurar i18n com rotas /en e /pt
-1. Configurar produtos Stripe (BRL e USD, três tiers)
-
-**Semana 2 — Páginas principais**
-6. Landing page bilingue (`05-landing/`)
-7. Checkout + webhook + magic link
-8. Dashboard da utilizadora
-9. Sessão 1 (reconhecimento) — texto em `03-conteudo-pt/sessao-01.md` e `04-conteudo-en/`
-10. Sessão 2 (diagnóstico) — lógica de cálculo + apresentação de resultado
-
-**Semana 3 — Sessões dinâmicas**
-11. Estrutura de Sessões 3-7 com gating por nó dominante
-12. Carregamento dinâmico do conteúdo por nó (7 nós × 3 sessões = 21 ficheiros .md)
-13. Sistema de práticas entre sessões
-14. Sistema de gating temporal (3 dias entre sessões)
-
-**Semana 4 — Lançamento**
-15. Emails transaccionais (`06-emails/`)
-16. Página de conta + histórico de diagnósticos (Tier 0 reusável)
-17. Sistema de upgrade dentro do produto
-18. Testes end-to-end PT e EN
-19. Deploy em Cloudflare Pages
-20. Conectar domínio syncehim.com
-
------
-
-## DECISÕES FECHADAS — NÃO RENEGOCIAR
-
-- **Nome do produto:** SyncHim (porta) / SyncMe (substância revelada na Sessão 5)
-- **Autora-persona:** Marina Vale (sem rosto, sem voz pública)
-- **Mercados:** Brasil + lusófonos + anglo, bilingue PT/EN com toggle
-- **Hospedagem:** Cloudflare Pages (não Vercel)
-- **Domínio:** syncehim.com
-- **Estrutura comercial:**
-  - Tier 0 — Grátis, reusável ilimitado (Sessões 1+2)
-  - Tier 1 — R$ 127 / US$ 39 — Travessia do nó dominante (Sessões 3-7 do nó)
-  - Tier 2 — R$ 297 / US$ 87 — Biblioteca completa dos 7 nós
-- **Sessões:** 7 sessões em 21 dias, 1 a cada 3 dias
-- **Nós:** Fome, Controlo, Inferioridade, Desconfiança, Salvadora, Abandono, Invisibilidade
-
------
-
-## CHECKLIST DE ENTREGA AO LANÇAMENTO
-
-- [ ] Site live em syncehim.com
-- [ ] Toggle PT/EN funcional
-- [ ] Detecção automática de língua por geolocalização
-- [ ] Stripe BRL e USD a funcionar
-- [ ] Webhook a criar conta automaticamente
-- [ ] Magic link a chegar em 1 minuto
-- [ ] Sessão 1 e 2 acessíveis sem pagamento
-- [ ] Tier 1 desbloqueia conteúdo específico do nó
-- [ ] Tier 2 desbloqueia 7 nós completos
-- [ ] Gating de 3 dias entre sessões funcional
-- [ ] Email automático na abertura de cada sessão
-- [ ] Histórico de diagnósticos visível ao utilizador
-- [ ] Reembolso de 7 dias documentado em /garantia
-- [ ] Termos e privacidade em /termos e /privacidade
-- [ ] Cloudflare Turnstile na landing
-- [ ] Conta Instagram @marinavale.sync criada com 10 carrosséis publicados
-
------
-
-## CONTEÚDO INCLUÍDO NESTE PACOTE
-
-**Escrito integralmente:**
-
-- Briefing técnico mestre
-- Schema completo da BD
-- Persona Marina Vale completa
-- Sessão 1 (reconhecimento) — PT + EN
-- Sessão 2 (diagnóstico, 21 situações + cálculo) — PT + EN
-- Sessões 3, 4, 5 para o **Nó da Fome** (modelo completo)
-- Sessões 6 e 7 (finais, comuns a todos os nós)
-- 5 práticas para o Nó da Fome
-- Landing page bilingue
-- 8 emails transaccionais bilingues
-- 10 conceitos de carrossel Instagram
-- 6 conceitos de anúncios Meta
-- Textos legais (termos, privacidade, garantia)
-
-**Por escrever (próxima entrega após validação):**
-
-- Sessões 3, 4, 5 para os outros 6 nós (Controlo, Inferioridade, Desconfiança, Salvadora, Abandono, Invisibilidade) — 18 textos
-- Práticas para os outros 6 nós — 30 textos
-
-A decisão de entregar **o Nó da Fome completo + estruturas modelo** em vez de tentar escrever os 7 nós de uma vez é deliberada: assim podes validar a voz e o método com o primeiro nó construído e funcional, antes de eu escrever os outros 18 textos. Se a voz precisar de afinação, ajusta-se no Nó da Fome e os restantes saem já no tom certo.
-
------
-
-FIM.

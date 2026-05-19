@@ -1,0 +1,146 @@
+{
+  "nav": {
+    "diagnostic": "Diagnóstico",
+    "account": "Conta",
+    "enter": "Entrar",
+    "logout": "Sair"
+  },
+  "common": {
+    "loading": "A carregar.",
+    "continue": "Continuar",
+    "back": "Voltar",
+    "save": "Guardar",
+    "free": "Grátis"
+  },
+  "landing": {
+    "heroLine1": "O teu marido afastou-se.",
+    "heroLine2": "E nada do que tentaste funcionou.",
+    "subhead": "SyncHim é o processo silencioso de 21 dias para ele voltar a procurar-te — sem cobrar, sem brigar, sem ele saber que estás a fazer nada.",
+    "cta": "Começar o diagnóstico — Grátis",
+    "subCta": "Sem pagamento. Sem cartão. Em 8 minutos sabes qual é o nó que está a estrangular o teu casamento."
+  },
+  "diagnostic": {
+    "start": "Começar",
+    "next": "Seguinte",
+    "previous": "Anterior",
+    "submit": "Ver o meu nó",
+    "scale": {
+      "0": "Nunca",
+      "1": "Às vezes",
+      "2": "Frequentemente",
+      "3": "Sempre"
+    },
+    "emailPrompt": "Para guardares o teu diagnóstico, deixa o teu email.",
+    "emailLabel": "Email",
+    "namePrompt": "Como queres que te chame?",
+    "nameLabel": "Primeiro nome",
+    "consent": "Concordo com os termos e a política de privacidade.",
+    "errorAllRequired": "Responde a todas as 21 situações antes de continuar."
+  },
+  "result": {
+    "preEyebrow": "Antes de te mostrar —",
+    "preBody": "O que vais ver agora é o nome do padrão antigo que te está a fazer perder o teu casamento. Não é uma sentença. É a primeira luz acesa numa sala onde estavas há muito tempo às escuras.",
+    "eyebrowNamed": "{nome}, o teu nó.",
+    "eyebrowUnnamed": "O teu nó.",
+    "mirrorTitle": "Reconhecês-te aqui?",
+    "mirrorIntroSome": "Disseste «sempre» ou «frequentemente» a {n} destas situações.",
+    "mirrorIntroOne": "Disseste «sempre» ou «frequentemente» a uma destas situações.",
+    "mirrorIntroNone": "Disseste «às vezes» ou menos a estas três situações. O padrão está cá — mas ainda silencioso.",
+    "origemTitle": "De onde vem.",
+    "custoTitle": "O que está a fazer ao teu casamento.",
+    "forceTitle": "A força deste nó em ti.",
+    "forceScore": "{score} em 9",
+    "forceOthers": "Outros nós ressoaram, em menor força:",
+    "history": "Há {months} meses o teu nó era {previous}. Hoje é {current}. Os nós mudam à medida que tu mudas.",
+    "travessiaTitle": "A travessia.",
+    "travessiaStep1Label": "Sessão 1 + 2",
+    "travessiaStep1Body": "Já fizeste. Vês o nó.",
+    "travessiaStep2Label": "Sessões 3, 4 e 5",
+    "travessiaStep2Body": "Vais à origem. Não em afirmações — em movimentos concretos.",
+    "travessiaStep3Label": "Sessões 6 + 7",
+    "travessiaStep3Body": "Dissolves o padrão. E ele começa a procurar-te.",
+    "travessiaRhythm": "Sete sessões. 21 dias. Cada uma abre três dias depois da anterior. Não há atalho.",
+    "offerPrice": "US$ 39",
+    "offerCta": "Atravessar este nó",
+    "offerFinePrint": "Pagas uma vez. Acesso vitalício. Garantia de 7 dias.",
+    "notReadyTitle": "Este nó ainda não está aberto.",
+    "notReadyBody": "Estou a escrever a travessia do nó da {no} agora. Deixa o teu email e aviso-te no dia em que abrir — não há lista de espera escondida.",
+    "secondaryTitle": "Detectei um eco.",
+    "secondaryBody": "{no} também apareceu nas tuas respostas. Não é o teu nó principal — é uma sombra do principal. Quando o dominante se dissolve, este tende a aliviar sozinho.",
+    "redo": "Refazer o diagnóstico",
+    "or": "Ou volta quando estiveres pronta. O diagnóstico fica aqui, e é teu para o refazeres sempre que precisares."
+  },
+  "checkout": {
+    "title": "Travessia do teu nó",
+    "summary": "Sessões 3 a 7 do teu nó dominante, mais 5 práticas. Acesso vitalício. Garantia de 7 dias.",
+    "price": "US$ 39",
+    "payWith": "Pagar com PayPal",
+    "processing": "A processar.",
+    "errorGeneric": "Algo correu mal. Tenta de novo daqui a um momento."
+  },
+  "success": {
+    "title": "Recebi.",
+    "body": "Vais receber um email com um link para entrar. Pode demorar um minuto. Verifica também o spam, por via das dúvidas.",
+    "openMail": "Abrir o email"
+  },
+  "login": {
+    "title": "Entrar",
+    "subtitle": "Digita o teu email. Mando-te um link de acesso.",
+    "emailLabel": "Email",
+    "cta": "Enviar link",
+    "sent": "Enviado. Verifica o teu email.",
+    "errorGeneric": "Não consegui enviar. Tenta outra vez."
+  },
+  "dashboard": {
+    "title": "A tua travessia",
+    "tier0Lock": "Compra a travessia para abrir as sessões 3 a 7.",
+    "sessionLabel": "Sessão {n}",
+    "locked": "Abre em {date}.",
+    "lockedTier": "Fica disponível depois da travessia.",
+    "open": "Abrir",
+    "completed": "Completada",
+    "redoDiagnostic": "Refazer o diagnóstico"
+  },
+  "session": {
+    "complete": "Marcar como completada",
+    "completed": "Sessão completada.",
+    "next": "Próxima sessão abre {date}.",
+    "saveAnswer": "Guardado.",
+    "writePlaceholder": "Escreve aqui. Só tu vês."
+  },
+  "account": {
+    "title": "A tua conta",
+    "email": "Email",
+    "tier": "Acesso",
+    "tier0": "Diagnóstico (grátis)",
+    "tier1": "Travessia do nó {no}",
+    "tier2": "Biblioteca completa",
+    "historyTitle": "Histórico de diagnósticos",
+    "noHistory": "Ainda não há diagnósticos.",
+    "deleteTitle": "Apagar a minha conta",
+    "deleteBody": "Apaga todos os teus dados de forma definitiva. Não há reverso.",
+    "deleteCta": "Apagar tudo",
+    "deleteConfirm": "Tens a certeza? Escreve APAGAR para confirmar.",
+    "deleteConfirmWord": "APAGAR",
+    "deleted": "A tua conta foi apagada."
+  },
+  "no": {
+    "fome": "Fome",
+    "controlo": "Controlo",
+    "inferioridade": "Inferioridade",
+    "desconfianca": "Desconfiança",
+    "salvadora": "Salvadora",
+    "abandono": "Abandono",
+    "invisibilidade": "Invisibilidade"
+  },
+  "footer": {
+    "terms": "Termos",
+    "privacy": "Privacidade",
+    "guarantee": "Garantia",
+    "signature": "Marina Vale"
+  },
+  "meta": {
+    "title": "SyncHim — Sincroniza-o contigo",
+    "description": "Processo silencioso de 21 dias para mulheres em casamentos a definhar."
+  }
+}

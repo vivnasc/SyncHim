@@ -1,0 +1,146 @@
+{
+  "nav": {
+    "diagnostic": "Diagnostic",
+    "account": "Account",
+    "enter": "Enter",
+    "logout": "Sign out"
+  },
+  "common": {
+    "loading": "Loading.",
+    "continue": "Continue",
+    "back": "Back",
+    "save": "Save",
+    "free": "Free"
+  },
+  "landing": {
+    "heroLine1": "Your husband has pulled away.",
+    "heroLine2": "And nothing you've tried has worked.",
+    "subhead": "SyncHim is the quiet 21-day process for him to start looking for you again — without chasing, without fighting, without him knowing you're doing anything.",
+    "cta": "Start the diagnostic — Free",
+    "subCta": "No payment. No card. In 8 minutes you'll know the knot that is choking your marriage."
+  },
+  "diagnostic": {
+    "start": "Begin",
+    "next": "Next",
+    "previous": "Back",
+    "submit": "See my knot",
+    "scale": {
+      "0": "Never",
+      "1": "Sometimes",
+      "2": "Often",
+      "3": "Always"
+    },
+    "emailPrompt": "Leave your email so I can save your diagnostic.",
+    "emailLabel": "Email",
+    "namePrompt": "What should I call you?",
+    "nameLabel": "First name",
+    "consent": "I agree to the terms and privacy policy.",
+    "errorAllRequired": "Answer all 21 situations before continuing."
+  },
+  "result": {
+    "preEyebrow": "Before I show you —",
+    "preBody": "What you are about to see is the name of the old pattern that is making you lose your marriage. It is not a sentence. It is the first light in a room you have been sitting in, in the dark, for a long time.",
+    "eyebrowNamed": "{nome}, your knot.",
+    "eyebrowUnnamed": "Your knot.",
+    "mirrorTitle": "Do you recognise yourself here?",
+    "mirrorIntroSome": "You said «always» or «often» to {n} of these.",
+    "mirrorIntroOne": "You said «always» or «often» to one of these.",
+    "mirrorIntroNone": "You said «sometimes» or less to all three. The pattern is here — but still quiet.",
+    "origemTitle": "Where it comes from.",
+    "custoTitle": "What it is doing to your marriage.",
+    "forceTitle": "The weight of this knot in you.",
+    "forceScore": "{score} of 9",
+    "forceOthers": "Other knots showed up, with less weight:",
+    "history": "{months} months ago your knot was {previous}. Today it is {current}. Knots shift as you shift.",
+    "travessiaTitle": "The crossing.",
+    "travessiaStep1Label": "Sessions 1 + 2",
+    "travessiaStep1Body": "Done. You see the knot.",
+    "travessiaStep2Label": "Sessions 3, 4 and 5",
+    "travessiaStep2Body": "You go to the origin. Not in affirmations — in specific movements.",
+    "travessiaStep3Label": "Sessions 6 + 7",
+    "travessiaStep3Body": "You dissolve the pattern. And he begins to look for you.",
+    "travessiaRhythm": "Seven sessions. 21 days. Each opens three days after the one before. No shortcuts.",
+    "offerPrice": "US$ 39",
+    "offerCta": "Cross this knot",
+    "offerFinePrint": "Pay once. Lifetime access. 7-day guarantee.",
+    "notReadyTitle": "This knot is not yet open.",
+    "notReadyBody": "I'm writing the crossing for {no} right now. Leave your email and I'll tell you the day it opens — there is no hidden waitlist.",
+    "secondaryTitle": "I noticed an echo.",
+    "secondaryBody": "{no} also showed up in your answers. It is not your main knot — it is a shadow of the main one. When the dominant one dissolves, this one tends to ease on its own.",
+    "redo": "Redo the diagnostic",
+    "or": "Or come back when you're ready. The diagnostic stays here, yours to redo whenever you need."
+  },
+  "checkout": {
+    "title": "Crossing your knot",
+    "summary": "Sessions 3 to 7 for your dominant knot, plus 5 practices. Lifetime access. 7-day guarantee.",
+    "price": "US$ 39",
+    "payWith": "Pay with PayPal",
+    "processing": "Processing.",
+    "errorGeneric": "Something went wrong. Try again in a moment."
+  },
+  "success": {
+    "title": "Received.",
+    "body": "You'll get an email with a sign-in link. It can take a minute. Check spam, just in case.",
+    "openMail": "Open mail"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Type your email. I'll send a link.",
+    "emailLabel": "Email",
+    "cta": "Send link",
+    "sent": "Sent. Check your email.",
+    "errorGeneric": "I couldn't send it. Try again."
+  },
+  "dashboard": {
+    "title": "Your crossing",
+    "tier0Lock": "Buy the crossing to open sessions 3 to 7.",
+    "sessionLabel": "Session {n}",
+    "locked": "Opens on {date}.",
+    "lockedTier": "Available after the crossing.",
+    "open": "Open",
+    "completed": "Completed",
+    "redoDiagnostic": "Redo the diagnostic"
+  },
+  "session": {
+    "complete": "Mark as completed",
+    "completed": "Session completed.",
+    "next": "Next session opens {date}.",
+    "saveAnswer": "Saved.",
+    "writePlaceholder": "Write here. Only you see this."
+  },
+  "account": {
+    "title": "Your account",
+    "email": "Email",
+    "tier": "Access",
+    "tier0": "Diagnostic (free)",
+    "tier1": "Crossing of the {no} knot",
+    "tier2": "Full library",
+    "historyTitle": "Diagnostic history",
+    "noHistory": "No diagnostics yet.",
+    "deleteTitle": "Delete my account",
+    "deleteBody": "Erases all your data, permanently. There is no undo.",
+    "deleteCta": "Delete everything",
+    "deleteConfirm": "Are you sure? Type DELETE to confirm.",
+    "deleteConfirmWord": "DELETE",
+    "deleted": "Your account has been deleted."
+  },
+  "no": {
+    "fome": "Hunger",
+    "controlo": "Grip",
+    "inferioridade": "Smallness",
+    "desconfianca": "Suspicion",
+    "salvadora": "Rescuer",
+    "abandono": "Abandonment",
+    "invisibilidade": "Vanishing"
+  },
+  "footer": {
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "guarantee": "Guarantee",
+    "signature": "Marina Vale"
+  },
+  "meta": {
+    "title": "SyncHim — Sync him to you",
+    "description": "A quiet 21-day method for women in marriages that are quietly fading."
+  }
+}
