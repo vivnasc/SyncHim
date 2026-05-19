@@ -1,9 +1,6 @@
 import { LEGAL } from '@/lib/content';
 import { SessionMarkdown } from '@/components/SessionMarkdown';
 import type { Locale } from '@/lib/diagnostic';
-
-export const runtime = 'edge';
-
 export default function PrivacyPage({ params }: { params: { locale: string } }) {
   const raw = LEGAL.privacidade[params.locale as Locale] ?? LEGAL.privacidade.en;
   return (

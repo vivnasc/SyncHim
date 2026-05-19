@@ -4,9 +4,6 @@ import { getTranslations } from 'next-intl/server';
 import { createSupabaseServer } from '@/lib/supabase/server';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { type No } from '@/lib/diagnostic';
-
-export const runtime = 'edge';
-
 export default async function DashboardPage({ params }: { params: { locale: string } }) {
   const locale = params.locale as 'pt' | 'en';
   const supabase = createSupabaseServer();

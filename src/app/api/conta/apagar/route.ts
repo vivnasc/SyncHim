@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase/server';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
-
-export const runtime = 'edge';
-
 export async function POST() {
   const supabase = createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();

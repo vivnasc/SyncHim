@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyWebhook, getOrder } from '@/lib/paypal';
 import { applyPurchase } from '@/lib/purchase';
-
-export const runtime = 'edge';
-
 export async function POST(req: NextRequest) {
   const raw = await req.text();
   const headers = {

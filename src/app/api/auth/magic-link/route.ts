@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { sendMagicLink } from '@/lib/resend';
-
-export const runtime = 'edge';
-
 const Body = z.object({
   email: z.string().email(),
   locale: z.enum(['pt', 'en']).default('en')

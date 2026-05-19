@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { captureOrder } from '@/lib/paypal';
 import { applyPurchase } from '@/lib/purchase';
-
-export const runtime = 'edge';
-
 const Body = z.object({ orderId: z.string() });
 
 export async function POST(req: NextRequest) {
