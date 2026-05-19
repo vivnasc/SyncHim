@@ -4,7 +4,7 @@ import { createOrder } from '@/lib/paypal';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { NOS_VENDAVEIS } from '@/lib/diagnostic';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 const Body = z.object({
   tier: z.union([z.literal(1), z.literal(2)]),

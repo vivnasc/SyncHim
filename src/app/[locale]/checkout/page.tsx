@@ -6,6 +6,8 @@ import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { trackEvent } from '@/lib/events';
 import { PayPalCheckout } from '@/components/PayPalCheckout';
 
+export const runtime = 'edge';
+
 export default async function CheckoutPage({
   params,
   searchParams

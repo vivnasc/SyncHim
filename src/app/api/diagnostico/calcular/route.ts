@@ -14,7 +14,7 @@ import { verifyTurnstile } from '@/lib/turnstile';
 import { trackEvent } from '@/lib/events';
 import { sendOnce } from '@/lib/resend';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 const Body = z.object({
   answers: z.record(z.string(), z.number().int().min(0).max(3)),

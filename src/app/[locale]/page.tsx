@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { trackEvent } from '@/lib/events';
 
+export const runtime = 'edge';
+
 const SECTIONS_PT = {
   recognition: [
     'Provavelmente foi de noite que clicaste. Provavelmente o teu marido estava ao lado, a dormir, ou no telemóvel, ou na outra divisão da casa — e tu, mesmo na mesma casa, estavas sozinha.',

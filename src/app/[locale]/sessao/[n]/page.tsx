@@ -8,6 +8,8 @@ import { SessionMarkdown } from '@/components/SessionMarkdown';
 import { CompleteSessionButton } from '@/components/CompleteSessionButton';
 import { trackEvent } from '@/lib/events';
 
+export const runtime = 'edge';
+
 export default async function SessionPage({
   params,
   searchParams

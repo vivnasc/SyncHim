@@ -4,6 +4,8 @@ import { createSupabaseServer } from '@/lib/supabase/server';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { DeleteAccountForm } from '@/components/DeleteAccountForm';
 
+export const runtime = 'edge';
+
 export default async function AccountPage({ params }: { params: { locale: string } }) {
   const locale = params.locale as 'pt' | 'en';
   const supabase = createSupabaseServer();
