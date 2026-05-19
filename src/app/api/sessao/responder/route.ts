@@ -6,7 +6,7 @@ import { NOS } from '@/lib/diagnostic';
 import { trackEvent } from '@/lib/events';
 import { sendOnce } from '@/lib/resend';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 const Body = z.object({
   no: z.string(),

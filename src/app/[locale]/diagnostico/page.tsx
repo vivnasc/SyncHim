@@ -3,6 +3,8 @@ import { SessionMarkdown } from '@/components/SessionMarkdown';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
+export const runtime = 'edge';
+
 export default async function DiagnosticEntry({ params }: { params: { locale: string } }) {
   const locale = params.locale as 'pt' | 'en';
   const s1 = await getCommonSession(locale, 1);

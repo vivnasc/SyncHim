@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:cf": "npx @cloudflare/next-on-pages@1",
+    "build:cf": "npx @cloudflare/next-on-pages@1 && printf '_worker.js\\n_routes.json\\n_redirects\\nnop-build-log.json\\n' > .vercel/output/static/.assetsignore",
     "start": "next start",
     "lint": "next lint",
     "preview": "wrangler pages dev .vercel/output/static"

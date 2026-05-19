@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { trackEvent } from '@/lib/events';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 const Body = z.object({
   email: z.string().email(),

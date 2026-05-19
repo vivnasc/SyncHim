@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { captureOrder } from '@/lib/paypal';
 import { applyPurchase } from '@/lib/purchase';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 
 const Body = z.object({ orderId: z.string() });
 
