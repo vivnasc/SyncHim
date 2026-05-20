@@ -1,0 +1,13 @@
+{
+  "name": "synchim-render-carrossel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "render": "node generate.mjs"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "puppeteer": "^23.6.0"
+  }
+}

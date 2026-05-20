@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8" />
+<title>SyncHim · kinetic scene</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=block" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1A1410;
+    --texto: #F2E8DC;
+    --ouro: #B8843D;
+    --ouro-folha: #D4A857;
+  }
+  html, body { margin: 0; padding: 0; }
+  body {
+    width: 1080px; height: 1920px; overflow: hidden;
+    background: var(--bg);
+    color: var(--texto);
+    font-family: 'EB Garamond', Georgia, serif;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0.97  0 0 0 0 0.91  0 0 0 0 0.82  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    opacity: 0.04;
+  }
+  #scene {
+    position: relative; z-index: 2;
+    width: 1080px; height: 1920px;
+    padding: 220px 120px;
+    box-sizing: border-box;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center;
+  }
+  #scene .body {
+    font-size: 78px;
+    line-height: 1.25;
+    color: var(--texto);
+    letter-spacing: -0.005em;
+  }
+  #scene .body strong { color: var(--ouro-folha); font-weight: 500; }
+  #scene .body em     { color: var(--ouro); font-style: italic; }
+
+  #scene.cta .body { color: var(--ouro-folha); font-size: 72px; }
+  #scene.capa .body { font-weight: 500; font-size: 88px; }
+
+  .mark { position: absolute; bottom: 110px; color: var(--ouro-folha); font-size: 38px; letter-spacing: 0.2em; }
+  .estrela { color: var(--ouro-folha); font-size: 46px; margin-top: 60px; }
+</style>
+</head>
+<body>
+<div id="scene"><div class="body"></div></div>
+<script>
+  function escapeHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function renderBody(src) {
+    return (src || '').split(/\n\n+/).map((par) => {
+      const inline = escapeHtml(par)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/_(.+?)_/g, '<em>$1</em>')
+        .replace(/\n/g, '<br/>');
+      return '<p style="margin:0 0 20px">' + inline + '</p>';
+    }).join('');
+  }
+  function fitToHeight(el, maxH, minPx) {
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    let guard = 80;
+    while (el.scrollHeight > maxH && size > minPx && guard-- > 0) { size -= 2; el.style.fontSize = size + 'px'; }
+  }
+
+  function applyBrand(b) {
+    if (!b) return;
+    const r = document.documentElement.style;
+    if (b.bg) r.setProperty('--bg', b.bg);
+    if (b.texto) r.setProperty('--texto', b.texto);
+    if (b.ouro) r.setProperty('--ouro', b.ouro);
+    if (b.ouroFolha) r.setProperty('--ouro-folha', b.ouroFolha);
+  }
+
+  const d = window.SCENE_DATA || {};
+  applyBrand(d.brand);
+  const root = document.getElementById('scene');
+  const layout = d.layout || 'kinetic-line';
+  root.classList.add(layout === 'cta' ? 'cta' : (layout === 'capa' ? 'capa' : 'kinetic'));
+  const body = root.querySelector('.body');
+  body.innerHTML = renderBody(d.body);
+
+  if (layout === 'cta' || layout === 'capa') {
+    const star = document.createElement('div');
+    star.className = 'estrela';
+    star.textContent = '✦';
+    root.appendChild(star);
+  }
+
+  // marca discreta no rodapé excepto na capa
+  if (layout !== 'capa') {
+    const m = document.createElement('div');
+    m.className = 'mark';
+    m.textContent = 'SYNCHIM';
+    root.appendChild(m);
+  }
+
+  document.fonts.ready.then(() => {
+    fitToHeight(body, root.clientHeight - 400, 32);
+    document.body.dataset.ready = '1';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+name: Render vídeo SyncHim
+
+on:
+  workflow_dispatch:
+    inputs:
+      jobId:
+        description: 'job id (mesmo da Supabase render-jobs)'
+        required: true
+        type: string
+      manifestUrl:
+        description: 'URL público do manifest JSON'
+        required: true
+        type: string
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: System libs (FFmpeg + Chromium)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg \
+            libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 \
+            libgtk-3-0 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 \
+            libxshmfence1 libasound2 fonts-liberation libpango-1.0-0 libcairo2
+          ffmpeg -version | head -1
+
+      - name: Install puppeteer
+        working-directory: tools/render-video
+        run: |
+          npm install --no-audit --no-fund
+          npx puppeteer browsers install chrome
+
+      - name: Render
+        working-directory: tools/render-video
+        env:
+          MANIFEST_URL: ${{ inputs.manifestUrl }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node render.mjs

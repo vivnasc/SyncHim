@@ -14,6 +14,11 @@ const intlMiddleware = createMiddleware({
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // /admin é não-i18n. Deixa passar.
+  if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+    return NextResponse.next();
+  }
+
   const hasLocale = locales.some(
     (l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`)
   );
@@ -41,5 +46,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next|_vercel|favicon.ico|robots.txt|.*\\..*).*)']
+  matcher: ['/((?!api|admin|_next|_vercel|favicon.ico|robots.txt|.*\\..*).*)']
 };
