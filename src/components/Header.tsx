@@ -6,7 +6,7 @@ import { SignOutButton } from './SignOutButton';
 
 export async function Header() {
   const locale = await getLocale();
-  const t = await getTranslations('nav');
+  const t = await getTranslations({ locale: locale, namespace: 'nav' });
   const supabase = createSupabaseServer();
   let userPresent = false;
   try {

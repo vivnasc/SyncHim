@@ -5,7 +5,7 @@ import { getTranslations } from 'next-intl/server';
 export default async function DiagnosticEntry({ params }: { params: { locale: string } }) {
   const locale = params.locale as 'pt' | 'en';
   const s1 = await getCommonSession(locale, 1);
-  const t = await getTranslations('diagnostic');
+  const t = await getTranslations({ locale: params.locale, namespace: 'diagnostic' });
 
   return (
     <div className="px-6 md:px-10 py-16">

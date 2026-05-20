@@ -33,8 +33,8 @@ export default async function CheckoutPage({
 
   await trackEvent('checkout_iniciado', { userId: cookieData.user_id, metadata: { no } });
 
-  const t = await getTranslations('checkout');
-  const tNo = await getTranslations('no');
+  const t = await getTranslations({ locale: params.locale, namespace: 'checkout' });
+  const tNo = await getTranslations({ locale: params.locale, namespace: 'no' });
 
   return (
     <div className="px-6 md:px-10 py-20">

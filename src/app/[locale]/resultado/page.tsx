@@ -35,8 +35,8 @@ export default async function ResultPage({ params }: { params: { locale: string 
     redirect(`/${locale}/diagnostico`);
   }
 
-  const t = await getTranslations('result');
-  const tNo = await getTranslations('no');
+  const t = await getTranslations({ locale: params.locale, namespace: 'result' });
+  const tNo = await getTranslations({ locale: params.locale, namespace: 'no' });
   const dominante = payload!.dominante;
   const secundario = payload!.secundario;
   const sellable = NOS_VENDAVEIS.includes(dominante);
