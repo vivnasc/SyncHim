@@ -359,7 +359,7 @@ export default async function LandingPage({ params }: { params: { locale: string
                     </span>
                   </div>
                   <p className="font-body italic text-ash text-sm md:text-base mt-2 leading-snug">
-                    {c.essence}
+                    {c.lead}
                   </p>
                 </li>
               );
