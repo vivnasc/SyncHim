@@ -8,12 +8,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: '#0A0A0A',
-        coal: '#111111',
-        bone: '#F5F1EA',
-        gold: '#B8956A',
-        bordeaux: '#6B1F2C',
-        ash: '#888880'
+        ink: '#1A1410',
+        coal: '#221A14',
+        bone: '#F2E8DC',
+        gold: '#B8843D',
+        goldBright: '#C9924A',
+        bordeaux: '#8B2235',
+        ash: '#A39B8E',
+        separator: '#2A2018'
       },
       fontFamily: {
         serif: ['"EB Garamond"', '"Cormorant Garamond"', 'Georgia', 'serif'],

@@ -34,7 +34,7 @@ export function DeleteAccountForm({ locale }: { locale: 'pt' | 'en' }) {
         onClick={submit}
         disabled={confirmation !== word || loading}
         className="btn"
-        style={{ borderColor: '#6B1F2C', color: '#F5F1EA' }}
+        style={{ borderColor: '#8B2235', color: '#F2E8DC' }}
       >
         {t('deleteCta')}
       </button>
