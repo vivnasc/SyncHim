@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8" />
+<title>SyncHim · slide</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@400;500&display=block" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="slide" class="slide layout-conteudo">
+  <!-- preenchido via window.SLIDE_DATA -->
+</div>
+<script>
+  // Render funciona em duas vias:
+  //   a) Standalone: o gerador injecta window.SLIDE_DATA antes de carregar
+  //      o doc (evaluateOnNewDocument) — seguimos esse path.
+  //   b) Manual QA: ?data=<base64 json> no URL.
+  function getData() {
+    if (window.SLIDE_DATA) return window.SLIDE_DATA;
+    const url = new URL(location.href);
+    const enc = url.searchParams.get('data');
+    if (enc) return JSON.parse(decodeURIComponent(escape(atob(enc))));
+    return null;
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderBody(src) {
+    return (src || '').split(/\n\n+/).map((par) => {
+      const inline = escapeHtml(par)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/_(.+?)_/g, '<em>$1</em>')
+        .replace(/\n/g, '<br/>');
+      return '<p>' + inline + '</p>';
+    }).join('');
+  }
+
+  // Tipografia adaptativa: reduz font-size até caber em altura.
+  function fitToHeight(el, maxH, minPx) {
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    let guard = 80;
+    while (el.scrollHeight > maxH && size > minPx && guard-- > 0) {
+      size -= 2;
+      el.style.fontSize = size + 'px';
+    }
+  }
+
+  function applyBrand(brand) {
+    if (!brand) return;
+    const r = document.documentElement.style;
+    if (brand.bg)        r.setProperty('--bg', brand.bg);
+    if (brand.bgElev)    r.setProperty('--bg-elev', brand.bgElev);
+    if (brand.texto)     r.setProperty('--texto', brand.texto);
+    if (brand.textoSuave)r.setProperty('--texto-suave', brand.textoSuave);
+    if (brand.ouro)      r.setProperty('--ouro', brand.ouro);
+    if (brand.ouroFolha) r.setProperty('--ouro-folha', brand.ouroFolha);
+    if (brand.bordeaux)  r.setProperty('--bordeaux', brand.bordeaux);
+    if (brand.linha)     r.setProperty('--linha', brand.linha);
+  }
+
+  function render() {
+    const data = getData();
+    if (!data) return;
+    applyBrand(data.brand);
+
+    const root = document.getElementById('slide');
+    const layout = data.layout || 'conteudo';
+    root.className = 'slide layout-' + layout;
+
+    let inner = '';
+    const design = data.design || {};
+
+    // Ghost number (canto): apenas para 'conteudo'.
+    if (layout === 'conteudo' && design.numero != null) {
+      inner += '<span class="ghost-num">' + String(design.numero).padStart(2, '0') + '</span>';
+    }
+
+    // Body principal.
+    inner += '<div class="body">' + renderBody(data.body || '') + '</div>';
+
+    // Ornamento / marca.
+    if (layout === 'capa') {
+      inner += '<div class="rosaceo">' + rosaceoSvg() + '</div>';
+    }
+    if (layout === 'cta' || layout === 'assinatura' || design.ornamento === 'estrela') {
+      inner += '<div class="estrela">✦</div>';
+    }
+    if (design.ornamento === 'vesica') {
+      inner += '<div class="vesica">' + vesicaSvg() + '</div>';
+    }
+
+    // Assinatura final ("— Marina Vale"): apenas para 'assinatura' ou último slide marcado.
+    if (layout === 'assinatura') {
+      inner += '<div class="signature">—<br/>Marina Vale</div>';
+    }
+
+    root.innerHTML = inner;
+    fitToHeight(root.querySelector('.body'), root.clientHeight - 200, 28);
+
+    // Sinaliza ao Puppeteer que está pronto.
+    document.body.dataset.ready = '1';
+  }
+
+  function rosaceoSvg() {
+    return '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="0.7"><circle cx="32" cy="32" r="22"/><circle cx="32" cy="32" r="14"/><circle cx="32" cy="32" r="6"/><path d="M32 10v44M10 32h44M16 16l32 32M48 16L16 48"/></svg>';
+  }
+  function vesicaSvg() {
+    return '<svg viewBox="0 0 120 60" fill="none" stroke="currentColor" stroke-width="0.7"><circle cx="48" cy="30" r="24"/><circle cx="72" cy="30" r="24"/></svg>';
+  }
+
+  document.fonts.ready.then(render);
+</script>
+</body>
+</html>

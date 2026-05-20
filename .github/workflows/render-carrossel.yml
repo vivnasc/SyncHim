@@ -1,0 +1,48 @@
+name: Render carrossel SyncHim
+
+on:
+  workflow_dispatch:
+    inputs:
+      jobId:
+        description: 'job id (mesmo da Supabase render-jobs)'
+        required: true
+        type: string
+      manifestUrl:
+        description: 'URL público do manifest JSON'
+        required: true
+        type: string
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: tools/render-carrossel/package-lock.json
+
+      - name: System libs for Chromium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgbm1 \
+            libgtk-3-0 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 \
+            libxshmfence1 libasound2 fonts-liberation libpango-1.0-0 libcairo2
+
+      - name: Install
+        working-directory: tools/render-carrossel
+        run: |
+          npm install --no-audit --no-fund
+          npx puppeteer browsers install chrome
+
+      - name: Render
+        working-directory: tools/render-carrossel
+        env:
+          MANIFEST_URL: ${{ inputs.manifestUrl }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node generate.mjs
