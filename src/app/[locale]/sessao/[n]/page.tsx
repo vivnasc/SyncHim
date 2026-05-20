@@ -7,6 +7,9 @@ import { getSession } from '@/lib/content';
 import { SessionMarkdown } from '@/components/SessionMarkdown';
 import { CompleteSessionButton } from '@/components/CompleteSessionButton';
 import { trackEvent } from '@/lib/events';
+import { Vesica } from '@/components/marks/Vesica';
+import { EstrelaPersa } from '@/components/marks/EstrelaPersa';
+
 export default async function SessionPage({
   params,
   searchParams
@@ -19,22 +22,35 @@ export default async function SessionPage({
   if (!Number.isInteger(nNum) || nNum < 1 || nNum > 7) notFound();
 
   const t = await getTranslations({ locale: params.locale, namespace: 'session' });
+  const tSession = await getTranslations({ locale: params.locale, namespace: 'dashboard' });
   const tNo = await getTranslations({ locale: params.locale, namespace: 'no' });
 
-  // Session 2 is the diagnostic — redirect into the form.
   if (nNum === 2) redirect(`/${locale}/diagnostico/perguntas`);
 
-  // Session 1 is recognition, public.
   if (nNum === 1) {
     const session = await getSession(locale, 'fome', 1);
     return (
-      <div className="px-6 md:px-10 py-16">
-        {session && <SessionMarkdown source={session.content} />}
+      <div>
+        <section className="px-6 md:px-10 pt-16 md:pt-24 pb-8 text-center">
+          <Vesica className="w-20 h-12 mx-auto text-gold mb-8" />
+          <div className="mini-caps text-goldBright">
+            {tSession('sessionLabel', { n: '1' })}
+          </div>
+        </section>
+        <section className="px-6 md:px-10 pb-16">
+          {session && (
+            <div className="max-w-[40rem] mx-auto">
+              <SessionMarkdown source={session.content} />
+            </div>
+          )}
+        </section>
+        <div className="flex justify-center py-10">
+          <EstrelaPersa className="w-10 h-10 text-goldBright" />
+        </div>
       </div>
     );
   }
 
-  // Sessions 3-7 require auth.
   const supabase = createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`/${locale}/login`);
@@ -44,14 +60,12 @@ export default async function SessionPage({
 
   const admin = createSupabaseAdmin();
 
-  // Check access.
   const { data: hasAccess } = await admin.rpc('tem_acesso_no', {
     p_user_id: user.id,
     p_no: no
   });
   if (!hasAccess) redirect(`/${locale}/dashboard`);
 
-  // Check unlock.
   const { data: unlocked } = await admin.rpc('sessao_desbloqueada', {
     p_user_id: user.id,
     p_no: no,
@@ -59,7 +73,6 @@ export default async function SessionPage({
   });
   if (!unlocked) redirect(`/${locale}/dashboard`);
 
-  // Mark started.
   await admin.from('progresso').upsert({
     user_id: user.id,
     no,
@@ -81,17 +94,32 @@ export default async function SessionPage({
     .maybeSingle();
 
   return (
-    <div className="px-6 md:px-10 py-16">
-      <div className="max-w-prose mx-auto mb-6 text-ash text-sm tracking-widest uppercase">
-        {tNo(no)} · {t('saveAnswer').replace('.', '')} {nNum}
-      </div>
-      <SessionMarkdown source={session.content} />
-      <div className="max-w-prose mx-auto mt-16 border-t border-ash/20 pt-8 flex items-center justify-between">
-        {progressRow?.completada_em ? (
-          <span className="text-gold font-body">{t('completed')}</span>
-        ) : (
-          <CompleteSessionButton locale={locale} no={no} sessao={nNum} />
-        )}
+    <div>
+      <section className="px-6 md:px-10 pt-16 md:pt-24 pb-8 text-center">
+        <Vesica className="w-20 h-12 mx-auto text-gold mb-8" />
+        <div className="mini-caps text-goldBright mb-3">
+          {tNo(no)} · {tSession('sessionLabel', { n: String(nNum) })}
+        </div>
+      </section>
+
+      <section className="px-6 md:px-10 pb-16">
+        <div className="max-w-[40rem] mx-auto">
+          <SessionMarkdown source={session.content} />
+        </div>
+      </section>
+
+      <section className="px-6 md:px-10 py-10 border-t border-separator">
+        <div className="max-w-[40rem] mx-auto flex items-center justify-between gap-6">
+          {progressRow?.completada_em ? (
+            <span className="mini-caps text-goldBright">{t('completed')}</span>
+          ) : (
+            <CompleteSessionButton locale={locale} no={no} sessao={nNum} />
+          )}
+        </div>
+      </section>
+
+      <div className="flex justify-center py-10">
+        <EstrelaPersa className="w-10 h-10 text-goldBright" />
       </div>
     </div>
   );

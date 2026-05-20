@@ -32,11 +32,11 @@ export function DiagnosticForm() {
 
   const total = ids.length;
   const onQuestions = step < total;
-  const reachedEmail = step === total;
+  const progress = onQuestions ? (step / total) * 100 : 100;
 
   function selectAnswer(qid: string, v: 0 | 1 | 2 | 3) {
     setAnswers((a) => ({ ...a, [qid]: v }));
-    setTimeout(() => setStep((s) => Math.min(s + 1, total)), 180);
+    setTimeout(() => setStep((s) => Math.min(s + 1, total)), 220);
   }
 
   async function submit() {
@@ -69,64 +69,128 @@ export function DiagnosticForm() {
 
   if (onQuestions) {
     const qid = ids[step];
+    const numero = String(step + 1).padStart(2, '0');
+    const totalStr = String(total).padStart(2, '0');
+
     return (
-      <div className="max-w-prose mx-auto px-6 md:px-10 py-16">
-        <div className="text-ash text-sm tracking-widest mb-6">{step + 1} / {total}</div>
-        <h2 className="font-serif text-2xl md:text-3xl leading-tight mb-10">{qMap[qid]}</h2>
-        <div className="flex flex-col gap-3">
-          {SCALE.map(({ v, key }) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => selectAnswer(qid, v)}
-              className={`text-left px-5 py-4 border transition-colors ${
-                answers[qid] === v
-                  ? 'border-gold text-bone'
-                  : 'border-ash/40 text-bone/80 hover:border-gold/60'
-              }`}
-            >
-              {t(`scale.${key}`)}
-            </button>
-          ))}
+      <div className="min-h-[60vh] flex flex-col">
+        {/* progress bar fixed at top of section */}
+        <div className="px-6 md:px-10 pt-10">
+          <div className="max-w-2xl mx-auto">
+            <div className="flex items-baseline justify-between mb-3 mini-caps text-ash">
+              <span>{numero} / {totalStr}</span>
+              <span>{Math.round(progress)}%</span>
+            </div>
+            <div className="h-px bg-separator relative overflow-hidden">
+              <div
+                className="absolute inset-y-0 left-0 bg-goldBright transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
         </div>
-        <div className="flex justify-between mt-10 text-sm">
-          <button
-            type="button"
-            disabled={step === 0}
-            onClick={() => setStep((s) => Math.max(0, s - 1))}
-            className="text-ash disabled:opacity-30"
-          >{t('previous')}</button>
-          <span className="text-ash">{tCommon('save')}</span>
+
+        {/* question */}
+        <div
+          key={qid}
+          className="flex-1 flex items-center px-6 md:px-10 py-12 md:py-16 fade-in-section is-visible"
+        >
+          <div className="max-w-2xl mx-auto w-full">
+            <h2 className="font-serif text-2xl md:text-4xl text-bone leading-[1.25] mb-12 max-w-xl">
+              {qMap[qid]}
+            </h2>
+            <div className="flex flex-col gap-3">
+              {SCALE.map(({ v, key }) => {
+                const selected = answers[qid] === v;
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => selectAnswer(qid, v)}
+                    className={`text-left font-body px-5 md:px-6 py-4 md:py-5 border transition-all duration-200 ${
+                      selected
+                        ? 'border-goldBright bg-coal/60 text-bone'
+                        : 'border-separator text-bone/85 hover:border-gold hover:bg-coal/30 hover:translate-x-1'
+                    }`}
+                  >
+                    {t(`scale.${key}`)}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex justify-between mt-12 text-sm">
+              <button
+                type="button"
+                disabled={step === 0}
+                onClick={() => setStep((s) => Math.max(0, s - 1))}
+                className="text-ash disabled:opacity-30 hover:text-goldBright transition-colors"
+              >
+                ← {t('previous')}
+              </button>
+              <span className="text-ash italic">{tCommon('save')}</span>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-prose mx-auto px-6 md:px-10 py-16">
-      <h2 className="font-serif text-2xl md:text-3xl mb-6">{t('emailPrompt')}</h2>
-      <label className="block mb-4">
-        <span className="block text-sm text-ash mb-2">{t('nameLabel')}</span>
-        <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
-      </label>
-      <label className="block mb-4">
-        <span className="block text-sm text-ash mb-2">{t('emailLabel')}</span>
-        <input className="input" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-      </label>
-      <label className="flex items-start gap-3 my-6 text-sm text-bone/80">
-        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-        <span>{t('consent')}</span>
-      </label>
-      <Turnstile onToken={setTurnstileToken} />
-      {error && <p className="text-bordeaux mb-4">{error}</p>}
-      <button
-        type="button"
-        disabled={!email || !consent || submitting}
-        onClick={submit}
-        className="btn btn-primary disabled:opacity-50"
-      >
-        {submitting ? tCommon('loading') : t('submit')}
-      </button>
+    <div className="min-h-[60vh] flex items-center px-6 md:px-10 py-16">
+      <div className="max-w-xl mx-auto w-full">
+        <div className="mini-caps text-goldBright mb-6">{tCommon('continue')}</div>
+        <h2 className="font-serif text-3xl md:text-4xl text-bone leading-tight mb-10 max-w-md">
+          {t('emailPrompt')}
+        </h2>
+
+        <label className="block mb-6">
+          <span className="block mini-caps text-ash mb-2">{t('nameLabel')}</span>
+          <input
+            className="input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={locale === 'pt' ? 'O teu primeiro nome' : 'Your first name'}
+          />
+        </label>
+
+        <label className="block mb-6">
+          <span className="block mini-caps text-ash mb-2">{t('emailLabel')}</span>
+          <input
+            className="input"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="email@dominio.com"
+          />
+        </label>
+
+        <label className="flex items-start gap-3 my-8 text-sm text-bone/80 font-body cursor-pointer">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            className="mt-1 accent-goldBright"
+          />
+          <span>{t('consent')}</span>
+        </label>
+
+        <Turnstile onToken={setTurnstileToken} />
+
+        {error && (
+          <p className="text-bordeaux font-body my-5 border-l-2 border-bordeaux pl-4">{error}</p>
+        )}
+
+        <button
+          type="button"
+          disabled={!email || !consent || submitting}
+          onClick={submit}
+          className="cta-living large mt-4 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <span>{submitting ? tCommon('loading') : t('submit')}</span>
+          {!submitting && <span className="arrow" aria-hidden="true">→</span>}
+        </button>
+      </div>
     </div>
   );
 }
