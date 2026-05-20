@@ -91,7 +91,7 @@ const PT: CopySection = {
     eyebrow: 'QUEM TE ESCREVE',
     lines: [
       'Eu chamo-me **Marina Vale**.',
-      'Não tenho rosto. Não dou entrevistas. Não vendo cursos. Não estou em mais lado nenhum.',
+      'Não dou entrevistas. Não vendo cursos. Não estou em mais lado nenhum.',
       'Construí SyncHim a partir da minha própria travessia, e do que aprendi acompanhando mulheres no mesmo processo.',
       'Não te vou prometer que o teu marido volta em 21 dias.',
       'Vou prometer-te que **vais ver, pela primeira vez, o que está a acontecer.**',
@@ -183,7 +183,7 @@ const EN: CopySection = {
     eyebrow: 'WHO WRITES TO YOU',
     lines: [
       'My name is **Marina Vale**.',
-      'No face. No interviews. No courses. Nowhere else.',
+      'I do not give interviews. I do not sell courses. I am nowhere else.',
       'I built SyncHim from my own crossing, and from what I learned walking with other women through the same process.',
       "I won't promise your husband will come back in 21 days.",
       "I'll promise you'll **see, for the first time, what is happening.**",
@@ -359,7 +359,7 @@ export default async function LandingPage({ params }: { params: { locale: string
                     </span>
                   </div>
                   <p className="font-body italic text-ash text-sm md:text-base mt-2 leading-snug">
-                    {c.essence}
+                    {c.lead}
                   </p>
                 </li>
               );

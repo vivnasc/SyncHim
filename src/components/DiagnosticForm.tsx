@@ -53,11 +53,16 @@ export function DiagnosticForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers, email, name, locale, turnstileToken })
       });
-      if (!res.ok) throw new Error('failed');
+      if (!res.ok) {
+        const detail = await res.json().catch(() => ({}));
+        console.error('diagnostico/calcular failed', res.status, detail);
+        throw new Error(detail.error || 'submit_failed');
+      }
       const data = await res.json() as { ok: boolean; redirect: string };
       router.push(data.redirect);
-    } catch {
-      setError('—');
+    } catch (err) {
+      console.error('submit error', err);
+      setError(t('errorGeneric'));
       setSubmitting(false);
     }
   }

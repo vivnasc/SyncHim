@@ -14,6 +14,10 @@ import { noContent } from '@/lib/no-content';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { trackEvent } from '@/lib/events';
 import { NotifyForm } from '@/components/NotifyForm';
+import { Vesica } from '@/components/marks/Vesica';
+import { EstrelaPersa } from '@/components/marks/EstrelaPersa';
+import { FadeIn } from '@/components/FadeIn';
+
 interface ResultCookie {
   user_id: string;
   nome: string | null;
@@ -22,6 +26,10 @@ interface ResultCookie {
   pontuacoes: Record<No, number>;
   respostas_dominante: Record<string, 0 | 1 | 2 | 3>;
   is_repeat: boolean;
+}
+
+function Arrow() {
+  return <span className="arrow" aria-hidden="true">→</span>;
 }
 
 export default async function ResultPage({ params }: { params: { locale: string } }) {
@@ -92,42 +100,47 @@ export default async function ResultPage({ params }: { params: { locale: string 
         : t('mirrorIntroSome', { n: String(highCount) });
 
   return (
-    <div className="px-6 md:px-10 py-24 md:py-32">
-      <article className="max-w-reading mx-auto">
+    <div>
+      {/* ============ REVEAL ============ */}
+      <section className="px-6 md:px-10 pt-16 md:pt-24 pb-16 md:pb-20 text-center">
+        <Vesica className="w-20 h-12 mx-auto text-gold mb-10 reveal reveal-1" />
+        <div className="mini-caps mb-10 text-goldBright reveal reveal-1">{eyebrow}</div>
+        <h1 className="font-serif text-goldBright leading-none">
+          <span className="reveal-name block text-6xl md:text-8xl">{dominanteName}</span>
+        </h1>
+        <p className="font-body italic text-bone/85 text-xl md:text-2xl reveal reveal-3 leading-snug max-w-2xl mx-auto mt-12">
+          {content.lead}
+        </p>
+      </section>
 
-        {/* PRE-REVEAL */}
-        <section className="reveal reveal-1">
-          <div className="text-ash uppercase tracking-widest text-xs mb-6">
-            {t('preEyebrow')}
-          </div>
-          <p className="font-body text-bone/85 text-lg leading-relaxed italic">
-            {t('preBody')}
+      {/* ============ DESCRIÇÃO ============ */}
+      <FadeIn as="section" className="px-6 md:px-10 py-16 md:py-20">
+        <div className="max-w-[40rem] mx-auto space-y-6 font-body text-bone text-lg md:text-xl leading-relaxed">
+          {content.body.map((p, i) => (
+            <p key={i}>{p}</p>
+          ))}
+        </div>
+      </FadeIn>
+
+      <Vesica className="w-20 h-12 mx-auto text-gold my-4" />
+
+      {/* ============ A FRASE QUE DÓI ============ */}
+      <FadeIn as="section" className="px-6 md:px-10 py-16 md:py-20 bg-coal/60">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="mini-caps text-bordeaux mb-8">{t('fraseTitle')}</div>
+          <p className="font-serif italic text-goldBright text-2xl md:text-3xl leading-snug">
+            {content.fraseQueDoi}
           </p>
-        </section>
+        </div>
+      </FadeIn>
 
-        <div className="divider-glyph reveal reveal-2"><span>·</span></div>
+      <Vesica className="w-20 h-12 mx-auto text-gold my-4" />
 
-        {/* REVEAL */}
-        <section className="text-center my-2">
-          <div className="text-ash uppercase tracking-widest text-xs mb-8 reveal reveal-2">
-            {eyebrow}
-          </div>
-          <h1 className="font-serif text-gold leading-none mb-8">
-            <span className="reveal-name text-6xl md:text-7xl">
-              {dominanteName}
-            </span>
-          </h1>
-          <p className="font-body italic text-bone/85 text-xl md:text-2xl reveal reveal-3 leading-snug max-w-prose mx-auto">
-            {content.essence}
-          </p>
-        </section>
-
-        <div className="divider-glyph"><span>·</span></div>
-
-        {/* MIRROR */}
-        <section>
-          <h2 className="font-serif text-3xl md:text-4xl mb-4">{t('mirrorTitle')}</h2>
-          <p className="text-ash font-body mb-7 text-sm tracking-wide">{mirrorIntro}</p>
+      {/* ============ ESPELHO ============ */}
+      <FadeIn as="section" className="px-6 md:px-10 py-16 md:py-20">
+        <div className="max-w-[40rem] mx-auto">
+          <h2 className="font-serif text-3xl md:text-4xl text-bone mb-4">{t('mirrorTitle')}</h2>
+          <p className="text-ash font-body mb-8 text-sm tracking-wide">{mirrorIntro}</p>
           <ul className="space-y-5">
             {dominanteAnswers.map((a) => {
               const strong = a.score >= 2;
@@ -136,8 +149,8 @@ export default async function ResultPage({ params }: { params: { locale: string 
                   key={a.qid}
                   className={
                     strong
-                      ? 'border-l-2 border-gold pl-5 text-bone font-body italic text-lg leading-relaxed'
-                      : 'border-l border-ash/30 pl-5 text-bone/55 font-body italic text-lg leading-relaxed'
+                      ? 'border-l-2 border-goldBright pl-5 text-bone font-body italic text-lg md:text-xl leading-relaxed'
+                      : 'border-l border-separator pl-5 text-bone/55 font-body italic text-lg md:text-xl leading-relaxed'
                   }
                 >
                   {a.text}
@@ -145,59 +158,33 @@ export default async function ResultPage({ params }: { params: { locale: string 
               );
             })}
           </ul>
-        </section>
+        </div>
+      </FadeIn>
 
-        <div className="divider-glyph"><span>·</span></div>
+      <Vesica className="w-20 h-12 mx-auto text-gold my-4" />
 
-        {/* ORIGEM */}
-        <section>
-          <h2 className="font-serif text-2xl md:text-3xl text-bone/90 mb-5">{t('origemTitle')}</h2>
-          {content.origem.split('\n\n').map((p, i) => (
-            <p key={i} className="font-body text-bone/85 text-lg leading-relaxed mb-5">
-              {p}
-            </p>
-          ))}
-        </section>
+      {/* ============ FORÇA DO NÓ ============ */}
+      <FadeIn as="section" className="px-6 md:px-10 py-16 md:py-20">
+        <div className="max-w-2xl mx-auto">
+          <h2 className="font-serif text-2xl md:text-3xl text-bone mb-10 text-center">
+            {t('forceTitle')}
+          </h2>
 
-        {/* CUSTO (only when present) */}
-        {content.custo && (
-          <>
-            <div className="divider-glyph"><span>·</span></div>
-            <section>
-              <h2 className="font-serif text-2xl md:text-3xl text-bordeaux mb-5">
-                {t('custoTitle')}
-              </h2>
-              {content.custo.split('\n\n').map((p, i) => (
-                <p key={i} className="font-body text-bone/85 text-lg leading-relaxed mb-5">
-                  {p}
-                </p>
-              ))}
-            </section>
-          </>
-        )}
-
-        <div className="divider-glyph"><span>·</span></div>
-
-        {/* FORCE — score conviction */}
-        <section>
-          <h2 className="font-serif text-2xl md:text-3xl mb-7">{t('forceTitle')}</h2>
-          <div className="border-l-2 border-gold pl-6">
-            <div className="font-serif text-3xl md:text-4xl text-gold leading-none mb-2">
-              {dominanteName}
-            </div>
-            <div className="text-ash text-sm tracking-widest uppercase">
+          <div className="grid grid-cols-[1fr_auto] items-baseline gap-x-8 gap-y-2 border-l-2 border-goldBright pl-6 pb-2 mb-8">
+            <span className="font-serif text-3xl md:text-4xl text-goldBright">{dominanteName}</span>
+            <span className="font-serif text-3xl md:text-4xl text-goldBright tabular-nums">
               {t('forceScore', { score: String(dominanteScore) })}
-            </div>
+            </span>
           </div>
 
           {otherNos.length > 0 && (
-            <div className="mt-10">
+            <div className="mt-6">
               <p className="text-ash text-sm tracking-wide mb-4 font-body">{t('forceOthers')}</p>
               <ul className="space-y-2">
                 {otherNos.map((o) => (
                   <li key={o.no} className="flex items-baseline gap-4 font-body">
                     <span className="text-bone/70">{tNo(o.no)}</span>
-                    <span className="flex-1 border-b border-dotted border-ash/25" />
+                    <span className="flex-1 border-b border-dotted border-separator" />
                     <span className="text-ash text-sm tabular-nums">{o.score}/9</span>
                   </li>
                 ))}
@@ -206,7 +193,7 @@ export default async function ResultPage({ params }: { params: { locale: string 
           )}
 
           {previous && (
-            <p className="mt-10 font-body italic text-bone/70 leading-relaxed">
+            <p className="mt-10 font-body italic text-bone/70 leading-relaxed text-center">
               {t('history', {
                 months: String(previous.months),
                 previous: tNo(previous.no),
@@ -214,39 +201,47 @@ export default async function ResultPage({ params }: { params: { locale: string 
               })}
             </p>
           )}
-        </section>
+        </div>
+      </FadeIn>
 
-        <div className="divider-glyph"><span>·</span></div>
+      <Vesica className="w-20 h-12 mx-auto text-gold my-4" />
 
-        {/* TRAVESSIA */}
-        <section>
-          <h2 className="font-serif text-3xl md:text-4xl mb-8">{t('travessiaTitle')}</h2>
+      {/* ============ A TRAVESSIA ============ */}
+      <FadeIn as="section" className="px-6 md:px-10 py-20 md:py-24 bg-coal/60">
+        <div className="max-w-3xl mx-auto">
+          <div className="mini-caps mb-6 text-goldBright text-center">{t('travessiaEyebrow')}</div>
+          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl text-bone text-center leading-[1.2] mb-8 max-w-2xl mx-auto">
+            {t('travessiaTitle')}
+          </h2>
+          <p className="font-body text-bone/85 text-lg leading-relaxed mb-12 max-w-2xl mx-auto text-center">
+            {t('travessiaBody')}
+          </p>
 
           {content.travessia && (
-            <p className="font-body text-bone/85 text-lg leading-relaxed mb-10">
+            <p className="font-body italic text-ash text-base leading-relaxed mb-12 max-w-xl mx-auto text-center">
               {content.travessia}
             </p>
           )}
 
-          <ol className="space-y-7 mb-10">
-            <li className="grid grid-cols-[8rem_1fr] gap-5 items-baseline">
-              <div className="text-gold/90 font-serif text-sm tracking-widest uppercase">
+          <ol className="space-y-7 mb-12 max-w-xl mx-auto">
+            <li className="grid grid-cols-[10rem_1fr] gap-5 items-baseline">
+              <div className="text-gold/80 font-serif text-sm tracking-widest uppercase">
                 {t('travessiaStep1Label')}
               </div>
-              <div className="font-body text-bone/85 leading-relaxed">
+              <div className="font-body text-bone/80 leading-relaxed">
                 {t('travessiaStep1Body')}
               </div>
             </li>
-            <li className="grid grid-cols-[8rem_1fr] gap-5 items-baseline">
-              <div className="text-gold font-serif text-sm tracking-widest uppercase">
+            <li className="grid grid-cols-[10rem_1fr] gap-5 items-baseline">
+              <div className="text-goldBright font-serif text-sm tracking-widest uppercase">
                 {t('travessiaStep2Label')}
               </div>
               <div className="font-body text-bone leading-relaxed">
                 {t('travessiaStep2Body')}
               </div>
             </li>
-            <li className="grid grid-cols-[8rem_1fr] gap-5 items-baseline">
-              <div className="text-gold font-serif text-sm tracking-widest uppercase">
+            <li className="grid grid-cols-[10rem_1fr] gap-5 items-baseline">
+              <div className="text-goldBright font-serif text-sm tracking-widest uppercase">
                 {t('travessiaStep3Label')}
               </div>
               <div className="font-body text-bone leading-relaxed">
@@ -255,61 +250,77 @@ export default async function ResultPage({ params }: { params: { locale: string 
             </li>
           </ol>
 
-          <p className="font-body italic text-ash leading-relaxed mb-12">
+          <p className="font-body italic text-ash leading-relaxed text-center max-w-xl mx-auto">
             {t('travessiaRhythm')}
           </p>
+        </div>
+      </FadeIn>
 
+      <Vesica className="w-20 h-12 mx-auto text-gold my-4" />
+
+      {/* ============ OFERTA ============ */}
+      <FadeIn as="section" className="px-6 md:px-10 py-20 md:py-24">
+        <div className="max-w-xl mx-auto">
           {sellable ? (
-            <div className="border-t border-ash/25 pt-10">
-              <div className="flex items-baseline gap-4 mb-6">
-                <div className="font-serif text-3xl md:text-4xl text-bone">{t('offerPrice')}</div>
+            <div className="border border-separator bg-coal/40 p-8 md:p-10 text-center">
+              <div className="mini-caps text-goldBright mb-6">{t('offerEyebrow')}</div>
+              <div className="font-serif text-5xl md:text-6xl text-goldBright mb-4">
+                {t('offerPrice')}
               </div>
-              <Link
-                href={`/${locale}/checkout?no=${dominante}`}
-                className="btn btn-primary inline-block"
-              >
-                {t('offerCta')}
+              <p className="font-body italic text-bone/80 leading-relaxed mb-8 max-w-md mx-auto">
+                {t('offerIncludes')}
+              </p>
+              <Link href={`/${locale}/checkout?no=${dominante}`} className="cta-living large">
+                <span>{t('offerCta')}</span>
+                <Arrow />
               </Link>
-              <p className="mt-5 text-ash text-sm font-body italic">{t('offerFinePrint')}</p>
+              <p className="mt-6 text-ash text-sm font-body italic">{t('offerFinePrint')}</p>
             </div>
           ) : (
-            <div className="border border-ash/30 px-6 py-7 mt-6">
-              <h3 className="font-serif text-xl mb-3">{t('notReadyTitle')}</h3>
-              <p className="font-body text-bone/80 leading-relaxed mb-6">
+            <div className="border border-separator bg-coal/40 p-8 md:p-10">
+              <div className="mini-caps text-goldBright mb-4">{t('offerEyebrow')}</div>
+              <h3 className="font-serif text-2xl md:text-3xl text-bone mb-5">
+                {t('notReadyTitle')}
+              </h3>
+              <p className="font-body text-bone/80 leading-relaxed mb-7">
                 {t('notReadyBody', { no: dominanteName })}
               </p>
               <NotifyForm locale={locale} no={dominante} email="" />
             </div>
           )}
-        </section>
+        </div>
+      </FadeIn>
 
-        {/* SECONDARY */}
-        {secundario && (
-          <>
-            <div className="divider-glyph"><span>·</span></div>
-            <section>
-              <h3 className="font-serif text-xl text-bone/85 mb-3">{t('secondaryTitle')}</h3>
-              <p className="font-body text-bone/70 italic leading-relaxed">
-                {t('secondaryBody', { no: tNo(secundario) })}
-              </p>
-            </section>
-          </>
-        )}
+      {/* ============ SECUNDÁRIO (eco) ============ */}
+      {secundario && (
+        <FadeIn as="section" className="px-6 md:px-10 py-12">
+          <div className="max-w-prose mx-auto text-center">
+            <div className="mini-caps text-ash mb-3">{t('secondaryTitle')}</div>
+            <p className="font-body italic text-bone/70 leading-relaxed">
+              {t('secondaryBody', { no: tNo(secundario) })}
+            </p>
+          </div>
+        </FadeIn>
+      )}
 
-        <div className="divider-glyph"><span>·</span></div>
+      <Vesica className="w-16 h-10 mx-auto text-gold/60 my-6" />
 
-        {/* EXIT */}
-        <section className="text-center">
-          <p className="font-body italic text-ash leading-relaxed mb-5">{t('or')}</p>
+      {/* ============ SAÍDA ============ */}
+      <FadeIn as="section" className="px-6 md:px-10 pb-16 text-center">
+        <div className="max-w-xl mx-auto">
+          <p className="font-body italic text-ash leading-relaxed mb-6">{t('or')}</p>
           <Link
             href={`/${locale}/diagnostico`}
-            className="text-ash hover:text-bone underline-offset-4 hover:underline text-sm tracking-wide"
+            className="text-ash hover:text-goldBright underline-offset-4 hover:underline text-sm tracking-wide transition-colors"
           >
             {t('redo')}
           </Link>
-        </section>
+        </div>
+      </FadeIn>
 
-      </article>
+      <div className="flex justify-center pt-8 pb-6">
+        <EstrelaPersa className="w-12 h-12 text-goldBright" />
+      </div>
     </div>
   );
 }
