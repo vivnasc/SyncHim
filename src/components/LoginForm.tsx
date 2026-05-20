@@ -7,6 +7,7 @@ export function LoginForm({ locale }: { locale: 'pt' | 'en' }) {
   const t = useTranslations('login');
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [fallbackLink, setFallbackLink] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,14 +15,24 @@ export function LoginForm({ locale }: { locale: 'pt' | 'en' }) {
     if (!email) return;
     setSubmitting(true);
     setError(null);
+    setFallbackLink(null);
     try {
       const res = await fetch('/api/auth/magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, locale })
       });
-      if (!res.ok) throw new Error('failed');
-      setSent(true);
+      if (!res.ok) {
+        const detail = await res.json().catch(() => ({}));
+        console.error('magic-link failed', res.status, detail);
+        throw new Error('failed');
+      }
+      const data = await res.json() as { ok: boolean; fallbackLink?: string };
+      if (data.fallbackLink) {
+        setFallbackLink(data.fallbackLink);
+      } else {
+        setSent(true);
+      }
     } catch {
       setError(t('errorGeneric'));
     } finally {
@@ -38,7 +49,21 @@ export function LoginForm({ locale }: { locale: 'pt' | 'en' }) {
         </h1>
         <p className="font-body italic text-bone/80 mb-10">{t('subtitle')}</p>
 
-        {sent ? (
+        {fallbackLink ? (
+          <div className="border-l-2 border-goldBright pl-4 py-1 mb-6">
+            <p className="font-body text-bone/90 leading-relaxed mb-3">
+              {locale === 'pt'
+                ? 'Email ainda não está activo neste ambiente. Usa o link abaixo para entrar directamente desta vez:'
+                : 'Email is not active in this environment yet. Use the link below to sign in directly this time:'}
+            </p>
+            <a
+              href={fallbackLink}
+              className="font-body text-goldBright break-all underline underline-offset-4 hover:text-bone"
+            >
+              {fallbackLink}
+            </a>
+          </div>
+        ) : sent ? (
           <p className="font-body text-goldBright border-l-2 border-goldBright pl-4 italic leading-relaxed">
             {t('sent')}
           </p>

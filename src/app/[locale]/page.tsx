@@ -22,9 +22,9 @@ type CopySection = {
 
 const PT: CopySection = {
   hero: {
-    eyebrow: 'MARINA VALE',
+    eyebrow: 'MARINA VALE · PARA CASADAS E SOLTEIRAS EM RELAÇÕES SÉRIAS',
     h1: ['Não é frieza dele.', 'É outra coisa.', 'E tu já sentes há meses.'],
-    sub: 'Em 8 minutos, sabes o nome do que está a estrangular o teu casamento.',
+    sub: 'Em 8 minutos, sabes o nome do padrão antigo que está a sabotar a tua relação, casada há vinte anos ou a construir agora.',
     cta: 'Quero saber o nome',
     subCta: 'Sem cartão. Sem email a perseguir-te depois.'
   },
@@ -114,9 +114,9 @@ const PT: CopySection = {
 
 const EN: CopySection = {
   hero: {
-    eyebrow: 'MARINA VALE',
+    eyebrow: 'MARINA VALE · FOR MARRIED WOMEN AND SINGLES IN SERIOUS RELATIONSHIPS',
     h1: ["It isn't his coldness.", "It's something else.", "And you've felt it for months."],
-    sub: "In 8 minutes, you'll know the name of what is strangling your marriage.",
+    sub: "In 8 minutes, you'll know the name of the old pattern that is sabotaging your relationship, whether you've been married for twenty years or are building one now.",
     cta: 'I want to know the name',
     subCta: 'No card. No follow-up email chasing you.'
   },
