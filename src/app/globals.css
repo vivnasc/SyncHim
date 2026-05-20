@@ -262,4 +262,87 @@ textarea.input {
 
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal-name { opacity: 1; animation: none; }
+  .fade-in-section { opacity: 1; transform: none; }
 }
+
+/* ============================================================
+   SCROLL-TRIGGERED FADE  (used by <FadeIn> client component)
+   ============================================================ */
+.fade-in-section {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 900ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.fade-in-section.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ============================================================
+   LIVING CTA  (more presence than the editorial .btn)
+   ============================================================ */
+.cta-living {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  letter-spacing: 0.03em;
+  padding: 1rem 2rem;
+  background: var(--ouro);
+  color: var(--bg);
+  border: none;
+  overflow: hidden;
+  transition: background 300ms ease, transform 300ms ease, box-shadow 300ms ease;
+  box-shadow: 0 0 0 rgba(212, 168, 87, 0);
+}
+.cta-living::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 240, 200, 0.35) 50%,
+    transparent 65%
+  );
+  transform: translateX(-120%);
+  transition: transform 900ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cta-living:hover {
+  background: var(--ouro-folha);
+  color: var(--bg);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(212, 168, 87, 0.25);
+}
+.cta-living:hover::after { transform: translateX(120%); }
+.cta-living .arrow {
+  display: inline-block;
+  transition: transform 300ms ease;
+}
+.cta-living:hover .arrow { transform: translateX(4px); }
+.cta-living.large {
+  font-size: 1.25rem;
+  padding: 1.15rem 2.5rem;
+  letter-spacing: 0.04em;
+}
+
+/* Ghost CTA, for the mid-section soft pulls */
+.cta-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ouro);
+  border-bottom: 1px solid var(--ouro);
+  padding-bottom: 2px;
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  letter-spacing: 0.02em;
+  transition: color 250ms ease, border-color 250ms ease;
+}
+.cta-ghost:hover { color: var(--ouro-folha); border-color: var(--ouro-folha); }
+.cta-ghost .arrow { transition: transform 250ms ease; }
+.cta-ghost:hover .arrow { transform: translateX(3px); }
