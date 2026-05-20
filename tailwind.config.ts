@@ -9,13 +9,13 @@ const config: Config = {
     extend: {
       colors: {
         ink: '#1A1410',
-        coal: '#221A14',
+        coal: '#201914',
         bone: '#F2E8DC',
         gold: '#B8843D',
-        goldBright: '#C9924A',
+        goldBright: '#D4A857',
         bordeaux: '#8B2235',
         ash: '#A39B8E',
-        separator: '#2A2018'
+        separator: '#3A2E22'
       },
       fontFamily: {
         serif: ['"EB Garamond"', '"Cormorant Garamond"', 'Georgia', 'serif'],
