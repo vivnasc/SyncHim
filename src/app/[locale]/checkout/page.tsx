@@ -5,6 +5,9 @@ import { NOS, NOS_VENDAVEIS, type No } from '@/lib/diagnostic';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { trackEvent } from '@/lib/events';
 import { PayPalCheckout } from '@/components/PayPalCheckout';
+import { Vesica } from '@/components/marks/Vesica';
+import { EstrelaPersa } from '@/components/marks/EstrelaPersa';
+
 export default async function CheckoutPage({
   params,
   searchParams
@@ -37,20 +40,42 @@ export default async function CheckoutPage({
   const tNo = await getTranslations({ locale: params.locale, namespace: 'no' });
 
   return (
-    <div className="px-6 md:px-10 py-20">
-      <div className="max-w-prose mx-auto">
-        <h1 className="font-serif text-5xl mb-3">{t('title')}</h1>
-        <p className="font-body text-bone/80 mb-10">{t('summary')}</p>
-
-        <div className="border border-ash/30 p-6 mb-10">
-          <div className="flex items-baseline justify-between mb-2">
-            <div className="font-serif text-2xl">{tNo(no!)}</div>
-            <div className="font-serif text-2xl text-gold">{t('price')}</div>
-          </div>
-          <p className="text-ash text-sm">{user.email}</p>
+    <div>
+      <section className="px-6 md:px-10 pt-16 md:pt-24 pb-10 text-center">
+        <Vesica className="w-20 h-12 mx-auto text-gold mb-8" />
+        <div className="mini-caps text-goldBright mb-4">
+          {locale === 'pt' ? 'A TRAVESSIA' : 'THE CROSSING'}
         </div>
+        <h1 className="font-serif text-4xl md:text-5xl text-bone mb-6">{t('title')}</h1>
+        <p className="font-body italic text-bone/80 max-w-xl mx-auto leading-relaxed">
+          {t('summary')}
+        </p>
+      </section>
 
-        <PayPalCheckout no={no!} email={user.email} locale={locale} />
+      <section className="px-6 md:px-10 py-12">
+        <div className="max-w-xl mx-auto">
+          <div className="border border-separator bg-coal/40 p-8 mb-10">
+            <div className="mini-caps text-ash mb-2">
+              {locale === 'pt' ? 'NÓ A ATRAVESSAR' : 'KNOT TO CROSS'}
+            </div>
+            <div className="flex items-baseline justify-between mb-5">
+              <div className="font-serif text-3xl text-goldBright">{tNo(no!)}</div>
+              <div className="font-serif text-3xl text-bone">{t('price')}</div>
+            </div>
+            <div className="border-t border-separator pt-4 text-sm font-body">
+              <span className="mini-caps text-ash mr-2">
+                {locale === 'pt' ? 'CONTA' : 'ACCOUNT'}
+              </span>
+              <span className="text-bone/85 break-all">{user.email}</span>
+            </div>
+          </div>
+
+          <PayPalCheckout no={no!} email={user.email} locale={locale} />
+        </div>
+      </section>
+
+      <div className="flex justify-center py-10">
+        <EstrelaPersa className="w-10 h-10 text-goldBright" />
       </div>
     </div>
   );
