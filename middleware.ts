@@ -18,6 +18,10 @@ export function middleware(request: NextRequest) {
   if (pathname === '/admin' || pathname.startsWith('/admin/')) {
     return NextResponse.next();
   }
+  // /offline é a fallback page do service worker — sem locale prefix.
+  if (pathname === '/offline') {
+    return NextResponse.next();
+  }
 
   const hasLocale = locales.some(
     (l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`)
@@ -46,5 +50,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|admin|_next|_vercel|favicon.ico|robots.txt|.*\\..*).*)']
+  matcher: ['/((?!api|admin|offline|_next|_vercel|favicon.ico|robots.txt|sw.js|manifest.webmanifest|.*\\..*).*)']
 };

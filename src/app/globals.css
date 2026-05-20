@@ -346,3 +346,92 @@ textarea.input {
 .cta-ghost:hover { color: var(--ouro-folha); border-color: var(--ouro-folha); }
 .cta-ghost .arrow { transition: transform 250ms ease; }
 .cta-ghost:hover .arrow { transform: translateX(3px); }
+
+/* ============================================================
+   MODERN POLISH (PWA + safe-area + transições)
+   ============================================================ */
+
+/* iOS/Android safe-areas para quando instalada como PWA. */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Anti-flicker do tema escuro durante a carga inicial. */
+html { background: var(--bg); }
+
+/* Focus ring editorial — visível mas não vulgar. */
+*:focus-visible {
+  outline: 2px solid var(--ouro-folha);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Skeleton genérico para placeholders de carregamento. */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--linha) 0%,
+    rgba(184, 132, 61, 0.10) 50%,
+    var(--linha) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shift 1.8s linear infinite;
+  border-radius: 2px;
+}
+@keyframes skeleton-shift {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Page transition: quando uma página de Server Component troca, o
+   container [data-page] respira em vez de mudar a seco. */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+main[data-page] {
+  animation: page-in 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Botão com estado "ocupado" (após click) — spinner discreto. */
+.cta-living[aria-busy="true"] .arrow,
+.btn[aria-busy="true"] .arrow {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+  transform: none !important;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Scrollbar editorial em browsers WebKit. */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--linha);
+  border: 2px solid var(--bg);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--ouro); }
+
+/* Selecção de texto consistente. */
+::selection { background: rgba(212, 168, 87, 0.30); color: var(--texto); }
+
+/* PWA: quando standalone, ocultar elementos só úteis no browser web. */
+@media (display-mode: standalone) {
+  .only-web { display: none !important; }
+}
+
+/* Toque-amigável: aumenta alvos para >=44px em mobile. */
+@media (max-width: 768px) {
+  .cta-living, .btn, .cta-ghost { min-height: 44px; }
+}

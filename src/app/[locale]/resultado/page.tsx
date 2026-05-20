@@ -6,11 +6,11 @@ import {
   NOS,
   NOS_VENDAVEIS,
   QUESTIONS_PER_NO,
-  QUESTIONS_PT,
-  QUESTIONS_EN,
   type No
 } from '@/lib/diagnostic';
-import { noContent } from '@/lib/no-content';
+import { noContentFor } from '@/lib/no-content-variants';
+import { questionMapFor } from '@/lib/diagnostic-variants';
+import { coerceTarget, type Target } from '@/lib/target';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { trackEvent } from '@/lib/events';
 import { NotifyForm } from '@/components/NotifyForm';
@@ -26,6 +26,7 @@ interface ResultCookie {
   pontuacoes: Record<No, number>;
   respostas_dominante: Record<string, 0 | 1 | 2 | 3>;
   is_repeat: boolean;
+  target?: Target;
 }
 
 function Arrow() {
@@ -48,10 +49,11 @@ export default async function ResultPage({ params }: { params: { locale: string 
   const dominante = payload!.dominante;
   const secundario = payload!.secundario;
   const sellable = NOS_VENDAVEIS.includes(dominante);
-  const content = noContent(locale, dominante);
+  const target = coerceTarget(payload!.target);
+  const content = noContentFor(locale, target, dominante);
   const dominanteScore = payload!.pontuacoes[dominante];
   const dominanteName = tNo(dominante);
-  const qMap = locale === 'pt' ? QUESTIONS_PT : QUESTIONS_EN;
+  const qMap = questionMapFor(locale, target);
   const dominanteQuestions = QUESTIONS_PER_NO[dominante];
   const dominanteAnswers = dominanteQuestions.map((qid) => ({
     qid,
