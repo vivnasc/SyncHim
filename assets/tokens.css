@@ -1,0 +1,252 @@
+/* ============================================================
+   SYNCHIM — DESIGN TOKENS
+   Importar em globals.css. Tudo o resto deriva daqui.
+   ============================================================ */
+
+:root {
+  /* Cor */
+  --bg:            #1A1410;
+  --bg-elev:       #201914;   /* cartões, blocos elevados */
+  --texto:         #F2E8DC;
+  --texto-suave:   #A39B8E;
+  --ouro:          #B8843D;   /* CTAs, links, ornamentos */
+  --ouro-folha:    #D4A857;   /* raro: letrina, símbolo central, hover */
+  --bordeaux:      #8B2235;   /* raríssimo: momentos altos */
+  --linha:         #3A2E22;   /* separadores, bordas */
+
+  /* Tipografia */
+  --serif:   "EB Garamond", "Cormorant Garamond", Georgia, serif;
+  --sans:    "Inter", "Söhne", system-ui, sans-serif;
+
+  /* Escala tipográfica (rem, baseada em 16px) */
+  --t-letrina: 4rem;     /* 64px */
+  --t-titulo:  2.5rem;   /* 40px — h1 hero */
+  --t-h2:      1.75rem;  /* 28px */
+  --t-h3:      1.25rem;  /* 20px */
+  --t-corpo:   1.0625rem;/* 17px — lê melhor em serif */
+  --t-pequeno: 0.875rem; /* 14px */
+  --t-mini:    0.75rem;  /* 12px — caps espaçadas */
+
+  /* Espaçamento — escala de 8 */
+  --s-1:  0.5rem;
+  --s-2:  1rem;
+  --s-3:  1.5rem;
+  --s-4:  2rem;
+  --s-5:  3rem;
+  --s-6:  4rem;
+  --s-7:  6rem;
+  --s-8:  8rem;
+
+  /* Largura de leitura */
+  --leitura: 38rem;     /* ~608px — linha cómoda em serif */
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
+html, body {
+  background: var(--bg);
+  color: var(--texto);
+  font-family: var(--serif);
+  font-size: var(--t-corpo);
+  line-height: 1.7;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Textura de pergaminho — global, subtilíssima */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0.97  0 0 0 0 0.91  0 0 0 0 0.82  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: 0.04;
+}
+
+/* Tudo acima da textura */
+body > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ============================================================
+   TIPOGRAFIA
+   ============================================================ */
+
+h1, h2, h3 {
+  font-family: var(--serif);
+  font-weight: 400;          /* serifa elegante não precisa de bold */
+  color: var(--texto);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+h1 { font-size: var(--t-titulo); }
+h2 { font-size: var(--t-h2); }
+h3 { font-size: var(--t-h3); }
+
+p {
+  max-width: var(--leitura);
+  margin: 0 0 var(--s-3) 0;
+}
+
+em, i { color: var(--texto); font-style: italic; }
+strong, b { font-weight: 500; color: var(--ouro-folha); }
+
+a {
+  color: var(--ouro);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  transition: color .2s ease;
+}
+a:hover { color: var(--ouro-folha); }
+
+/* Caps espaçadas — para etiquetas, "secção 03", "tier 1" */
+.mini {
+  font-family: var(--sans);
+  font-size: var(--t-mini);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+  font-weight: 400;
+}
+
+/* ============================================================
+   CTA — botão dourado
+   ============================================================ */
+
+.cta {
+  display: inline-block;
+  font-family: var(--serif);
+  font-size: var(--t-corpo);
+  padding: var(--s-2) var(--s-4);
+  background: var(--ouro);
+  color: var(--bg);
+  border: none;
+  border-bottom: none;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background .25s ease;
+}
+.cta:hover { background: var(--ouro-folha); }
+
+.cta-secundario {
+  background: transparent;
+  color: var(--ouro);
+  border: 1px solid var(--ouro);
+}
+.cta-secundario:hover {
+  color: var(--bg);
+  background: var(--ouro);
+}
+
+/* ============================================================
+   ELEMENTOS DECORATIVOS
+   ============================================================ */
+
+/* 1. Rosáceo de canto — herda cor de currentColor.
+   Usar em blocos importantes (abertura de sessão, CTA, fim de email). */
+.rosaceo {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  color: var(--ouro);
+}
+.rosaceo-grande { width: 48px; height: 48px; }
+
+/* 2. Vesica piscis — separador entre secções */
+.vesica {
+  display: block;
+  margin: var(--s-6) auto;
+  width: 80px;
+  height: 48px;
+  color: var(--ouro);
+}
+
+/* 3. Letrina iluminada
+   Uso: <span class="letrina">T</span>u não estás aqui por acaso.
+*/
+.letrina {
+  position: relative;
+  float: left;
+  font-family: var(--serif);
+  font-size: var(--t-letrina);
+  line-height: 1;
+  color: var(--ouro-folha);
+  margin: 0.1em 0.4rem -0.1em 0;
+  padding: 0.3rem 0.6rem 0.3rem 0.6rem;
+  border: 0.5px solid var(--ouro);
+  background-image:
+    radial-gradient(circle at 6px 6px, var(--ouro) 1.5px, transparent 2px),
+    radial-gradient(circle at calc(100% - 6px) 6px, var(--ouro) 1.5px, transparent 2px),
+    radial-gradient(circle at 6px calc(100% - 6px), var(--ouro) 1.5px, transparent 2px),
+    radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), var(--ouro) 1.5px, transparent 2px);
+}
+
+/* 4. Separador-verso — bloco que envolve um verso entre secções */
+.verso {
+  display: block;
+  max-width: var(--leitura);
+  margin: var(--s-6) auto;
+  text-align: center;
+  font-style: italic;
+  color: var(--ouro);
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+.verso .sep {
+  display: block;
+  width: 320px;
+  height: 16px;
+  margin: var(--s-2) auto;
+  color: var(--ouro);
+}
+
+/* 5. Símbolo da marca — estrela persa */
+.marca {
+  display: block;
+  width: 48px;
+  height: 48px;
+  margin: var(--s-6) auto;
+  color: var(--ouro-folha);
+}
+.marca-pequena { width: 24px; height: 24px; margin: var(--s-3) auto; }
+.marca-grande  { width: 80px; height: 80px; }
+
+/* ============================================================
+   LAYOUT — contentor de leitura
+   ============================================================ */
+
+.container {
+  max-width: var(--leitura);
+  margin: 0 auto;
+  padding: var(--s-7) var(--s-3);
+}
+
+.container-largo {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: var(--s-7) var(--s-3);
+}
+
+/* Secção da landing */
+section { padding: var(--s-7) 0; }
+section + section { border-top: 0.5px solid var(--linha); }
+
+/* ============================================================
+   RESPONSIVO
+   ============================================================ */
+
+@media (max-width: 768px) {
+  :root {
+    --t-titulo: 2rem;
+    --t-h2:     1.5rem;
+    --t-letrina: 3rem;
+  }
+  .container { padding: var(--s-5) var(--s-3); }
+  section    { padding: var(--s-5) 0; }
+}

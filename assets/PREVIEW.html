@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SyncHim — prévia</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:            #1A1410;
+  --bg-elev:       #201914;
+  --texto:         #F2E8DC;
+  --texto-suave:   #A39B8E;
+  --ouro:          #B8843D;
+  --ouro-folha:    #D4A857;
+  --bordeaux:      #8B2235;
+  --linha:         #3A2E22;
+  --serif:   "EB Garamond", Georgia, serif;
+  --sans:    "Inter", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg);
+  color: var(--texto);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.7;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0.97  0 0 0 0 0.91  0 0 0 0 0.82  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: 0.04;
+}
+body > * { position: relative; z-index: 2; }
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 3rem;
+  border-bottom: 0.5px solid var(--linha);
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.25rem;
+  color: var(--texto);
+}
+.logo svg { width: 24px; height: 24px; color: var(--ouro-folha); }
+.nav { display: flex; gap: 1.5rem; color: var(--texto-suave); font-family: var(--sans); font-size: 0.875rem; letter-spacing: 0.05em; }
+.nav .active { color: var(--ouro-folha); }
+
+.hero {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 6rem 2rem 4rem;
+  position: relative;
+}
+.hero .rosaceo {
+  position: absolute;
+  top: 3rem;
+  right: 2rem;
+  width: 36px;
+  height: 36px;
+  color: var(--ouro);
+}
+.mini {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+  margin-bottom: 1.5rem;
+  display: inline-block;
+}
+h1 {
+  font-size: 2.75rem;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: 0.005em;
+  margin-bottom: 1rem;
+  max-width: 600px;
+}
+h1 .quebra { display: block; margin-top: 1.5rem; }
+.sub {
+  color: var(--texto);
+  font-size: 1.0625rem;
+  max-width: 540px;
+  margin: 2rem 0;
+  line-height: 1.65;
+}
+.cta {
+  display: inline-block;
+  font-family: var(--serif);
+  font-size: 1rem;
+  padding: 0.875rem 2rem;
+  background: var(--ouro);
+  color: var(--bg);
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: background 0.25s ease;
+}
+.cta:hover { background: var(--ouro-folha); }
+.sub-cta {
+  display: block;
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--texto-suave);
+  font-style: italic;
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+/* vesica entre secções */
+.vesica {
+  display: block;
+  margin: 5rem auto;
+  width: 80px;
+  height: 48px;
+  color: var(--ouro);
+}
+
+/* secção com letrina */
+.secao {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+.secao-titulo {
+  font-size: 1.75rem;
+  font-weight: 400;
+  margin-bottom: 2rem;
+}
+.letrina {
+  position: relative;
+  float: left;
+  font-family: var(--serif);
+  font-size: 4rem;
+  line-height: 1;
+  color: var(--ouro-folha);
+  margin: 0.05em 0.5rem -0.1em 0;
+  padding: 0.4rem 0.7rem;
+  border: 0.5px solid var(--ouro);
+  background-image:
+    radial-gradient(circle at 7px 7px, var(--ouro) 1.5px, transparent 2px),
+    radial-gradient(circle at calc(100% - 7px) 7px, var(--ouro) 1.5px, transparent 2px),
+    radial-gradient(circle at 7px calc(100% - 7px), var(--ouro) 1.5px, transparent 2px),
+    radial-gradient(circle at calc(100% - 7px) calc(100% - 7px), var(--ouro) 1.5px, transparent 2px);
+}
+.secao p {
+  max-width: 540px;
+  margin-bottom: 1.25rem;
+}
+.secao p + p { clear: none; }
+
+/* verso */
+.verso {
+  display: block;
+  max-width: 480px;
+  margin: 5rem auto;
+  text-align: center;
+  font-style: italic;
+  color: var(--ouro);
+  font-size: 1.1875rem;
+  line-height: 1.6;
+}
+.verso .sep {
+  display: block;
+  width: 280px;
+  height: 16px;
+  margin: 1rem auto;
+  color: var(--ouro);
+}
+
+/* rodapé */
+footer {
+  max-width: 680px;
+  margin: 6rem auto 0;
+  padding: 3rem 2rem;
+  text-align: center;
+  border-top: 0.5px solid var(--linha);
+}
+.marca {
+  display: block;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1.5rem;
+  color: var(--ouro-folha);
+}
+.assinatura {
+  font-style: italic;
+  color: var(--texto-suave);
+  font-size: 0.9375rem;
+}
+.legais {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+.legais a { color: var(--texto-suave); text-decoration: none; }
+.legais a:hover { color: var(--ouro); }
+
+@media (max-width: 768px) {
+  header { padding: 1rem 1.5rem; }
+  .hero { padding: 4rem 1.5rem 3rem; }
+  h1 { font-size: 2rem; }
+  .letrina { font-size: 3rem; }
+  .hero .rosaceo { width: 28px; height: 28px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SyncHim">
+      <g transform="translate(30, 30)">
+        <polygon points="0,-26 6,-9 23,-13 13,1 25,11 9,11 0,26 -6,9 -23,13 -13,-1 -25,-11 -9,-11" fill="none" stroke="currentColor" stroke-width="0.6"/>
+        <circle cx="0" cy="0" r="8" fill="none" stroke="currentColor" stroke-width="0.6"/>
+        <circle cx="0" cy="0" r="3" fill="currentColor"/>
+      </g>
+    </svg>
+    <span>SyncHim.</span>
+  </a>
+  <div class="nav">
+    <a href="#" style="color: var(--texto-suave); text-decoration: none;">Entrar</a>
+    <span class="active">PT</span>
+    <span>EN</span>
+  </div>
+</header>
+
+<section class="hero">
+  <svg class="rosaceo" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ornamento">
+    <g transform="translate(20, 20)" fill="none" stroke="currentColor" stroke-width="0.6">
+      <line x1="0" y1="-16" x2="0" y2="16"/>
+      <line x1="-16" y1="0" x2="16" y2="0"/>
+      <line x1="-11.3" y1="-11.3" x2="11.3" y2="11.3"/>
+      <line x1="-11.3" y1="11.3" x2="11.3" y2="-11.3"/>
+      <circle cx="0" cy="0" r="11"/>
+      <circle cx="0" cy="0" r="7"/>
+    </g>
+    <g transform="translate(20, 20)" fill="currentColor">
+      <circle cx="0" cy="0" r="1.8"/>
+      <circle cx="0" cy="-11" r="1.4"/>
+      <circle cx="0" cy="11" r="1.4"/>
+      <circle cx="-11" cy="0" r="1.4"/>
+      <circle cx="11" cy="0" r="1.4"/>
+    </g>
+  </svg>
+
+  <span class="mini">Marina Vale</span>
+  <h1>
+    O teu marido afastou-se.
+    <span class="quebra">E nada do que tentaste funcionou.</span>
+  </h1>
+  <p class="sub">SyncHim é o processo silencioso de 21 dias para ele voltar a procurar-te — sem cobrar, sem brigar, sem ele saber que estás a fazer nada.</p>
+  <a href="#" class="cta">Começar o diagnóstico — Grátis</a>
+  <span class="sub-cta">Sem pagamento. Sem cartão. Em 8 minutos sabes qual é o nó que está a estrangular o teu casamento.</span>
+</section>
+
+<svg class="vesica" viewBox="0 0 80 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Separador">
+  <g transform="translate(40, 24)" fill="none" stroke="currentColor" stroke-width="0.6">
+    <circle cx="-10" cy="0" r="22"/>
+    <circle cx="10" cy="0" r="22"/>
+  </g>
+  <circle cx="40" cy="24" r="2" fill="currentColor"/>
+</svg>
+
+<section class="secao">
+  <span class="mini">Reconhecimento</span>
+  <h2 class="secao-titulo">Antes de começarmos.</h2>
+  <p><span class="letrina">T</span>u não estás aqui por acaso. Provavelmente foi de noite que clicaste. Provavelmente o teu marido estava ao lado, a dormir, ou no telemóvel, ou na outra divisão da casa — e tu, mesmo na mesma casa, estavas sozinha.</p>
+  <p>Não é a primeira vez.</p>
+  <p>Há quanto tempo é que tu sentes <em>isto</em>? Não a briga. Não a crise. Esta coisa silenciosa, sem nome, que mora entre vocês há meses ou anos.</p>
+</section>
+
+<blockquote class="verso">
+  <svg class="sep" viewBox="0 0 320 16" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="currentColor" stroke-width="0.6" fill="none">
+      <line x1="0" y1="8" x2="60" y2="8"/>
+      <line x1="260" y1="8" x2="320" y2="8"/>
+      <circle cx="160" cy="8" r="3.5"/>
+    </g>
+    <g fill="currentColor">
+      <circle cx="66" cy="8" r="2"/>
+      <circle cx="160" cy="8" r="1.2"/>
+      <circle cx="254" cy="8" r="2"/>
+    </g>
+  </svg>
+  Não procures por onde foste partida.<br>
+  Procura por onde foste cosida.
+  <svg class="sep" viewBox="0 0 320 16" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="currentColor" stroke-width="0.6" fill="none">
+      <line x1="0" y1="8" x2="60" y2="8"/>
+      <line x1="260" y1="8" x2="320" y2="8"/>
+      <circle cx="160" cy="8" r="3.5"/>
+    </g>
+    <g fill="currentColor">
+      <circle cx="66" cy="8" r="2"/>
+      <circle cx="160" cy="8" r="1.2"/>
+      <circle cx="254" cy="8" r="2"/>
+    </g>
+  </svg>
+</blockquote>
+
+<footer>
+  <svg class="marca" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SyncHim">
+    <g transform="translate(30, 30)">
+      <polygon points="0,-26 6,-9 23,-13 13,1 25,11 9,11 0,26 -6,9 -23,13 -13,-1 -25,-11 -9,-11" fill="none" stroke="currentColor" stroke-width="0.6"/>
+      <circle cx="0" cy="0" r="8" fill="none" stroke="currentColor" stroke-width="0.6"/>
+      <circle cx="0" cy="0" r="3" fill="currentColor"/>
+    </g>
+  </svg>
+  <p class="assinatura">SyncHim. Método de Marina Vale.</p>
+  <p class="assinatura" style="font-style: normal; font-family: var(--sans); font-size: 0.8125rem; letter-spacing: 0.05em; margin-top: 0.5rem;">syncehim.com</p>
+  <div class="legais">
+    <a href="#">Termos</a>
+    <a href="#">Privacidade</a>
+    <a href="#">Garantia</a>
+  </div>
+</footer>
+
+</body>
+</html>
