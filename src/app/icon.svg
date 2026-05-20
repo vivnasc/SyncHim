@@ -1,7 +1,8 @@
-<svg width="48" height="48" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SyncHim">
-  <g transform="translate(30, 30)" stroke="#D4A857">
-    <polygon points="0,-26 6,-9 23,-13 13,1 25,11 9,11 0,26 -6,9 -23,13 -13,-1 -25,-11 -9,-11" fill="none" stroke-width="0.6"/>
-    <circle cx="0" cy="0" r="8" fill="none" stroke-width="0.6"/>
-    <circle cx="0" cy="0" r="3" fill="#D4A857" stroke="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SyncHim">
+  <rect width="64" height="64" fill="#1A1410"/>
+  <g transform="translate(32, 32)">
+    <polygon points="0,-26 6,-9 23,-13 13,1 25,11 9,11 0,26 -6,9 -23,13 -13,-1 -25,-11 -9,-11" fill="#D4A857"/>
+    <circle cx="0" cy="0" r="8" fill="#1A1410"/>
+    <circle cx="0" cy="0" r="4" fill="#D4A857"/>
   </g>
 </svg>
