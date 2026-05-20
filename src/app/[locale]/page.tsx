@@ -10,7 +10,7 @@ import { noContent } from '@/lib/no-content';
 import { getTranslations } from 'next-intl/server';
 
 type CopySection = {
-  hero: { eyebrow: string; h1: [string, string, string]; sub: string; cta: string; subCta: string };
+  hero: { eyebrow: string; tag: string; h1: [string, string, string]; sub: string; cta: string; subCta: string };
   corte: { number: string; title: string; lines: string[]; ctaLight: string };
   numeros: { items: { value: string; label: string }[] };
   os7: { eyebrow: string; title: string; helper: string; cta: string };
@@ -22,7 +22,8 @@ type CopySection = {
 
 const PT: CopySection = {
   hero: {
-    eyebrow: 'MARINA VALE · PARA CASADAS E SOLTEIRAS EM RELAÇÕES SÉRIAS',
+    eyebrow: 'MARINA VALE',
+    tag: 'Para casadas e solteiras em relações sérias',
     h1: ['Não é frieza dele.', 'É outra coisa.', 'E tu já sentes há meses.'],
     sub: 'Em 8 minutos, sabes o nome do padrão antigo que está a sabotar a tua relação, casada há vinte anos ou a construir agora.',
     cta: 'Quero saber o nome',
@@ -114,7 +115,8 @@ const PT: CopySection = {
 
 const EN: CopySection = {
   hero: {
-    eyebrow: 'MARINA VALE · FOR MARRIED WOMEN AND SINGLES IN SERIOUS RELATIONSHIPS',
+    eyebrow: 'MARINA VALE',
+    tag: 'For married women and singles in serious relationships',
     h1: ["It isn't his coldness.", "It's something else.", "And you've felt it for months."],
     sub: "In 8 minutes, you'll know the name of the old pattern that is sabotaging your relationship, whether you've been married for twenty years or are building one now.",
     cta: 'I want to know the name',
@@ -242,7 +244,8 @@ export default async function LandingPage({ params }: { params: { locale: string
         <div className="max-w-6xl mx-auto pt-12 md:pt-20 grid md:grid-cols-[1fr_minmax(0,440px)] gap-10 md:gap-16 items-center">
           {/* Left column: copy */}
           <FadeIn className="order-2 md:order-1">
-            <div className="mini-caps mb-8 text-goldBright">{d.hero.eyebrow}</div>
+            <div className="mini-caps mb-2 text-goldBright">{d.hero.eyebrow}</div>
+            <div className="font-body italic text-ash text-sm mb-10">{d.hero.tag}</div>
 
             <h1 className="font-serif text-bone">
               <span className="block text-4xl md:text-5xl lg:text-6xl leading-[1.1] mb-5 md:mb-6">
