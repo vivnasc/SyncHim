@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
-export default async function SuccessPage() {
-  const t = await getTranslations('success');
+export default async function SuccessPage({ params }: { params: { locale: string } }) {
+  const t = await getTranslations({ locale: params.locale, namespace: 'success' });
   return (
     <div className="px-6 md:px-10 py-32 max-w-prose mx-auto">
       <h1 className="font-serif text-5xl mb-6">{t('title')}</h1>

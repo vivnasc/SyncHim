@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { trackEvent } from '@/lib/events';
 const SECTIONS_PT = {
   recognition: [
-    'Provavelmente foi de noite que clicaste. Provavelmente o teu marido estava ao lado, a dormir, ou no telemóvel, ou na outra divisão da casa — e tu, mesmo na mesma casa, estavas sozinha.',
+    'Provavelmente foi de noite que clicaste. Provavelmente o teu marido estava ao lado, a dormir, ou no telemóvel, ou na outra divisão da casa, e tu, mesmo na mesma casa, estavas sozinha.',
     'Não é a primeira vez.',
     'Há quanto tempo é que tu sentes isto? Não a briga. Não a crise. **Isto.** A coisa silenciosa, sem nome, que mora entre vocês há meses ou anos.',
     'Por fora está tudo bem. Ninguém percebe. Os filhos não percebem. As tuas amigas elogiam-vos.',
@@ -19,7 +19,7 @@ const SECTIONS_PT = {
   ],
   different: [
     'SyncHim não te ensina a fingir. Não te dá frases para mandar. Não te diz para te fazeres de difícil.',
-    'Em vez disso, vai mostrar-te qual é o **padrão antigo em ti** que está a tirar o teu casamento de sincronia — sem tu veres. Cada mulher tem o seu. Vais descobrir o teu. E vais aprender a dissolvê-lo, no silêncio, sem ele perceber que estás a fazer nada.',
+    'Em vez disso, vai mostrar-te qual é o **padrão antigo em ti** que está a tirar o teu casamento de sincronia, sem tu veres. Cada mulher tem o seu. Vais descobrir o teu. E vais aprender a dissolvê-lo, no silêncio, sem ele perceber que estás a fazer nada.',
     'Quando a sincronia volta, ele volta. Não porque o manipulaste. Porque deixaste de o empurrar para longe sem perceberes.'
   ],
   authorBlock: 'Quem te escreve é Marina Vale. Sem rosto, sem voz pública. Não vendo a minha história. Vendo um método que atravessei e refinei.',
@@ -28,7 +28,7 @@ const SECTIONS_PT = {
 
 const SECTIONS_EN = {
   recognition: [
-    'It was probably night when you clicked. Your husband was probably next to you, asleep, or on his phone, or in another room — and you, even in the same house, were alone.',
+    'It was probably night when you clicked. Your husband was probably next to you, asleep, or on his phone, or in another room, and you, even in the same house, were alone.',
     "It's not the first time.",
     'How long have you felt this? Not the fight. Not the crisis. **This.** This silent thing, without a name, that has lived between you for months or years.',
     "From the outside, everything is fine. No one notices. The children don't notice. Your friends compliment you both.",
@@ -44,7 +44,7 @@ const SECTIONS_EN = {
   ],
   different: [
     "SyncHim doesn't teach you to pretend. Doesn't give you sentences to send. Doesn't tell you to play hard to get.",
-    'Instead, it shows you the **old pattern in you** that is pulling your marriage out of sync — without you seeing it. Each woman has her own. You will find yours. And you will learn to dissolve it, in silence, without him knowing you are doing anything.',
+    'Instead, it shows you the **old pattern in you** that is pulling your marriage out of sync, without you seeing it. Each woman has her own. You will find yours. And you will learn to dissolve it, in silence, without him knowing you are doing anything.',
     'When sync returns, he returns. Not because you manipulated him. Because you stopped pushing him away without knowing.'
   ],
   authorBlock: "Marina Vale writes to you. No face, no public voice. I don't sell my story. I sell a method I crossed and refined.",
@@ -60,7 +60,7 @@ function formatLine(line: string) {
 }
 
 export default async function LandingPage({ params }: { params: { locale: string } }) {
-  const t = await getTranslations('landing');
+  const t = await getTranslations({ locale: params.locale, namespace: 'landing' });
   const locale = params.locale as 'pt' | 'en';
   const data = locale === 'pt' ? SECTIONS_PT : SECTIONS_EN;
   await trackEvent('landing_view', { metadata: { locale } });

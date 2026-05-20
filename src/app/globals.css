@@ -9,8 +9,8 @@
     color-scheme: dark;
   }
   html, body {
-    background: #0A0A0A;
-    color: #F5F1EA;
+    background: #1A1410;
+    color: #F2E8DC;
   }
   body {
     font-family: 'Spectral', 'Lora', Georgia, serif;
@@ -24,15 +24,15 @@
     letter-spacing: -0.005em;
   }
   a {
-    color: #B8956A;
+    color: #B8843D;
     text-decoration: none;
   }
   a:hover {
-    color: #F5F1EA;
+    color: #C9924A;
   }
   ::selection {
-    background: #B8956A;
-    color: #0A0A0A;
+    background: #C9924A;
+    color: #1A1410;
   }
 }
 
@@ -41,14 +41,14 @@
     @apply inline-block border border-gold text-bone px-7 py-3 font-serif text-lg tracking-wider transition-colors;
   }
   .btn:hover {
-    background: rgba(184, 149, 106, 0.08);
+    background: rgba(184, 132, 61, 0.10);
   }
   .btn-primary {
     @apply bg-gold text-ink border-gold;
   }
   .btn-primary:hover {
-    background: #c8a378;
-    color: #0A0A0A;
+    background: #C9924A;
+    color: #1A1410;
   }
   .btn-ghost {
     @apply border-ash text-ash;
@@ -90,8 +90,8 @@
 
 .input {
   background: transparent;
-  border: 1px solid #888880;
-  color: #F5F1EA;
+  border: 1px solid #2A2018;
+  color: #F2E8DC;
   padding: 12px 14px;
   font-family: inherit;
   font-size: 16px;
@@ -99,7 +99,7 @@
 }
 .input:focus {
   outline: none;
-  border-color: #B8956A;
+  border-color: #B8843D;
 }
 textarea.input {
   min-height: 140px;
@@ -136,7 +136,7 @@ textarea.input {
   align-items: center;
   gap: 1.2rem;
   margin: 4.5rem 0;
-  color: #88888033;
+  color: #2A2018;
 }
 .divider-glyph::before, .divider-glyph::after {
   content: '';
@@ -146,7 +146,7 @@ textarea.input {
 }
 .divider-glyph > span {
   font-family: 'EB Garamond', Georgia, serif;
-  color: #B8956A;
+  color: #B8843D;
   font-size: 1.25rem;
   line-height: 1;
 }

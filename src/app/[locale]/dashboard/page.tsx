@@ -17,8 +17,8 @@ export default async function DashboardPage({ params }: { params: { locale: stri
     .eq('id', user.id)
     .maybeSingle();
 
-  const t = await getTranslations('dashboard');
-  const tNo = await getTranslations('no');
+  const t = await getTranslations({ locale: params.locale, namespace: 'dashboard' });
+  const tNo = await getTranslations({ locale: params.locale, namespace: 'no' });
 
   if (!u) return null;
 

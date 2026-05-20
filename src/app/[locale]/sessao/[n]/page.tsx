@@ -18,8 +18,8 @@ export default async function SessionPage({
   const nNum = Number(params.n);
   if (!Number.isInteger(nNum) || nNum < 1 || nNum > 7) notFound();
 
-  const t = await getTranslations('session');
-  const tNo = await getTranslations('no');
+  const t = await getTranslations({ locale: params.locale, namespace: 'session' });
+  const tNo = await getTranslations({ locale: params.locale, namespace: 'no' });
 
   // Session 2 is the diagnostic — redirect into the form.
   if (nNum === 2) redirect(`/${locale}/diagnostico/perguntas`);

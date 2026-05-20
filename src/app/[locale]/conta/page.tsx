@@ -21,12 +21,12 @@ export default async function AccountPage({ params }: { params: { locale: string
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
-  const t = await getTranslations('account');
-  const tNo = await getTranslations('no');
+  const t = await getTranslations({ locale: params.locale, namespace: 'account' });
+  const tNo = await getTranslations({ locale: params.locale, namespace: 'no' });
 
   const tierLabel =
     u?.tier === 2 ? t('tier2') :
-    u?.tier === 1 ? t('tier1', { no: u.no_comprado ? tNo(u.no_comprado as 'fome') : '—' }) :
+    u?.tier === 1 ? t('tier1', { no: u.no_comprado ? tNo(u.no_comprado as 'fome') : '' }) :
     t('tier0');
 
   return (

@@ -15,8 +15,8 @@
   "landing": {
     "heroLine1": "Your husband has pulled away.",
     "heroLine2": "And nothing you've tried has worked.",
-    "subhead": "SyncHim is the quiet 21-day process for him to start looking for you again — without chasing, without fighting, without him knowing you're doing anything.",
-    "cta": "Start the diagnostic — Free",
+    "subhead": "SyncHim is the quiet 21-day process for him to start looking for you again, without chasing, without fighting, without him knowing you're doing anything.",
+    "cta": "Start the diagnostic",
     "subCta": "No payment. No card. In 8 minutes you'll know the knot that is choking your marriage."
   },
   "diagnostic": {
@@ -38,14 +38,14 @@
     "errorAllRequired": "Answer all 21 situations before continuing."
   },
   "result": {
-    "preEyebrow": "Before I show you —",
+    "preEyebrow": "Before I show you.",
     "preBody": "What you are about to see is the name of the old pattern that is making you lose your marriage. It is not a sentence. It is the first light in a room you have been sitting in, in the dark, for a long time.",
     "eyebrowNamed": "{nome}, your knot.",
     "eyebrowUnnamed": "Your knot.",
     "mirrorTitle": "Do you recognise yourself here?",
     "mirrorIntroSome": "You said «always» or «often» to {n} of these.",
     "mirrorIntroOne": "You said «always» or «often» to one of these.",
-    "mirrorIntroNone": "You said «sometimes» or less to all three. The pattern is here — but still quiet.",
+    "mirrorIntroNone": "You said «sometimes» or less to all three. The pattern is here, but still quiet.",
     "origemTitle": "Where it comes from.",
     "custoTitle": "What it is doing to your marriage.",
     "forceTitle": "The weight of this knot in you.",
@@ -56,7 +56,7 @@
     "travessiaStep1Label": "Sessions 1 + 2",
     "travessiaStep1Body": "Done. You see the knot.",
     "travessiaStep2Label": "Sessions 3, 4 and 5",
-    "travessiaStep2Body": "You go to the origin. Not in affirmations — in specific movements.",
+    "travessiaStep2Body": "You go to the origin. Not in affirmations, in specific movements.",
     "travessiaStep3Label": "Sessions 6 + 7",
     "travessiaStep3Body": "You dissolve the pattern. And he begins to look for you.",
     "travessiaRhythm": "Seven sessions. 21 days. Each opens three days after the one before. No shortcuts.",
@@ -64,9 +64,9 @@
     "offerCta": "Cross this knot",
     "offerFinePrint": "Pay once. Lifetime access. 7-day guarantee.",
     "notReadyTitle": "This knot is not yet open.",
-    "notReadyBody": "I'm writing the crossing for {no} right now. Leave your email and I'll tell you the day it opens — there is no hidden waitlist.",
+    "notReadyBody": "I'm writing the crossing for {no} right now. Leave your email and I'll tell you the day it opens, there is no hidden waitlist.",
     "secondaryTitle": "I noticed an echo.",
-    "secondaryBody": "{no} also showed up in your answers. It is not your main knot — it is a shadow of the main one. When the dominant one dissolves, this one tends to ease on its own.",
+    "secondaryBody": "{no} also showed up in your answers. It is not your main knot, it is a shadow of the main one. When the dominant one dissolves, this one tends to ease on its own.",
     "redo": "Redo the diagnostic",
     "or": "Or come back when you're ready. The diagnostic stays here, yours to redo whenever you need."
   },
@@ -140,7 +140,7 @@
     "signature": "Marina Vale"
   },
   "meta": {
-    "title": "SyncHim — Sync him to you",
+    "title": "SyncHim, Sync him to you",
     "description": "A quiet 21-day method for women in marriages that are quietly fading."
   }
 }
