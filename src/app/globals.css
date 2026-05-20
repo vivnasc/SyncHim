@@ -4,94 +4,201 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   DESIGN TOKENS
+   Mirrors assets/tokens.css. Tailwind tokens map to the same hex.
+   ============================================================ */
+:root {
+  color-scheme: dark;
+
+  --bg:           #1A1410;
+  --bg-elev:      #201914;
+  --texto:        #F2E8DC;
+  --texto-suave:  #A39B8E;
+  --ouro:         #B8843D;
+  --ouro-folha:   #D4A857;
+  --bordeaux:     #8B2235;
+  --linha:        #3A2E22;
+
+  --serif: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+  --body:  'Spectral', 'Lora', Georgia, serif;
+  --sans:  'Inter', system-ui, sans-serif;
+
+  --t-letrina: 4rem;
+  --t-titulo:  2.5rem;
+  --t-h2:      1.75rem;
+  --t-h3:      1.25rem;
+  --t-corpo:   1.0625rem;
+  --t-pequeno: 0.875rem;
+  --t-mini:    0.75rem;
+
+  --leitura: 38rem;
+}
+
 @layer base {
-  :root {
-    color-scheme: dark;
-  }
   html, body {
-    background: #1A1410;
-    color: #F2E8DC;
+    background: var(--bg);
+    color: var(--texto);
   }
   body {
-    font-family: 'Spectral', 'Lora', Georgia, serif;
+    font-family: var(--body);
     font-weight: 300;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
   h1, h2, h3, h4 {
-    font-family: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+    font-family: var(--serif);
     font-weight: 500;
     letter-spacing: -0.005em;
   }
   a {
-    color: #B8843D;
+    color: var(--ouro);
     text-decoration: none;
   }
   a:hover {
-    color: #C9924A;
+    color: var(--ouro-folha);
   }
   ::selection {
-    background: #C9924A;
-    color: #1A1410;
+    background: var(--ouro-folha);
+    color: var(--bg);
   }
+}
+
+/* Subtle parchment grain across the whole document. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0.97  0 0 0 0 0.91  0 0 0 0 0.82  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity: 0.04;
+}
+body > * {
+  position: relative;
+  z-index: 2;
 }
 
 @layer components {
+  /* Buttons */
   .btn {
     @apply inline-block border border-gold text-bone px-7 py-3 font-serif text-lg tracking-wider transition-colors;
   }
-  .btn:hover {
-    background: rgba(184, 132, 61, 0.10);
-  }
-  .btn-primary {
-    @apply bg-gold text-ink border-gold;
-  }
-  .btn-primary:hover {
-    background: #C9924A;
-    color: #1A1410;
-  }
-  .btn-ghost {
-    @apply border-ash text-ash;
-  }
-  .prose-mv {
-    @apply max-w-prose font-body text-bone leading-relaxed text-lg;
-  }
-  .prose-mv h1 {
-    @apply font-serif text-4xl md:text-5xl mb-8 leading-tight;
-  }
-  .prose-mv h2 {
-    @apply font-serif text-2xl md:text-3xl mt-12 mb-4;
-  }
-  .prose-mv h3 {
-    @apply font-serif text-xl mt-8 mb-3;
-  }
-  .prose-mv p {
-    @apply mb-5;
-  }
-  .prose-mv blockquote {
-    @apply border-l-2 border-gold pl-5 italic text-bone/90 my-6;
-  }
-  .prose-mv strong {
-    @apply text-bone font-semibold;
-  }
-  .prose-mv em {
-    @apply italic text-bone/90;
-  }
-  .prose-mv ul, .prose-mv ol {
-    @apply pl-6 mb-5;
-  }
-  .prose-mv li {
-    @apply mb-2;
-  }
-  .prose-mv hr {
-    @apply border-ash/30 my-10;
+  .btn:hover { background: rgba(184, 132, 61, 0.10); }
+  .btn-primary { @apply bg-gold text-ink border-gold; }
+  .btn-primary:hover { background: var(--ouro-folha); color: var(--bg); }
+  .btn-ghost { @apply border-ash text-ash; }
+
+  /* Prose for markdown */
+  .prose-mv { @apply max-w-prose font-body text-bone leading-relaxed text-lg; }
+  .prose-mv h1 { @apply font-serif text-4xl md:text-5xl mb-8 leading-tight; }
+  .prose-mv h2 { @apply font-serif text-2xl md:text-3xl mt-12 mb-4; }
+  .prose-mv h3 { @apply font-serif text-xl mt-8 mb-3; }
+  .prose-mv p { @apply mb-5; }
+  .prose-mv blockquote { @apply border-l-2 border-gold pl-5 italic text-bone/90 my-6; }
+  .prose-mv strong { @apply text-bone font-semibold; }
+  .prose-mv em { @apply italic text-bone/90; }
+  .prose-mv ul, .prose-mv ol { @apply pl-6 mb-5; }
+  .prose-mv li { @apply mb-2; }
+  .prose-mv hr { @apply border-ash/30 my-10; }
+
+  /* Spaced caps label — "MARINA VALE", "SECTION 03", "TIER 1" */
+  .mini-caps {
+    font-family: var(--sans);
+    font-size: var(--t-mini);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--texto-suave);
+    font-weight: 400;
   }
 }
 
+/* ============================================================
+   EDITORIAL ELEMENTS  (from assets/tokens.css)
+   ============================================================ */
+
+/* Illuminated drop-cap. Use <span class="letrina">T</span> at the
+   opening of a session or the result page only. */
+.letrina {
+  position: relative;
+  float: left;
+  font-family: var(--serif);
+  font-size: var(--t-letrina);
+  line-height: 1;
+  color: var(--ouro-folha);
+  margin: 0.1em 0.4rem -0.1em 0;
+  padding: 0.3rem 0.6rem;
+  border: 0.5px solid var(--ouro);
+  background-image:
+    radial-gradient(circle at 6px 6px, var(--ouro) 1.5px, transparent 2px),
+    radial-gradient(circle at calc(100% - 6px) 6px, var(--ouro) 1.5px, transparent 2px),
+    radial-gradient(circle at 6px calc(100% - 6px), var(--ouro) 1.5px, transparent 2px),
+    radial-gradient(circle at calc(100% - 6px) calc(100% - 6px), var(--ouro) 1.5px, transparent 2px);
+}
+
+/* Vesica piscis separator between primary sections. */
+.vesica {
+  display: block;
+  margin: 4rem auto;
+  width: 80px;
+  height: 48px;
+  color: var(--ouro);
+}
+
+/* Rosáceo de canto, paired with a hero or important block. */
+.rosaceo {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  color: var(--ouro);
+}
+.rosaceo-grande { width: 48px; height: 48px; }
+
+/* Brand mark (estrela persa). Logo, favicon, end of session. */
+.marca {
+  display: block;
+  width: 48px;
+  height: 48px;
+  margin: 4rem auto 1.5rem;
+  color: var(--ouro-folha);
+}
+.marca-pequena { width: 24px; height: 24px; margin: 0; }
+.marca-grande  { width: 80px; height: 80px; }
+
+/* Centred verse block, optionally framed by separadores. */
+.verso {
+  display: block;
+  max-width: var(--leitura);
+  margin: 4rem auto;
+  text-align: center;
+  font-style: italic;
+  color: var(--ouro);
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+.verso .sep {
+  display: block;
+  width: 320px;
+  height: 16px;
+  margin: 1rem auto;
+  color: var(--ouro);
+}
+
+@media (max-width: 768px) {
+  :root {
+    --t-titulo: 2rem;
+    --t-h2:     1.5rem;
+    --t-letrina: 3rem;
+  }
+}
+
+/* ============================================================
+   FORM INPUTS
+   ============================================================ */
 .input {
   background: transparent;
-  border: 1px solid #2A2018;
-  color: #F2E8DC;
+  border: 1px solid var(--linha);
+  color: var(--texto);
   padding: 12px 14px;
   font-family: inherit;
   font-size: 16px;
@@ -99,15 +206,16 @@
 }
 .input:focus {
   outline: none;
-  border-color: #B8843D;
+  border-color: var(--ouro);
 }
 textarea.input {
   min-height: 140px;
   resize: vertical;
 }
 
-/* Reveal — staggered fade for the resultado page.
-   Server-rendered, no JS. Each element appears slightly after the one above. */
+/* ============================================================
+   REVEAL ANIMATIONS  (for /resultado)
+   ============================================================ */
 @keyframes reveal-fade {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: none; }
@@ -130,13 +238,14 @@ textarea.input {
   display: inline-block;
 }
 
-/* Editorial divider — thin line with a centred glyph. */
+/* Editorial line+glyph divider, kept for backwards compatibility
+   while sections are being migrated to <Vesica />. */
 .divider-glyph {
   display: flex;
   align-items: center;
   gap: 1.2rem;
   margin: 4.5rem 0;
-  color: #2A2018;
+  color: var(--linha);
 }
 .divider-glyph::before, .divider-glyph::after {
   content: '';
@@ -145,8 +254,8 @@ textarea.input {
   background: currentColor;
 }
 .divider-glyph > span {
-  font-family: 'EB Garamond', Georgia, serif;
-  color: #B8843D;
+  font-family: var(--serif);
+  color: var(--ouro);
   font-size: 1.25rem;
   line-height: 1;
 }
