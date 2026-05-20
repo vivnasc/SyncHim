@@ -35,7 +35,8 @@
     "namePrompt": "Como queres que te chame?",
     "nameLabel": "Primeiro nome",
     "consent": "Concordo com os termos e a política de privacidade.",
-    "errorAllRequired": "Responde a todas as 21 situações antes de continuar."
+    "errorAllRequired": "Responde a todas as 21 situações antes de continuar.",
+    "errorGeneric": "Algo correu mal a guardar o teu diagnóstico. Verifica o email e tenta de novo."
   },
   "result": {
     "preEyebrow": "Antes de te mostrar.",

@@ -35,7 +35,8 @@
     "namePrompt": "What should I call you?",
     "nameLabel": "First name",
     "consent": "I agree to the terms and privacy policy.",
-    "errorAllRequired": "Answer all 21 situations before continuing."
+    "errorAllRequired": "Answer all 21 situations before continuing.",
+    "errorGeneric": "Something went wrong saving your diagnostic. Check the email and try again."
   },
   "result": {
     "preEyebrow": "Before I show you.",
