@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { MusicBlock } from './MusicBlock';
 
 type Item = {
   id: string; code: string | null; title: string; status: string;
@@ -196,6 +197,10 @@ export function VideoEditor({
               </button>
             ))}
           </div>
+
+          <div className="mini" style={{ marginTop: 16 }}>música ambiente (suno)</div>
+          <MusicBlock itemId={item.id} musicUrl={item.metadata?.musicUrl ?? null} musicPrompt={item.metadata?.musicPrompt ?? null}
+            onGenerated={(url, prompt) => setItem((it) => ({ ...it, metadata: { ...(it.metadata ?? {}), musicUrl: url, musicPrompt: prompt } }))} />
 
           <div className="mini" style={{ marginTop: 16 }}>render</div>
           <div className="card" style={{ padding: 12 }}>
