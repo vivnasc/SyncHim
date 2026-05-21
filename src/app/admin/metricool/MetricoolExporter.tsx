@@ -7,6 +7,7 @@ type Item = {
   code: string | null;
   title: string;
   type: 'carousel' | 'video';
+  target: 'casada' | 'solteira' | 'ambos';
   status: string;
   scheduled_at: string | null;
   platforms: string[];
@@ -16,18 +17,23 @@ type Item = {
 };
 
 export function MetricoolExporter({ items }: { items: Item[] }) {
+  const [targetFilter, setTargetFilter] = useState<'all' | 'casada' | 'solteira' | 'ambos'>('all');
+  const visible = useMemo(
+    () => targetFilter === 'all' ? items : items.filter((i) => i.target === targetFilter),
+    [items, targetFilter]
+  );
   const [selected, setSelected] = useState<Set<string>>(new Set(items.map((i) => i.id)));
   const [busy, setBusy] = useState(false);
 
   const stats = useMemo(() => {
-    const sel = items.filter((i) => selected.has(i.id));
+    const sel = visible.filter((i) => selected.has(i.id));
     const carouselCount = sel.filter((i) => i.type === 'carousel').length;
     const videoCount    = sel.filter((i) => i.type === 'video').length;
     const totalRows =
       carouselCount /* 1 linha IG */ +
       sel.filter((i) => i.type === 'video').reduce((acc, v) => acc + (v.platforms?.length || 0), 0);
     return { sel, carouselCount, videoCount, totalRows };
-  }, [items, selected]);
+  }, [visible, selected]);
 
   function toggle(id: string) {
     const next = new Set(selected);
@@ -35,7 +41,7 @@ export function MetricoolExporter({ items }: { items: Item[] }) {
     setSelected(next);
   }
 
-  function all() { setSelected(new Set(items.map((i) => i.id))); }
+  function all()  { setSelected(new Set(visible.map((i) => i.id))); }
   function none() { setSelected(new Set()); }
 
   async function download() {
@@ -81,6 +87,12 @@ export function MetricoolExporter({ items }: { items: Item[] }) {
             </div>
           </div>
           <div className="row">
+            <select className="input" value={targetFilter} onChange={(e) => setTargetFilter(e.target.value as any)} style={{ width: 160 }}>
+              <option value="all">todos os públicos</option>
+              <option value="casada">só casadas</option>
+              <option value="solteira">só solteiras</option>
+              <option value="ambos">só &ldquo;ambas&rdquo;</option>
+            </select>
             <button className="btn" onClick={all}>todos</button>
             <button className="btn" onClick={none}>nenhum</button>
             <button className="btn primary" onClick={download} disabled={busy || selected.size === 0}>
@@ -97,18 +109,20 @@ export function MetricoolExporter({ items }: { items: Item[] }) {
             <th style={{ width: 90 }}>código</th>
             <th>título</th>
             <th style={{ width: 80 }}>tipo</th>
+            <th style={{ width: 90 }}>público</th>
             <th style={{ width: 140 }}>agendado</th>
             <th style={{ width: 140 }}>plataformas</th>
             <th style={{ width: 90 }}>render</th>
           </tr>
         </thead>
         <tbody>
-          {items.map((it) => (
+          {visible.map((it) => (
             <tr key={it.id}>
               <td><input type="checkbox" checked={selected.has(it.id)} onChange={() => toggle(it.id)} /></td>
               <td><code style={{ fontSize: 11 }}>{it.code}</code></td>
               <td><a href={`/admin/${it.type === 'video' ? 'videos' : 'carrosseis'}/${it.id}`}>{it.title}</a></td>
               <td className="muted">{it.type}</td>
+              <td className="muted">{it.target}</td>
               <td className="muted">{it.scheduled_at ? new Date(it.scheduled_at).toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' }) : 'hoje 10:00'}</td>
               <td className="muted">{(it.platforms ?? []).join(' · ') || '—'}</td>
               <td>{it.type === 'carousel' ? `${it.output_urls?.pngs?.length ?? 0} pngs` : '1 mp4'}</td>

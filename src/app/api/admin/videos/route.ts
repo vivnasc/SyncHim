@@ -6,8 +6,11 @@ export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   if (!getAdminEmailFromRequest(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  const body = await req.json().catch(() => null) as { title?: string; subtype?: string; sceneCount?: number } | null;
+  const body = await req.json().catch(() => null) as {
+    title?: string; subtype?: string; sceneCount?: number; target?: 'casada' | 'solteira' | 'ambos'
+  } | null;
   if (!body?.title || !body?.subtype) return NextResponse.json({ error: 'campos em falta' }, { status: 400 });
+  const target = body.target ?? 'casada';
 
   const supabase = createSupabaseAdmin();
 
@@ -21,7 +24,7 @@ export async function POST(req: NextRequest) {
     .from('content_items')
     .insert({
       type: 'video', subtype: body.subtype, code, title: body.title, slug,
-      status: 'draft', platforms: ['ig', 'tiktok', 'youtube']
+      target, status: 'draft', platforms: ['ig', 'tiktok', 'youtube']
     })
     .select().single();
   if (error || !item) return NextResponse.json({ error: error?.message || 'insert' }, { status: 500 });

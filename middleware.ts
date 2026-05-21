@@ -29,7 +29,13 @@ export function middleware(request: NextRequest) {
 
   if (!hasLocale && pathname === '/') {
     const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
-    const country = request.headers.get('cf-ipcountry') ?? '';
+    // Vercel: `x-vercel-ip-country`. Fallback para o antigo cf-header
+    // mantém-se para casos onde a app continua a correr atrás de CF.
+    const country =
+      request.headers.get('x-vercel-ip-country') ??
+      request.geo?.country ??
+      request.headers.get('cf-ipcountry') ??
+      '';
     const inferred = PT_COUNTRIES.has(country.toUpperCase()) ? 'pt' : 'en';
     const target = (cookieLocale && (locales as readonly string[]).includes(cookieLocale))
       ? cookieLocale

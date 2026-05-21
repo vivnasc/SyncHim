@@ -12,7 +12,7 @@ export default async function MetricoolPage() {
   // Mostra apenas items prontos a exportar: rendered, published ou ready com output.
   const { data } = await supabase
     .from('content_items')
-    .select('id, code, title, type, status, scheduled_at, platforms, output_urls, caption, hashtags')
+    .select('id, code, title, type, target, status, scheduled_at, platforms, output_urls, caption, hashtags')
     .in('status', ['rendered', 'published', 'ready'])
     .order('scheduled_at', { ascending: true, nullsFirst: false })
     .limit(200);

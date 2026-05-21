@@ -6,13 +6,16 @@ export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   if (!getAdminEmailFromRequest(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  const body = await req.json().catch(() => null) as { title?: string; categoria?: string; slideCount?: number } | null;
+  const body = await req.json().catch(() => null) as {
+    title?: string; categoria?: string; slideCount?: number; target?: 'casada' | 'solteira' | 'ambos'
+  } | null;
   if (!body?.title) return NextResponse.json({ error: 'title em falta' }, { status: 400 });
 
   const slug = slugify(body.title);
   const supabase = createSupabaseAdmin();
 
   const nextCode = await nextCarouselCode(supabase, body.categoria);
+  const target = body.target ?? 'casada';
 
   const { data: item, error } = await supabase
     .from('content_items')
@@ -22,6 +25,7 @@ export async function POST(req: NextRequest) {
       slug,
       categoria: body.categoria,
       code: nextCode,
+      target,
       status: 'draft',
       platforms: ['ig', 'tiktok']
     })

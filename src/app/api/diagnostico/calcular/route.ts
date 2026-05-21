@@ -30,7 +30,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
   }
 
-  const ip = req.headers.get('cf-connecting-ip') ?? req.headers.get('x-forwarded-for') ?? undefined;
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? req.headers.get('x-real-ip')
+    ?? req.headers.get('cf-connecting-ip')
+    ?? undefined;
   const ok = await verifyTurnstile(payload.turnstileToken, ip ?? undefined);
   if (!ok) return NextResponse.json({ error: 'turnstile_failed' }, { status: 400 });
 
