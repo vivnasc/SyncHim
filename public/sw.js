@@ -1,17 +1,16 @@
 /* SyncHim · service worker
  *
  * Estratégia:
- *   - Static assets (/_next/static/*, /icons/*, /marina/*, fontes):
- *     cache-first com revalidação em background.
+ *   - Static assets (/_next/static/*, /icons/*, /icon-*.png, /marina/*,
+ *     fontes, css, js): cache-first com revalidação em background.
  *   - HTML pages (navigation requests): network-first com fallback
- *     para a última versão em cache, e fallback final para uma
- *     página offline.
+ *     para a última versão em cache, e fallback final para /offline.
  *   - APIs (/api/*): sempre network. Nunca cacheadas.
  *
  * Versionamento: muda CACHE_VERSION para forçar invalidação total.
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const STATIC_CACHE  = `synchim-static-${CACHE_VERSION}`;
 const HTML_CACHE    = `synchim-html-${CACHE_VERSION}`;
 const OFFLINE_URL   = '/offline';
@@ -21,13 +20,18 @@ const PRECACHE_URLS = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/apple-touch-icon.png',
+  '/icon-192.png',
+  '/icon-512.png',
   '/icon.svg',
+  '/marina/editorial.png',
   '/manifest.webmanifest'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(STATIC_CACHE);
+    // Cada add() pode falhar (ficheiro ausente em dev); allSettled evita
+    // abortar o install se um asset opcional não estiver presente.
     await Promise.allSettled(PRECACHE_URLS.map((u) => cache.add(u).catch(() => {})));
     self.skipWaiting();
   })());
@@ -50,12 +54,14 @@ function isStaticAsset(url) {
     url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/icons/') ||
     url.pathname.startsWith('/marina/') ||
+    url.pathname.startsWith('/icon-') ||
+    url.pathname === '/icon.svg' ||
     /\.(?:woff2?|ttf|eot|svg|png|jpg|jpeg|webp|avif|ico|css|js)$/i.test(url.pathname)
   );
 }
 
 function isApi(url) {
-  return url.pathname.startsWith('/api/');
+  return url.pathname.startsWith('/api/') || url.pathname.startsWith('/_next/data/');
 }
 
 async function cacheFirst(request, cacheName) {

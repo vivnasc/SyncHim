@@ -44,6 +44,22 @@ export async function sendOnce(args: SendOnceArgs) {
   return { skipped: false as const, id: r.data?.id };
 }
 
+export async function sendMagicLinkEmail(email: string, locale: Locale, actionLink: string, nome?: string) {
+  const { subject, html, text } = renderEmail('magic_link', locale, {
+    nome: nome ?? '',
+    link: actionLink
+  });
+  const r = await client().emails.send({
+    from: FROM(),
+    to: email,
+    subject,
+    html,
+    text
+  });
+  if (r.error) throw new Error(r.error.message);
+  return r.data?.id;
+}
+
 export async function sendMagicLink(email: string, locale: Locale, nome?: string) {
   const admin = createSupabaseAdmin();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -58,18 +74,5 @@ export async function sendMagicLink(email: string, locale: Locale, nome?: string
   if (error) throw new Error(error.message);
   const actionLink = data?.properties?.action_link;
   if (!actionLink) throw new Error('No action link from Supabase');
-
-  const { subject, html, text } = renderEmail('magic_link', locale, {
-    nome: nome ?? '',
-    link: actionLink
-  });
-  const r = await client().emails.send({
-    from: FROM(),
-    to: email,
-    subject,
-    html,
-    text
-  });
-  if (r.error) throw new Error(r.error.message);
-  return r.data?.id;
+  return sendMagicLinkEmail(email, locale, actionLink, nome);
 }

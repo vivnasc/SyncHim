@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { createSupabaseServer } from '@/lib/supabase/server';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { DeleteAccountForm } from '@/components/DeleteAccountForm';
+import { ChangePasswordForm } from '@/components/ChangePasswordForm';
 import { Vesica } from '@/components/marks/Vesica';
 import { EstrelaPersa } from '@/components/marks/EstrelaPersa';
 
@@ -84,7 +85,13 @@ export default async function AccountPage({ params }: { params: { locale: string
         </div>
       </section>
 
-      <section className="px-6 md:px-10 py-16 border-t border-separator mt-8">
+      <section className="px-6 md:px-10 py-12 border-t border-separator mt-8">
+        <div className="max-w-xl mx-auto">
+          <ChangePasswordForm />
+        </div>
+      </section>
+
+      <section className="px-6 md:px-10 py-16 border-t border-separator">
         <div className="max-w-xl mx-auto">
           <div className="mini-caps text-bordeaux mb-3">
             {locale === 'pt' ? 'IRREVERSÍVEL' : 'IRREVERSIBLE'}

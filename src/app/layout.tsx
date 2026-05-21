@@ -2,16 +2,20 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { PWAInstall } from '@/components/PWAInstall';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://synchim.vercel.app';
+const DESCRIPTION =
+  'Método silencioso de 21 dias para mulheres em relações sérias, casadas ou em construção, que querem ver o padrão antigo que as está a tirar de sincronia.';
+
 export const metadata: Metadata = {
-  title: 'SyncHim',
-  description: 'A quiet 21-day method.',
-  robots: { index: true, follow: true },
+  metadataBase: new URL(SITE_URL),
+  title: { default: 'SyncHim', template: '%s · SyncHim' },
+  description: DESCRIPTION,
   manifest: '/manifest.webmanifest',
   applicationName: 'SyncHim',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'SyncHim'
+    title: 'SyncHim',
+    statusBarStyle: 'black-translucent'
   },
   icons: {
     icon: [
@@ -23,6 +27,21 @@ export const metadata: Metadata = {
       { url: '/icons/apple-touch-icon.png', sizes: '180x180' }
     ]
   },
+  openGraph: {
+    type: 'website',
+    siteName: 'SyncHim',
+    title: 'SyncHim',
+    description: DESCRIPTION,
+    url: SITE_URL,
+    locale: 'pt_PT',
+    alternateLocale: ['en_US']
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SyncHim',
+    description: DESCRIPTION
+  },
+  robots: { index: true, follow: true },
   formatDetection: { telephone: false }
 };
 

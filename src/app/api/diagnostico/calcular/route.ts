@@ -10,12 +10,14 @@ import {
   type Locale
 } from '@/lib/diagnostic';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
+import { createSupabaseServer } from '@/lib/supabase/server';
 import { verifyTurnstile } from '@/lib/turnstile';
 import { trackEvent } from '@/lib/events';
 import { sendOnce } from '@/lib/resend';
 const Body = z.object({
   answers: z.record(z.string(), z.number().int().min(0).max(3)),
   email: z.string().email(),
+  password: z.string().min(8).max(120),
   name: z.string().max(120).optional().default(''),
   locale: z.enum(['pt', 'en']),
   target: z.enum(['casada', 'solteira']).optional().default('casada'),
@@ -53,17 +55,21 @@ export async function POST(req: NextRequest) {
 
   // Find or create auth user.
   let userId: string | null = null;
+  let createdNow = false;
   const { data: existing } = await admin
     .from('users')
     .select('id')
     .eq('email', payload.email)
     .maybeSingle();
 
-  if (existing) {
-    userId = existing.id;
+  if (existing && existing.id) {
+    userId = existing.id as string;
+    // Update the password so the woman can sign in again with what she just typed.
+    await admin.auth.admin.updateUserById(existing.id as string, { password: payload.password });
   } else {
     const { data: created, error } = await admin.auth.admin.createUser({
       email: payload.email,
+      password: payload.password,
       email_confirm: true,
       user_metadata: { app: 'synchim', nome: payload.name, locale, tier: 0, target: payload.target }
     });
@@ -71,6 +77,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'auth_create_failed', detail: error?.message }, { status: 500 });
     }
     userId = created.user.id;
+    createdNow = true;
   }
 
   if (!userId) {
@@ -103,7 +110,7 @@ export async function POST(req: NextRequest) {
     { userId, metadata: { dominante, secundario, pontuacoes } }
   );
 
-  // Send welcome email (once).
+  // Send welcome email (once). Doesn't block on failure.
   try {
     await sendOnce({
       userId,
@@ -115,6 +122,16 @@ export async function POST(req: NextRequest) {
   } catch {
     /* don't block on email */
   }
+
+  // Sign her in immediately so she lands on /resultado already logged in
+  // and can reach /dashboard, /conta etc. without a second password step.
+  const userSupabase = createSupabaseServer();
+  await userSupabase.auth.signInWithPassword({
+    email: payload.email,
+    password: payload.password
+  });
+
+  void createdNow; // silences unused warning while we may surface it later
 
   // Stash result in a short-lived cookie so the result page can render before login.
   const res = NextResponse.json({

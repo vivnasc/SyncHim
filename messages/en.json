@@ -35,7 +35,10 @@
     "namePrompt": "What should I call you?",
     "nameLabel": "First name",
     "consent": "I agree to the terms and privacy policy.",
+    "passwordLabel": "Password",
+    "passwordHint": "At least 8 characters. You'll use it to sign back in.",
     "errorAllRequired": "Answer all 21 situations before continuing.",
+    "errorPasswordShort": "Your password needs at least 8 characters.",
     "errorGeneric": "Something went wrong saving your diagnostic. Check the email and try again."
   },
   "result": {
@@ -87,11 +90,19 @@
   },
   "login": {
     "title": "Sign in",
-    "subtitle": "Type your email. I'll send a link.",
+    "subtitle": "Welcome back.",
     "emailLabel": "Email",
-    "cta": "Send link",
+    "passwordLabel": "Password",
+    "cta": "Sign in",
+    "forgotPassword": "Forgot password",
+    "backToLogin": "← Back to sign in",
+    "resetTitle": "Reset password",
+    "resetSubtitle": "I'll send you a link to set a new one.",
+    "resetCta": "Send link",
+    "resetSent": "Sent. Check your email.",
     "sent": "Sent. Check your email.",
-    "errorGeneric": "I couldn't send it. Try again."
+    "errorWrongPassword": "Email or password don't match. Try again.",
+    "errorGeneric": "Something went wrong. Try again."
   },
   "dashboard": {
     "title": "Your crossing",
@@ -143,6 +154,6 @@
   },
   "meta": {
     "title": "SyncHim, Sync him to you",
-    "description": "A quiet 21-day method for women in marriages that are quietly fading."
+    "description": "A quiet 21-day method. For married women and for single women in serious relationships, who have tried everything and nothing reaches what is underneath."
   }
 }
