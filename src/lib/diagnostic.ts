@@ -10,8 +10,11 @@ export const NOS = [
 
 export type No = (typeof NOS)[number];
 
-// Phase 1: only `fome` is sellable.
-export const NOS_VENDAVEIS: readonly No[] = ['fome'];
+// Todos os 7 nós são vendáveis: o conteúdo Tier 1+2 (sessões 3-7 +
+// práticas) existe pelo menos na variante 'solteira' para todos, e a
+// variante 'casada' cai para 'solteira' via fallback no content loader
+// enquanto a editora completa a escrita dedicada por contexto.
+export const NOS_VENDAVEIS: readonly No[] = NOS;
 
 export type Locale = 'pt' | 'en';
 

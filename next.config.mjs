@@ -25,6 +25,13 @@ const nextConfig = {
       type: 'asset/source'
     });
     return config;
+  },
+  // Vercel: garante que content/ e versao-solteira/ ficam no bundle
+  // das funções server (getKnotSession lê via fs.readFileSync).
+  outputFileTracingIncludes: {
+    '/[locale]/sessao/[n]': ['./content/**/*.md'],
+    '/[locale]/dashboard':  ['./content/**/*.md'],
+    '/[locale]/diagnostico': ['./content/**/*.md']
   }
 };
 
