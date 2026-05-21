@@ -10,7 +10,7 @@ import {
   QUESTIONS_EN,
   type No
 } from '@/lib/diagnostic';
-import { noContent } from '@/lib/no-content';
+import { noContent, toContentContext, type LoveContext } from '@/lib/no-content';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { trackEvent } from '@/lib/events';
 import { NotifyForm } from '@/components/NotifyForm';
@@ -26,7 +26,47 @@ interface ResultCookie {
   pontuacoes: Record<No, number>;
   respostas_dominante: Record<string, 0 | 1 | 2 | 3>;
   is_repeat: boolean;
+  contexto?: LoveContext;
 }
+
+const SUB_PROFILE_GREETINGS = {
+  pt: {
+    sozinha: {
+      lines: [
+        'Tu não estás aqui por causa de um homem específico.',
+        'Estás aqui porque há um padrão.',
+        'As relações que começam e morrem na mesma fase. Os homens que parecem diferentes e afinal são iguais. A sensação de que há algo em ti que afasta o que tu queres.',
+        'Vamos ver o que é.'
+      ]
+    },
+    inicio: {
+      lines: [
+        'Conheceste alguém.',
+        'E em vez de alegria pura, há também medo.',
+        'Medo de estragar. Medo de repetir. Medo de que desta vez também não dure.',
+        'Esse medo tem nome. Vamos vê-lo antes que ele aja por ti.'
+      ]
+    }
+  },
+  en: {
+    sozinha: {
+      lines: [
+        "You are not here because of a specific man.",
+        "You are here because there is a pattern.",
+        "The relationships that begin and die in the same phase. The men who seem different and turn out to be the same. The feeling that something in you pushes away what you want.",
+        "Let's see what it is."
+      ]
+    },
+    inicio: {
+      lines: [
+        "You met someone.",
+        "And instead of pure joy, there is also fear.",
+        "Fear of ruining it. Fear of repeating. Fear that this one will not last either.",
+        "That fear has a name. Let's see it before it acts on your behalf."
+      ]
+    }
+  }
+} as const;
 
 function Arrow() {
   return <span className="arrow" aria-hidden="true">→</span>;
@@ -48,7 +88,13 @@ export default async function ResultPage({ params }: { params: { locale: string 
   const dominante = payload!.dominante;
   const secundario = payload!.secundario;
   const sellable = NOS_VENDAVEIS.includes(dominante);
-  const content = noContent(locale, dominante);
+  const loveContext: LoveContext = payload!.contexto ?? 'casada';
+  const contentContext = toContentContext(loveContext);
+  const content = noContent(locale, dominante, contentContext);
+  const greeting =
+    loveContext === 'sozinha' || loveContext === 'inicio'
+      ? SUB_PROFILE_GREETINGS[locale][loveContext]
+      : null;
   const dominanteScore = payload!.pontuacoes[dominante];
   const dominanteName = tNo(dominante);
   const qMap = locale === 'pt' ? QUESTIONS_PT : QUESTIONS_EN;
@@ -101,6 +147,17 @@ export default async function ResultPage({ params }: { params: { locale: string 
 
   return (
     <div>
+      {/* ============ SAUDAÇÃO POR SUB-PERFIL ============ */}
+      {greeting && (
+        <section className="px-6 md:px-10 pt-16 md:pt-20 pb-2">
+          <div className="max-w-[40rem] mx-auto space-y-4 font-body italic text-bone/85 text-lg md:text-xl leading-relaxed">
+            {greeting.lines.map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ============ REVEAL ============ */}
       <section className="px-6 md:px-10 pt-16 md:pt-24 pb-16 md:pb-20 text-center">
         <Vesica className="w-20 h-12 mx-auto text-gold mb-10 reveal reveal-1" />

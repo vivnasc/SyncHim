@@ -20,6 +20,7 @@ const Body = z.object({
   password: z.string().min(8).max(120),
   name: z.string().max(120).optional().default(''),
   locale: z.enum(['pt', 'en']),
+  contexto: z.enum(['casada', 'sozinha', 'inicio']).default('casada'),
   turnstileToken: z.string().optional()
 });
 
@@ -67,7 +68,13 @@ export async function POST(req: NextRequest) {
       email: payload.email,
       password: payload.password,
       email_confirm: true,
-      user_metadata: { app: 'synchim', nome: payload.name, locale, tier: 0 }
+      user_metadata: {
+        app: 'synchim',
+        nome: payload.name,
+        locale,
+        tier: 0,
+        contexto: payload.contexto
+      }
     });
     if (error || !created.user) {
       return NextResponse.json({ error: 'auth_create_failed', detail: error?.message }, { status: 500 });
@@ -147,7 +154,8 @@ export async function POST(req: NextRequest) {
     secundario,
     pontuacoes,
     respostas_dominante: respostasDominante,
-    is_repeat: (count ?? 0) > 0
+    is_repeat: (count ?? 0) > 0,
+    contexto: payload.contexto
   }), {
     httpOnly: true,
     sameSite: 'lax',
