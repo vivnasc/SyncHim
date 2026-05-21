@@ -112,34 +112,80 @@ async function main() {
   const merged = path.join(tmp, 'merged.mp4');
   await runFfmpeg(['-y', '-f', 'concat', '-safe', '0', '-i', listPath, '-c', 'copy', merged]);
 
-  // 6. Pista de áudio: concat das narrações (com adelay por cena offset).
+  // 6. Pista de áudio: concat das narrações (com adelay por cena offset)
+  //    mais música ambiente em loop com ducking quando há voz.
   await writeResult(bucket, storage.resultPath, { status: 'running', progress: 75, message: 'a montar áudio', jobId });
   const hasAnyVoice = voices.some(Boolean);
+  const musicUrl = manifest.musicUrl || manifest.metadata?.musicUrl || null;
+
+  // Descarrega música se fornecida
+  let musicPath = null;
+  if (musicUrl) {
+    musicPath = path.join(tmp, 'music.mp3');
+    const r = await fetch(musicUrl);
+    if (r.ok) {
+      await fs.writeFile(musicPath, Buffer.from(await r.arrayBuffer()));
+    } else {
+      console.warn('música indisponível:', musicUrl, r.status);
+      musicPath = null;
+    }
+  }
+
   let final = merged;
-  if (hasAnyVoice) {
-    // Constrói um filter_complex com delays cumulativos.
+  if (hasAnyVoice || musicPath) {
     let cumulative = 0;
     const inputs = [];
     const filters = [];
-    const labels = [];
+    const voiceLabels = [];
+
+    // Vozes por cena com adelay cumulativo
     voices.forEach((v, i) => {
       if (v) {
         inputs.push('-i', v);
-        const idx = inputs.filter(x => x === '-i').length; // 1-based após o input principal
+        const idx = inputs.filter(x => x === '-i').length;
         const delayMs = Math.round(cumulative * 1000);
         const lab = `v${i}`;
-        filters.push(`[${idx}:a]adelay=${delayMs}|${delayMs}[${lab}]`);
-        labels.push(`[${lab}]`);
+        filters.push(`[${idx}:a]adelay=${delayMs}|${delayMs},volume=1.1[${lab}]`);
+        voiceLabels.push(`[${lab}]`);
       }
       cumulative += durations[i];
     });
-    const mix = labels.length > 1 ? `${labels.join('')}amix=inputs=${labels.length}:duration=longest:normalize=0[aout]`
-                                   : `${labels[0]}anull[aout]`;
+
+    const totalDur = cumulative;
+
+    // Música ambiente em loop, com volume reduzido e fade
+    let musicChain = '';
+    if (musicPath) {
+      inputs.push('-stream_loop', '-1', '-i', musicPath);
+      const idx = inputs.filter(x => x === '-i').length;
+      musicChain = `[${idx}:a]atrim=0:${totalDur.toFixed(2)},volume=0.18,afade=t=in:st=0:d=2,afade=t=out:st=${(totalDur - 2).toFixed(2)}:d=2[musraw]`;
+      filters.push(musicChain);
+    }
+
+    let outLabel = '[aout]';
+    if (voiceLabels.length > 0 && musicPath) {
+      // Sidechain ducking: música baixa quando voz toca
+      const voiceMix = voiceLabels.length > 1
+        ? `${voiceLabels.join('')}amix=inputs=${voiceLabels.length}:duration=longest:normalize=0[narr]`
+        : `${voiceLabels[0]}anull[narr]`;
+      filters.push(voiceMix);
+      filters.push(`[narr]asplit=2[narr1][narr2]`);
+      filters.push(`[musraw][narr1]sidechaincompress=threshold=0.04:ratio=8:attack=20:release=400[musduck]`);
+      filters.push(`[narr2][musduck]amix=inputs=2:duration=first:normalize=0[aout]`);
+    } else if (voiceLabels.length > 0) {
+      const voiceMix = voiceLabels.length > 1
+        ? `${voiceLabels.join('')}amix=inputs=${voiceLabels.length}:duration=longest:normalize=0[aout]`
+        : `${voiceLabels[0]}anull[aout]`;
+      filters.push(voiceMix);
+    } else if (musicPath) {
+      filters.push(`[musraw]anull[aout]`);
+    }
+
     final = path.join(tmp, 'final.mp4');
     await runFfmpeg([
       '-y', '-i', merged, ...inputs,
-      '-filter_complex', filters.concat(mix).join(';'),
-      '-map', '0:v', '-map', '[aout]',
+      '-filter_complex', filters.join(';'),
+      '-map', '0:v', '-map', outLabel,
       '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
       '-movflags', '+faststart', '-shortest', final
     ]);

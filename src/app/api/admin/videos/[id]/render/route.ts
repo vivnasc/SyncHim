@@ -33,6 +33,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       outputPrefix: `videos/${item.slug}/${jobId}`,
       resultPath
     },
+    musicUrl: item.metadata?.musicUrl ?? null,
+    metadata: item.metadata ?? {},
     scenes: scenes.map((s) => ({
       idx: s.idx, layout: s.layout, body: s.body,
       design: s.design ?? {}, voiceUrl: s.voice_url, durationSec: s.duration_sec

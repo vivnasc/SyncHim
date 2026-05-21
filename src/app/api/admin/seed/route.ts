@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { getAdminEmailFromRequest } from '@/lib/admin/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
+import { softenForSingle } from '@/lib/admin/soften-for-single';
 
 export const runtime = 'nodejs';
 
@@ -10,10 +11,11 @@ export const runtime = 'nodejs';
  * Faz parsing dos markdowns em assets/insta-60-carrosseis/ e cria
  * um item + slides por carrossel. Idempotente por code (SC-NNN).
  *
- * Convenção dos ficheiros:
- *   - cabeçalho `## POST <n> — <título>` ou `## CARROSSEL <n>...`
- *   - secções `### Slide N` (ou `**Slide N (...)**:`) seguidas de prosa
- *   - opcional: `### Caption` e `### Hashtags` no fim
+ * Importa todos como `target='ambos'`, neutralizando o texto via
+ * softenForSingle (marido → ele, casamento → relação, esposa →
+ * mulher). Razão: o produto serve ambos os públicos com a mesma
+ * voz e um item deve servir os dois. Quando um carrossel específico
+ * precisar de duas variantes, há um botão "duplicar" no editor.
  */
 export async function POST(req: NextRequest) {
   if (!getAdminEmailFromRequest(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -25,47 +27,62 @@ export async function POST(req: NextRequest) {
     { file: 'assets/insta-60-carrosseis/insta-60-carrosseis/carrosseis-cta.md',           categoria: 'cta',            codeBase: 56 }
   ];
 
-  const log: string[] = [];
+  const errors: string[] = [];
   let imported = 0;
   let skipped = 0;
+  let parsed = 0;
+  let missingFiles = 0;
 
   for (const src of sources) {
     const full = path.join(process.cwd(), src.file);
     const text = await fs.readFile(full, 'utf-8').catch(() => '');
-    if (!text) { log.push(`miss: ${src.file}`); continue; }
+    if (!text) { missingFiles++; errors.push(`ficheiro em falta: ${src.file}`); continue; }
 
     const carrosseis = parseCarrosseis(text);
+    parsed += carrosseis.length;
+
     for (const c of carrosseis) {
       const codeNum = c.postNumber ?? (src.codeBase + carrosseis.indexOf(c));
       const code = `SC-${String(codeNum).padStart(3, '0')}`;
 
-      const { data: existing } = await supabase.from('content_items').select('id').eq('code', code).maybeSingle();
+      const { data: existing, error: lookupError } = await supabase
+        .from('content_items').select('id').eq('code', code).maybeSingle();
+      if (lookupError) {
+        // Mais provável: tabela synchim.content_items não existe → migration por aplicar.
+        return reportError(req, lookupError.message, {
+          hint: 'Aplica supabase/admin-schema.sql no SQL editor do Supabase e confirma que synchim está em "Exposed schemas".'
+        });
+      }
       if (existing) { skipped++; continue; }
 
       const categoria = src.categoria ?? guessCategoria(codeNum);
 
-      const { data: item, error } = await supabase
+      const { data: item, error: insertError } = await supabase
         .from('content_items')
         .insert({
           type: 'carousel',
           code,
-          title: c.title,
+          title: softenForSingle(c.title),
           slug: slugify(c.title) || code.toLowerCase(),
           categoria,
+          target: 'ambos',
           status: 'draft',
-          caption: c.caption ?? null,
+          caption: c.caption ? softenForSingle(c.caption) : null,
           hashtags: c.hashtags ?? null,
           platforms: ['ig', 'tiktok']
         })
         .select()
         .single();
-      if (error || !item) { log.push(`fail ${code}: ${error?.message}`); continue; }
+      if (insertError || !item) {
+        errors.push(`fail ${code}: ${insertError?.message}`);
+        continue;
+      }
 
       const rows = c.slides.map((body, i) => ({
         item_id: item.id,
         idx: i,
         layout: i === 0 ? 'capa' : (i === c.slides.length - 1 ? 'cta' : 'conteudo'),
-        body,
+        body: softenForSingle(body),
         design: {}
       }));
       if (rows.length > 0) await supabase.from('content_slides').insert(rows);
@@ -74,7 +91,20 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(new URL('/admin/carrosseis', req.url), { status: 303 });
+  // Redireccionar com um query param para a UI mostrar o resumo.
+  const url = new URL('/admin/carrosseis', req.url);
+  url.searchParams.set('seed', `${imported}/${parsed}`);
+  if (skipped > 0) url.searchParams.set('skipped', String(skipped));
+  if (missingFiles > 0) url.searchParams.set('missing', String(missingFiles));
+  if (errors.length > 0) url.searchParams.set('errors', String(errors.length));
+  return NextResponse.redirect(url, { status: 303 });
+}
+
+function reportError(req: NextRequest, message: string, opts: { hint?: string } = {}) {
+  const url = new URL('/admin/carrosseis', req.url);
+  url.searchParams.set('seed_error', message.slice(0, 200));
+  if (opts.hint) url.searchParams.set('seed_hint', opts.hint);
+  return NextResponse.redirect(url, { status: 303 });
 }
 
 function parseCarrosseis(text: string) {
