@@ -4,7 +4,10 @@ import { createSupabaseServer } from '@/lib/supabase/server';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { NOS, type No } from '@/lib/diagnostic';
 import { getSession } from '@/lib/content';
+import { expandDynamic } from '@/lib/session-dynamic';
+import { PROXIMO_NO, precoExtra, precoBiblioteca } from '@/lib/upsell';
 import { SessionMarkdown } from '@/components/SessionMarkdown';
+import { UpsellSessao7 } from '@/components/UpsellSessao7';
 import { CompleteSessionButton } from '@/components/CompleteSessionButton';
 import { trackEvent } from '@/lib/events';
 import { Vesica } from '@/components/marks/Vesica';
@@ -93,6 +96,11 @@ export default async function SessionPage({
   const session = await getSession(locale, no, nNum, target);
   if (!session) notFound();
 
+  // Sessão 7: expande [Mostrar ...] com as respostas guardadas da utilizadora.
+  const renderedContent = nNum === 7
+    ? await expandDynamic(session.content, user.id, no)
+    : session.content;
+
   const { data: progressRow } = await admin
     .from('progresso')
     .select('completada_em')
@@ -100,6 +108,13 @@ export default async function SessionPage({
     .eq('no', no)
     .eq('sessao_numero', nNum)
     .maybeSingle();
+
+  // Para a sessão 7, lemos o tier da utilizadora, define qual upsell mostrar.
+  let userTier = 1;
+  if (nNum === 7) {
+    const { data: u } = await admin.from('users').select('tier').eq('id', user.id).maybeSingle();
+    userTier = (u?.tier as number | undefined) ?? 1;
+  }
 
   return (
     <div>
@@ -112,7 +127,7 @@ export default async function SessionPage({
 
       <section className="px-6 md:px-10 pb-16">
         <div className="max-w-[40rem] mx-auto">
-          <SessionMarkdown source={session.content} />
+          <SessionMarkdown source={renderedContent} />
         </div>
       </section>
 
@@ -125,6 +140,21 @@ export default async function SessionPage({
           )}
         </div>
       </section>
+
+      {nNum === 7 && (
+        <section className="px-6 md:px-10 py-10 border-t border-separator">
+          <UpsellSessao7
+            locale={locale}
+            noActual={no}
+            proximo={PROXIMO_NO[no]}
+            tier={userTier}
+            upgradeNoUsd={precoExtra().usd}
+            upgradeNoBrl={precoExtra().brl}
+            bibliotecaDiffUsd={precoBiblioteca().diff_usd}
+            bibliotecaDiffBrl={precoBiblioteca().diff_brl}
+          />
+        </section>
+      )}
 
       <div className="flex justify-center py-10">
         <EstrelaPersa className="w-10 h-10 text-goldBright" />

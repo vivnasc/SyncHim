@@ -10,7 +10,8 @@ import {
 } from '@/lib/diagnostic';
 import { noContentFor } from '@/lib/no-content-variants';
 import { questionMapFor } from '@/lib/diagnostic-variants';
-import { coerceTarget, type Target } from '@/lib/target';
+import { coerceTarget, coerceSubPerfil, type Target, type SubPerfil } from '@/lib/target';
+import { SaudacaoSubPerfil } from '@/components/SaudacaoSubPerfil';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { trackEvent } from '@/lib/events';
 import { NotifyForm } from '@/components/NotifyForm';
@@ -27,6 +28,7 @@ interface ResultCookie {
   respostas_dominante: Record<string, 0 | 1 | 2 | 3>;
   is_repeat: boolean;
   target?: Target;
+  sub_perfil?: SubPerfil | null;
 }
 
 function Arrow() {
@@ -50,6 +52,7 @@ export default async function ResultPage({ params }: { params: { locale: string 
   const secundario = payload!.secundario;
   const sellable = NOS_VENDAVEIS.includes(dominante);
   const target = coerceTarget(payload!.target);
+  const subPerfil = coerceSubPerfil(payload!.sub_perfil);
   const content = noContentFor(locale, target, dominante);
   const dominanteScore = payload!.pontuacoes[dominante];
   const dominanteName = tNo(dominante);
@@ -103,6 +106,13 @@ export default async function ResultPage({ params }: { params: { locale: string 
 
   return (
     <div>
+      {/* ============ SAUDAÇÃO POR SUB-PERFIL (apenas B e C) ============ */}
+      {subPerfil && !payload!.is_repeat && (
+        <section className="px-6 md:px-10 pt-16 md:pt-20 pb-4">
+          <SaudacaoSubPerfil subPerfil={subPerfil} locale={locale} />
+        </section>
+      )}
+
       {/* ============ REVEAL ============ */}
       <section className="px-6 md:px-10 pt-16 md:pt-24 pb-16 md:pb-20 text-center">
         <Vesica className="w-20 h-12 mx-auto text-gold mb-10 reveal reveal-1" />

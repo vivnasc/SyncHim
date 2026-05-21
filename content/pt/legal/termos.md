@@ -23,9 +23,9 @@ Os pagamentos são processados via PayPal. Os valores estão expressos em USD (D
 
 | Tier | Acesso |
 |------|--------|
-| Tier 0 — Grátis | Sessões 1 e 2 (diagnóstico), uso ilimitado |
-| Tier 1 — US$ 39 | Sessões 3-7 do nó dominante diagnosticado |
-| Tier 2 — US$ 87 | Biblioteca completa dos 7 nós, acesso vitalício |
+| Tier 0, Grátis | Sessões 1 e 2 (diagnóstico), uso ilimitado |
+| Tier 1, US$ 39 | Sessões 3-7 do nó dominante diagnosticado |
+| Tier 2, US$ 87 | Biblioteca completa dos 7 nós, acesso vitalício |
 
 ## Acesso vitalício
 
@@ -33,7 +33,7 @@ Os pagamentos são processados via PayPal. Os valores estão expressos em USD (D
 
 ## Propriedade intelectual
 
-Todo o conteúdo de SyncHim — textos, método, estrutura, marca — é propriedade de Marina Vale / Sete Ecos SAS. Não pode ser copiado, redistribuído, traduzido ou utilizado para criar produtos derivados sem autorização escrita.
+Todo o conteúdo de SyncHim, textos, método, estrutura, marca, é propriedade de Marina Vale / Sete Ecos SAS. Não pode ser copiado, redistribuído, traduzido ou utilizado para criar produtos derivados sem autorização escrita.
 
 ## Uso permitido
 

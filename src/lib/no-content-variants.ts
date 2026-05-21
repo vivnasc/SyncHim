@@ -26,7 +26,7 @@ const PT_SOLTEIRA: Record<No, Variant> = {
     body: [
       'Não é amor. É fome. Aprendeste, muito cedo, que a atenção de outro alguém é o que te mantém de pé. Por isso, quando ele aparece, tu respiras. Quando se afasta um milímetro, tu sufocas.',
       'Vives em vigilância. Lês o tom da última mensagem. Recompões a conversa para perceber se ele estava distante. Quando ele demora a responder, tu já viajaste por três cenários antes de ele responder.',
-      'Não estás louca. Estás faminta. E a fome não tem culpa, tem origem — vem de antes de qualquer relação tua.',
+      'Não estás louca. Estás faminta. E a fome não tem culpa, tem origem, vem de antes de qualquer relação tua.',
       'Mas a fome esgota quem chega perto. Não porque eles sejam fracos. Porque corpos próximos cansam de carregar fome alheia.'
     ],
     fraseQueDoi:
@@ -71,17 +71,17 @@ const PT_SOLTEIRA: Record<No, Variant> = {
     lead: 'Tu escolhes projectos.',
     body: [
       'Não escolhes homens prontos. Escolhes potencial. Tu vês quem ele podia ser e apaixonas-te por essa pessoa, em vez da que está à tua frente.',
-      'Pagas-lhe contas. Resolves-lhe a vida. Educas-lhe os gostos. Fazes por ele coisas que ele devia estar a fazer sozinho — e chamas a isso amor.',
+      'Pagas-lhe contas. Resolves-lhe a vida. Educas-lhe os gostos. Fazes por ele coisas que ele devia estar a fazer sozinho, e chamas a isso amor.',
       'Eles tornam-se filhos contigo. Ou rebelam-se. Em ambos os casos, a relação inverte: tu cuidas, ele recebe ou foge.',
       'Se ele estivesse bem sem ti, perderias o teu lugar. Por isso, sem perceber, escolhes sempre quem ainda não está bem.'
     ],
     fraseQueDoi:
-      'Não estás a procurar parceiro. Estás a procurar quem te precise — e o que precisa não dura.'
+      'Não estás a procurar parceiro. Estás a procurar quem te precise, e o que precisa não dura.'
   },
   abandono: {
     lead: 'Tu sabes que ele vai partir.',
     body: [
-      'Mesmo quando ele está perto. Mesmo quando está bem. Carregas, por baixo, a certeza tranquila de que isto vai acabar — e quando começa a correr bem, é aí que tu mais te apertas por dentro.',
+      'Mesmo quando ele está perto. Mesmo quando está bem. Carregas, por baixo, a certeza tranquila de que isto vai acabar, e quando começa a correr bem, é aí que tu mais te apertas por dentro.',
       'Sabotas. Crias distância antes que ele crie. Mandas mensagens que sabes que vão afastar. Procuras provas de que ele já está com um pé fora.',
       'E ele, sem perceber, recebe a mensagem: "estás a preparar-te para sair". Então prepara-se também. E a tua profecia confirma-se.',
       'Não és azarada com homens. És fluente em prever o fim ao ponto de o construíres antes do tempo.'
@@ -108,7 +108,7 @@ const EN_SOLTEIRA: Record<No, Variant> = {
     body: [
       "It is not love. It is hunger. You learned, very early, that another person's attention is what keeps you standing. So when he shows up, you breathe. When he pulls back a millimetre, you suffocate.",
       "You live in vigilance. You read the tone of the last message. You replay the conversation to figure out if he was distant. When he takes long to reply, you have already travelled through three scenarios before he replies.",
-      'You are not crazy. You are starving. And hunger is not your fault — it has an origin, from before any relationship of yours.',
+      'You are not crazy. You are starving. And hunger is not your fault, it has an origin, from before any relationship of yours.',
       'But hunger exhausts whoever gets close. Not because they are weak. Because bodies near other bodies get tired of carrying hunger that is not theirs.'
     ],
     fraseQueDoi:
@@ -132,7 +132,7 @@ const EN_SOLTEIRA: Record<No, Variant> = {
     body: [
       'Less beautiful than you should be. Less interesting. Less young than other women. When someone shows up, you carry a quiet certainty that he will eventually find out. So you swallow. You smile when you should speak. You accept what hurts you to avoid creating a problem.',
       'Inside, you have a list of injustices you never named. Outside, you are the easy woman to live with.',
-      'And men, without realising it — because they rarely do — slowly lose respect for you in silence. They do not tell you. They simply pull back into a place where you no longer have entry.',
+      'And men, without realising it, because they rarely do, slowly lose respect for you in silence. They do not tell you. They simply pull back into a place where you no longer have entry.',
       'Men do not desire those who erase themselves to serve. It is not injustice. It is how human systems work.'
     ],
     fraseQueDoi:
@@ -153,20 +153,20 @@ const EN_SOLTEIRA: Record<No, Variant> = {
     lead: 'You choose projects.',
     body: [
       'You do not choose ready men. You choose potential. You see who he could be and you fall in love with that person, instead of the one in front of you.',
-      'You pay his bills. You fix his life. You educate his taste. You do for him things he should be doing on his own — and you call that love.',
+      'You pay his bills. You fix his life. You educate his taste. You do for him things he should be doing on his own, and you call that love.',
       'They become children with you. Or they rebel. Either way, the relationship flips: you give, he receives or runs.',
       'If he were fine without you, you would lose your place. So, without realising it, you always pick someone who is not yet fine.'
     ],
     fraseQueDoi:
-      'You are not looking for a partner. You are looking for someone who needs you — and what needs you does not last.'
+      'You are not looking for a partner. You are looking for someone who needs you, and what needs you does not last.'
   },
   abandono: {
     lead: 'You know he will leave.',
     body: [
-      'Even when he is near. Even when things are going well. You carry, underneath, a quiet certainty that this will end — and when it starts to go well, that is when you tighten the most.',
+      'Even when he is near. Even when things are going well. You carry, underneath, a quiet certainty that this will end, and when it starts to go well, that is when you tighten the most.',
       'You sabotage. You create distance before he can. You send messages you know will push him away. You search for proof he already has one foot out.',
       'And he, without realising, receives the message: "you are getting ready to leave". So he gets ready too. And your prophecy is confirmed.',
-      'You are not unlucky with men. You are fluent at predicting the ending — to the point of building it ahead of time.'
+      'You are not unlucky with men. You are fluent at predicting the ending, to the point of building it ahead of time.'
     ],
     fraseQueDoi:
       'Your knot is not them leaving. It is that you never let yourself stay.'

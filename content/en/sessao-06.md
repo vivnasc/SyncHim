@@ -1,8 +1,8 @@
-# SESSION 6 — THE SUSTAINED PRACTICE
+# SESSION 6, THE SUSTAINED PRACTICE
 
 **Tier:** 1 or 2 · **Access:** 3 days after Session 5
 
-## Block A — The Truth About Undoing
+## Block A, The Truth About Undoing
 
 Your knot doesn't dissolve by will.
 
@@ -10,11 +10,11 @@ Not by affirmations. Not by promises to yourself. Not by reading what you've rea
 
 This sounds easy. It isn't.
 
-There will be days the knot returns. With force, especially in moments you feel more fragile — a night he comes home late, a silence at the table, a message you misread, a strange dream, a hormonal cycle, news that stirred you.
+There will be days the knot returns. With force, especially in moments you feel more fragile, a night he comes home late, a silence at the table, a message you misread, a strange dream, a hormonal cycle, news that stirred you.
 
 When this happens, the knot will say:
 
-> *"See? You're being silly. Ask him. Charge. Watch. You're not different — you've always been this way."*
+> *"See? You're being silly. Ask him. Charge. Watch. You're not different, you've always been this way."*
 
 In these moments, do only one thing:
 
@@ -22,19 +22,19 @@ In these moments, do only one thing:
 
 Not abstract. Physical.
 
-Return literally — feel your feet on the floor, your breath, your own body occupying the space it's in. Ask yourself:
+Return literally, feel your feet on the floor, your breath, your own body occupying the space it's in. Ask yourself:
 
 > *"Where am I right now? Am I with him, or am I with me?"*
 
-If you're with him in thought, in your head, watching — return to your body. To what you're doing with your hands. To what you, now, want.
+If you're with him in thought, in your head, watching, return to your body. To what you're doing with your hands. To what you, now, want.
 
 This is the practice. Only this. For years. Forever.
 
-## Block B — Why There Will Be Relapses
+## Block B, Why There Will Be Relapses
 
 You won't transform into a new woman. There is no new woman. There is only your attention learning to return faster.
 
-The first time the knot pulls you back, you'll slip — you'll stay 3 hours in hunger, in control, in suspicion, without realising, until at some moment you notice and return.
+The first time the knot pulls you back, you'll slip, you'll stay 3 hours in hunger, in control, in suspicion, without realising, until at some moment you notice and return.
 
 The second time, you'll slip but notice in 1 hour.
 
@@ -42,7 +42,7 @@ The third, in 20 minutes.
 
 The tenth, in 5 minutes.
 
-The hundredth, in the moment the knot tries to pull — and you, before following, breathe and stay.
+The hundredth, in the moment the knot tries to pull, and you, before following, breathe and stay.
 
 This is how it dissolves. Not by never slipping. By slipping and returning faster, each time.
 
@@ -54,11 +54,11 @@ The difference between the woman you were before this process and the woman you 
 
 That recognition alone moves it from invisible to visible. The invisible has power. The visible doesn't.
 
-## Block C — A Letter
+## Block C, A Letter
 
 Write, now, a letter to yourself.
 
-Not to the future. To the past — to the woman you were 18 days ago, when you clicked the link, when you read Session 1 in tears, when you answered yes to *"do you recognise yourself?"*.
+Not to the future. To the past, to the woman you were 18 days ago, when you clicked the link, when you read Session 1 in tears, when you answered yes to *"do you recognise yourself?"*.
 
 What would you tell her now?
 
@@ -70,11 +70,11 @@ This letter will be saved. It returns in Session 7, in 3 days, for you to read a
 
 [ Writing space ]
 
-## Block D — Practice for the Next 3 Days
+## Block D, Practice for the Next 3 Days
 
 **Return.**
 
-For 3 days, whenever you notice the knot acting — watching, hungering, controlling, suspecting, abandoning, rescuing, vanishing — do one thing.
+For 3 days, whenever you notice the knot acting, watching, hungering, controlling, suspecting, abandoning, rescuing, vanishing, do one thing.
 
 Stop. Breathe once. Ask:
 
@@ -88,7 +88,4 @@ Anything counts. The question matters, not the answer.
 
 The question reminds your system that you exist outside of him. Each time you ask, the knot loosens a millimetre.
 
-In 3 days, Session 7 opens. The last.
-
-—
-Marina Vale
+In 3 days, Session 7 opens. The last., Marina Vale

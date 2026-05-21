@@ -1,4 +1,4 @@
-# SESSION 2 — DIAGNOSTIC
+# SESSION 2, DIAGNOSTIC
 
 **Tier:** 0 (free)
 **Access:** Immediately after Session 1
@@ -14,7 +14,7 @@ Your knot has a name.
 
 I'll show you 21 situations.
 
-For each, choose with brutal honesty — not the right answer, the real one. The more honest you are, the sharper your knot becomes.
+For each, choose with brutal honesty, not the right answer, the real one. The more honest you are, the sharper your knot becomes.
 
 No one sees this except you.
 
@@ -40,7 +40,7 @@ q3. My mood depends heavily on how he woke up.
 
 q4. I know better than he does what he needs to do day to day.
 
-q5. I've given up asking — I'd rather do it myself, it's faster.
+q5. I've given up asking, I'd rather do it myself, it's faster.
 
 q6. When he makes a decision without consulting me, I feel disrespected.
 
@@ -106,9 +106,9 @@ q21. I demand his attention, but I haven't given attention to myself in years.
 
 > You need him to fill you.
 >
-> You live in anxious fusion. You watch. You anticipate. Your mood rises and falls with the tone of his voice. When he pulls away a little, you go fetch him — and that fetching is exactly what pushes him further.
+> You live in anxious fusion. You watch. You anticipate. Your mood rises and falls with the tone of his voice. When he pulls away a little, you go fetch him, and that fetching is exactly what pushes him further.
 >
-> It isn't love. It's hunger. And hunger isn't your fault — it has an origin. It came before your husband.
+> It isn't love. It's hunger. And hunger isn't your fault, it has an origin. It came before your husband.
 >
 > Your marriage isn't dying because he went cold. It's dying because your hunger exhausted him.
 
@@ -130,7 +130,7 @@ q21. I demand his attention, but I haven't given attention to myself in years.
 >
 > And he loses respect for you in silence. He doesn't say. He just drifts.
 >
-> Men don't desire those who erase themselves to serve. It's not unjust — it's how systems work. You aren't being punished. You're being treated as the woman you present yourself to be.
+> Men don't desire those who erase themselves to serve. It's not unjust, it's how systems work. You aren't being punished. You're being treated as the woman you present yourself to be.
 
 #### If Suspicion:
 
@@ -158,7 +158,7 @@ q21. I demand his attention, but I haven't given attention to myself in years.
 >
 > Always. Even in good moments. By anticipating, you sabotage. You create distance before he can. You punish him for crimes he hasn't committed.
 >
-> When he finally drifts — exhausted — you say "I knew it."
+> When he finally drifts, exhausted, you say "I knew it."
 >
 > Your knot isn't the relationship. It's an old abandonment that still hurts, using this man as rehearsal for an ending you've already lived before.
 
@@ -180,12 +180,12 @@ q21. I demand his attention, but I haven't given attention to myself in years.
 >
 > But seeing it isn't undoing it.
 >
-> If you want to go deeper — to the origin, what it's doing to your marriage, and how to undo it — there are two paths.
+> If you want to go deeper, to the origin, what it's doing to your marriage, and how to undo it, there are two paths.
 
-**Cross this knot** — $39
+**Cross this knot**, $39
 > 5 personalised sessions + 5 practices + lifetime access to this knot.
 
-**Full Library** — $87
+**Full Library**, $87
 > All 7 knots, complete. Retake the diagnostic whenever you want over a lifetime and cross any knot that appears.
 
 ---
@@ -196,7 +196,4 @@ q21. I demand his attention, but I haven't given attention to myself in years.
 
 [ Cross now ] [ Back to dashboard ]
 
----
-
-—
-Marina Vale
+---, Marina Vale

@@ -23,9 +23,9 @@ Payments are processed via PayPal. Amounts are in USD (US Dollar).
 
 | Tier | Access |
 |------|--------|
-| Tier 0 — Free | Sessions 1 and 2 (diagnostic), unlimited use |
-| Tier 1 — US$ 39 | Sessions 3-7 of your diagnosed dominant knot |
-| Tier 2 — US$ 87 | Complete library of all 7 knots, lifetime access |
+| Tier 0, Free | Sessions 1 and 2 (diagnostic), unlimited use |
+| Tier 1, US$ 39 | Sessions 3-7 of your diagnosed dominant knot |
+| Tier 2, US$ 87 | Complete library of all 7 knots, lifetime access |
 
 ## Lifetime access
 
@@ -33,7 +33,7 @@ Payments are processed via PayPal. Amounts are in USD (US Dollar).
 
 ## Intellectual property
 
-All SyncHim content — text, method, structure, brand — is the property of Marina Vale / Sete Ecos SAS. It may not be copied, redistributed, translated, or used to create derivative products without written authorisation.
+All SyncHim content, text, method, structure, brand, is the property of Marina Vale / Sete Ecos SAS. It may not be copied, redistributed, translated, or used to create derivative products without written authorisation.
 
 ## Permitted use
 

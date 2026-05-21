@@ -45,13 +45,13 @@ We collect the minimum necessary. We don't sell data. We don't share with third 
 
 ## Encryption
 
-Your written responses in sessions — which may contain sensitive information about your childhood, relationship, and family — are encrypted at rest in Supabase.
+Your written responses in sessions, which may contain sensitive information about your childhood, relationship, and family, are encrypted at rest in Supabase.
 
 ## Your rights (GDPR)
 
 You have the right to:
 
-1. **Access** your data — at `/account` you can see everything we have about you.
+1. **Access** your data, at `/account` you can see everything we have about you.
 2. **Correct** incorrect data.
 3. **Delete** your account and all associated data. Button at `/account/delete`. Full deletion within 30 days.
 4. **Export** your data in JSON format. Button at `/account/export`.
@@ -69,7 +69,7 @@ SyncHim is for adult women. We do not intentionally collect data from anyone und
 
 ## Data Protection Officer
 
-Marina Vale (Sete Ecos SAS) — privacy@syncehim.com
+Marina Vale (Sete Ecos SAS), privacy@syncehim.com
 
 ---
 

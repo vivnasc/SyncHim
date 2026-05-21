@@ -42,8 +42,15 @@ export async function createOrder(args: OrderArgs) {
   const t = await token();
   const amount = priceFor(args.tier);
   const description = args.tier === 2
-    ? 'SyncHim — Full library'
-    : `SyncHim — Crossing of the ${args.no ?? 'knot'} knot`;
+    ? 'SyncHim, biblioteca completa'
+    : args.tier === 'upgrade'
+      ? `SyncHim, atravessar o nó ${args.no ?? '?'}`
+      : `SyncHim, travessia do nó ${args.no ?? '?'}`;
+
+  // No custom_id, tier='upgrade' fica como 1 com o nó novo: o applyPurchase
+  // lê isto, vê que o user já tinha um no_comprado diferente, e adiciona
+  // este nó a `nos_comprados_adicionais`. Tier=2 fica como 2.
+  const tierForMeta = args.tier === 'upgrade' ? 1 : args.tier;
 
   const res = await fetch(`${BASE}/v2/checkout/orders`, {
     method: 'POST',
@@ -56,7 +63,7 @@ export async function createOrder(args: OrderArgs) {
       purchase_units: [{
         amount: { currency_code: 'USD', value: amount },
         description,
-        custom_id: JSON.stringify({ email: args.email, tier: args.tier, no: args.no ?? null, locale: args.locale }).slice(0, 127)
+        custom_id: JSON.stringify({ email: args.email, tier: tierForMeta, no: args.no ?? null, locale: args.locale }).slice(0, 127)
       }],
       application_context: {
         brand_name: 'SyncHim',

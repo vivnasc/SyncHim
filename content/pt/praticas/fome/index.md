@@ -1,10 +1,10 @@
-# PRÁTICAS — NÓ DA FOME
+# PRÁTICAS, NÓ DA FOME
 
 5 práticas, uma entre cada par de sessões. Apresentadas no final de cada sessão respectiva.
 
 ---
 
-## PRÁTICA 1 — APÓS A SESSÃO 2
+## PRÁTICA 1, APÓS A SESSÃO 2
 
 ### Nome
 Não iniciar.
@@ -17,7 +17,7 @@ Durante 3 dias, não inicies conversa com ele primeiro. Nem mensagem. Nem chamad
 
 Não é silêncio punitivo. Não é truque. É observação.
 
-Vais reparar que a vontade de iniciar aparece 20, 30, 50 vezes nestes 3 dias. Cada vez que aparecer, repara — não no que querias dizer-lhe, mas no que tu estavas a sentir antes de quereres falar.
+Vais reparar que a vontade de iniciar aparece 20, 30, 50 vezes nestes 3 dias. Cada vez que aparecer, repara, não no que querias dizer-lhe, mas no que tu estavas a sentir antes de quereres falar.
 
 ### Regras
 
@@ -28,7 +28,7 @@ Vais reparar que a vontade de iniciar aparece 20, 30, 50 vezes nestes 3 dias. Ca
 
 ---
 
-## PRÁTICA 2 — APÓS A SESSÃO 3
+## PRÁTICA 2, APÓS A SESSÃO 3
 
 ### Nome
 Não responder à fome.
@@ -37,7 +37,7 @@ Não responder à fome.
 3 dias.
 
 ### Instrução
-Quando sentires fome dele — vontade de mandar mensagem, perguntar onde está, procurar, vigiar o telemóvel — não respondas à fome. Pergunta-te:
+Quando sentires fome dele, vontade de mandar mensagem, perguntar onde está, procurar, vigiar o telemóvel, não respondas à fome. Pergunta-te:
 
 *"O que é que eu sentiria agora se ele não existisse?"*
 
@@ -51,7 +51,7 @@ Fica com a pergunta 5 minutos. Não vás procurar resposta. Só fica.
 
 ---
 
-## PRÁTICA 3 — APÓS A SESSÃO 4
+## PRÁTICA 3, APÓS A SESSÃO 4
 
 ### Nome
 5 minutos de eu.
@@ -60,7 +60,7 @@ Fica com a pergunta 5 minutos. Não vás procurar resposta. Só fica.
 3 dias.
 
 ### Instrução
-Reserva 5 minutos por dia (cinco — não mais) só para te perguntares: *o que é que eu estou a sentir agora?*
+Reserva 5 minutos por dia (cinco, não mais) só para te perguntares: *o que é que eu estou a sentir agora?*
 
 Senta-te. Telefone fora de alcance. Olhos fechados. Fica contigo.
 
@@ -73,7 +73,7 @@ Senta-te. Telefone fora de alcance. Olhos fechados. Fica contigo.
 
 ---
 
-## PRÁTICA 4 — APÓS A SESSÃO 5
+## PRÁTICA 4, APÓS A SESSÃO 5
 
 ### Nome
 Chegar primeiro a ti.
@@ -96,7 +96,7 @@ Diferença: 10 segundos. Não mais.
 
 ---
 
-## PRÁTICA 5 — APÓS A SESSÃO 6
+## PRÁTICA 5, APÓS A SESSÃO 6
 
 ### Nome
 Voltar.
@@ -105,7 +105,7 @@ Voltar.
 3 dias (e o resto da vida).
 
 ### Instrução
-Sempre que reparares que o nó está a agir — vigilância, fome, controlo, ansiedade — para. Respira uma vez. Pergunta-te:
+Sempre que reparares que o nó está a agir, vigilância, fome, controlo, ansiedade, para. Respira uma vez. Pergunta-te:
 
 *"O que é que eu, neste momento, fora dele, quero?"*
 

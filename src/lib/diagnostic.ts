@@ -10,8 +10,11 @@ export const NOS = [
 
 export type No = (typeof NOS)[number];
 
-// Phase 1: only `fome` is sellable.
-export const NOS_VENDAVEIS: readonly No[] = ['fome'];
+// Todos os 7 nós são vendáveis: o conteúdo Tier 1+2 (sessões 3-7 +
+// práticas) existe pelo menos na variante 'solteira' para todos, e a
+// variante 'casada' cai para 'solteira' via fallback no content loader
+// enquanto a editora completa a escrita dedicada por contexto.
+export const NOS_VENDAVEIS: readonly No[] = NOS;
 
 export type Locale = 'pt' | 'en';
 
@@ -78,7 +81,7 @@ export const QUESTIONS_PT: Record<string, string> = {
   q2: 'Quando estamos os dois calados, eu sinto necessidade de quebrar o silêncio.',
   q3: 'O meu humor do dia depende muito de como ele acordou.',
   q4: 'Eu sei melhor do que ele o que ele precisa de fazer no dia-a-dia.',
-  q5: 'Já desisti de pedir e prefiro fazer eu — é mais rápido.',
+  q5: 'Já desisti de pedir e prefiro fazer eu, é mais rápido.',
   q6: 'Quando ele toma uma decisão sem me consultar, sinto-me desrespeitada.',
   q7: 'Sinto que ele podia ter alguém melhor do que eu.',
   q8: 'Engulo coisas que me magoam para não criar problema.',
@@ -102,7 +105,7 @@ export const QUESTIONS_EN: Record<string, string> = {
   q2: 'When we are both quiet, I feel the need to break the silence.',
   q3: 'My mood for the day depends a lot on how he woke up.',
   q4: 'I know what he needs to do day-to-day better than he does.',
-  q5: "I've given up asking and prefer to do it myself — it's faster.",
+  q5: "I've given up asking and prefer to do it myself, it's faster.",
   q6: 'When he makes a decision without consulting me, I feel disrespected.',
   q7: 'I feel he could have someone better than me.',
   q8: "I swallow things that hurt me so as not to make a problem.",

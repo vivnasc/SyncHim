@@ -45,13 +45,13 @@ Recolhemos o mínimo necessário. Não vendemos dados. Não partilhamos com terc
 
 ## Cifragem
 
-As tuas respostas escritas nas sessões — que podem conter informação sensível sobre a tua infância, relação e família — são cifradas em repouso no Supabase.
+As tuas respostas escritas nas sessões, que podem conter informação sensível sobre a tua infância, relação e família, são cifradas em repouso no Supabase.
 
 ## Os teus direitos (LGPD / RGPD)
 
 Tens direito a:
 
-1. **Aceder** aos teus dados — em `/conta` podes ver tudo o que temos sobre ti.
+1. **Aceder** aos teus dados, em `/conta` podes ver tudo o que temos sobre ti.
 2. **Corrigir** dados incorrectos.
 3. **Apagar** a tua conta e todos os dados associados. Botão em `/conta/apagar`. Apagamento total em até 30 dias.
 4. **Exportar** os teus dados em formato JSON. Botão em `/conta/exportar`.
@@ -69,7 +69,7 @@ SyncHim é para mulheres adultas. Não recolhemos intencionalmente dados de meno
 
 ## Encarregada de Protecção de Dados
 
-Marina Vale (Sete Ecos SAS) — privacidade@syncehim.com
+Marina Vale (Sete Ecos SAS), privacidade@syncehim.com
 
 ---
 
