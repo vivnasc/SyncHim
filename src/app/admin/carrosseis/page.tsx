@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getAdminEmailFromCookies } from '@/lib/admin/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { CATEGORIAS_CARROSSEL } from '@/lib/admin/brand';
+import { BulkDuplicateButton } from './BulkDuplicateButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +61,9 @@ export default async function CarrosseisList({
         <Link href="/admin/carrosseis?target=casada"   className={`btn ${filter === 'casada' ? 'primary' : ''}`}>casadas · {counts.casada}</Link>
         <Link href="/admin/carrosseis?target=solteira" className={`btn ${filter === 'solteira' ? 'primary' : ''}`}>solteiras · {counts.solteira}</Link>
         <Link href="/admin/carrosseis?target=ambos"    className={`btn ${filter === 'ambos' ? 'primary' : ''}`}>ambas · {counts.ambos}</Link>
+        {counts.casada > 0 && counts.solteira === 0 && (
+          <BulkDuplicateButton count={counts.casada} />
+        )}
       </div>
 
       {(!items || items.length === 0) && !filter && (

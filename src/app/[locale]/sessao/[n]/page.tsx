@@ -82,7 +82,15 @@ export default async function SessionPage({
 
   await trackEvent('sessao_iniciada', { userId: user.id, metadata: { no, sessao: nNum } });
 
-  const session = await getSession(locale, no, nNum);
+  // Conteúdo Tier 1 varia por target (casada | solteira).
+  const { data: profile } = await admin
+    .from('users')
+    .select('target')
+    .eq('id', user.id)
+    .maybeSingle();
+  const target = (profile?.target === 'solteira' ? 'solteira' : 'casada') as 'casada' | 'solteira';
+
+  const session = await getSession(locale, no, nNum, target);
   if (!session) notFound();
 
   const { data: progressRow } = await admin
