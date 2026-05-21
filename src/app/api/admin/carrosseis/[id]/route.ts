@@ -11,7 +11,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const supabase = createSupabaseAdmin();
 
   if (body.item) {
-    const allowed = ['title', 'categoria', 'caption', 'hashtags', 'platforms', 'scheduled_at', 'status'];
+    const allowed = ['title', 'categoria', 'target', 'caption', 'hashtags', 'platforms', 'scheduled_at', 'status'];
     const patch: any = {};
     for (const k of allowed) if (k in body.item) patch[k] = body.item[k];
     if (Object.keys(patch).length > 0) {

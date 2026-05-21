@@ -6,11 +6,21 @@ import { Vesica } from '@/components/marks/Vesica';
 import { EstrelaPersa } from '@/components/marks/EstrelaPersa';
 import { FadeIn } from '@/components/FadeIn';
 
-export default async function DiagnosticEntry({ params }: { params: { locale: string } }) {
+export default async function DiagnosticEntry({
+  params,
+  searchParams
+}: {
+  params: { locale: string };
+  searchParams?: { for?: string };
+}) {
   const locale = params.locale as 'pt' | 'en';
   const s1 = await getCommonSession(locale, 1);
   const t = await getTranslations({ locale: params.locale, namespace: 'diagnostic' });
   const tCommon = await getTranslations({ locale: params.locale, namespace: 'common' });
+  const targetParam = searchParams?.for === 'solteira' || searchParams?.for === 'casada' ? searchParams.for : null;
+  const startHref = targetParam
+    ? `/${locale}/diagnostico/perguntas?for=${targetParam}`
+    : `/${locale}/diagnostico/perguntas`;
 
   return (
     <div>
@@ -30,7 +40,7 @@ export default async function DiagnosticEntry({ params }: { params: { locale: st
       </FadeIn>
 
       <FadeIn as="section" className="px-6 md:px-10 pb-24 text-center">
-        <Link href={`/${locale}/diagnostico/perguntas`} className="cta-living large">
+        <Link href={startHref} className="cta-living large">
           <span>{t('start')}</span>
           <span className="arrow" aria-hidden="true">→</span>
         </Link>

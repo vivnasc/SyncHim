@@ -14,18 +14,20 @@ export default async function AdminHome() {
   // manter PostgREST simples — o volume é dezenas, não milhares.
   const { data: items } = await supabase
     .from('content_items')
-    .select('type, status')
+    .select('type, status, target')
     .limit(500);
 
   const counts = {
     carousel: { draft: 0, ready: 0, rendering: 0, rendered: 0, published: 0, failed: 0, total: 0 },
     video:    { draft: 0, ready: 0, rendering: 0, rendered: 0, published: 0, failed: 0, total: 0 }
   } as Record<string, Record<string, number>>;
-  (items ?? []).forEach((i) => {
+  const byTarget = { casada: 0, solteira: 0, ambos: 0 };
+  (items ?? []).forEach((i: any) => {
     const t = i.type as 'carousel' | 'video';
     if (!counts[t]) return;
     counts[t][i.status] = (counts[t][i.status] ?? 0) + 1;
     counts[t].total += 1;
+    byTarget[(i.target ?? 'casada') as keyof typeof byTarget]++;
   });
 
   const { data: latestJobs } = await supabase
@@ -43,6 +45,13 @@ export default async function AdminHome() {
       <div className="grid grid-2">
         <Card type="carousel" counts={counts.carousel} href="/admin/carrosseis" />
         <Card type="video" counts={counts.video} href="/admin/videos" />
+      </div>
+
+      <h2>Por público</h2>
+      <div className="row" style={{ gap: 6 }}>
+        <span className="pill draft">casadas · {byTarget.casada}</span>
+        <span className="pill ready">solteiras · {byTarget.solteira}</span>
+        <span className="pill rendered">ambas · {byTarget.ambos}</span>
       </div>
 
       <h2>Render jobs recentes</h2>

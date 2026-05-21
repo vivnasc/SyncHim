@@ -6,6 +6,7 @@ export function NovoCarrosselForm({ categorias }: { categorias: { key: string; l
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [categoria, setCategoria] = useState(categorias[0].key);
+  const [target, setTarget] = useState<'casada' | 'solteira' | 'ambos'>('casada');
   const [slideCount, setSlideCount] = useState(8);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -17,7 +18,7 @@ export function NovoCarrosselForm({ categorias }: { categorias: { key: string; l
       const res = await fetch('/api/admin/carrosseis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, categoria, slideCount })
+        body: JSON.stringify({ title, categoria, slideCount, target })
       });
       const j = await res.json();
       if (!res.ok) { setErr(j.error || 'falhou'); return; }
@@ -35,6 +36,14 @@ export function NovoCarrosselForm({ categorias }: { categorias: { key: string; l
         <label>Categoria</label>
         <select className="input" value={categoria} onChange={(e) => setCategoria(e.target.value)}>
           {categorias.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
+        </select>
+      </div>
+      <div>
+        <label>Público</label>
+        <select className="input" value={target} onChange={(e) => setTarget(e.target.value as any)}>
+          <option value="casada">Casadas</option>
+          <option value="solteira">Solteiras (relacionamento sério)</option>
+          <option value="ambos">Ambas (copy neutro)</option>
         </select>
       </div>
       <div>

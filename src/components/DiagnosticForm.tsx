@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { questionIds, QUESTIONS_PT, QUESTIONS_EN } from '@/lib/diagnostic';
+import { questionIds } from '@/lib/diagnostic';
+import { questionMapFor } from '@/lib/diagnostic-variants';
+import { coerceTarget, type Target } from '@/lib/target';
 import { Turnstile } from './Turnstile';
 
 const SCALE: Array<{ v: 0 | 1 | 2 | 3; key: '0' | '1' | '2' | '3' }> = [
@@ -13,18 +15,15 @@ const SCALE: Array<{ v: 0 | 1 | 2 | 3; key: '0' | '1' | '2' | '3' }> = [
   { v: 3, key: '3' }
 ];
 
-type Contexto = 'casada' | 'sozinha' | 'inicio';
-type Phase = 'bifurcacao' | 'perguntas' | 'email';
-
 const DRAFT_KEY = 'synchim_draft_v2';
+const TARGET_COOKIE = 'synchim_target';
 
 type Draft = {
-  phase: Phase;
   step: number;
   answers: Record<string, 0 | 1 | 2 | 3>;
   name: string;
   email: string;
-  contexto: Contexto | null;
+  target: Target | null;
 };
 
 function loadDraft(): Partial<Draft> {
@@ -40,9 +39,7 @@ function loadDraft(): Partial<Draft> {
 
 function saveDraft(d: Draft) {
   if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
-  } catch { /* quota or disabled */ }
+  try { window.localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch { /* */ }
 }
 
 function clearDraft() {
@@ -50,67 +47,30 @@ function clearDraft() {
   try { window.localStorage.removeItem(DRAFT_KEY); } catch { /* */ }
 }
 
-const BIFURCACAO = {
-  pt: {
-    eyebrow: 'ANTES DAS 21 PERGUNTAS',
-    title: 'Onde estás, agora, na tua vida amorosa?',
-    helper: 'Não há resposta certa. Só preciso de saber para te falar a ti, e não a uma mulher genérica.',
-    options: [
-      {
-        v: 'casada' as const,
-        label: 'Estou num casamento ou relação séria.',
-        sub: 'E algo nele já não funciona como antes.'
-      },
-      {
-        v: 'sozinha' as const,
-        label: 'Estou sozinha.',
-        sub: 'Quero entender porque ainda não tenho a relação que quero, ou porque as que tenho nunca duram.'
-      },
-      {
-        v: 'inicio' as const,
-        label: 'Estou no início de algo.',
-        sub: 'Conheci alguém, ou estou a namorar há pouco, e não quero estragar mais este.'
-      }
-    ]
-  },
-  en: {
-    eyebrow: 'BEFORE THE 21 QUESTIONS',
-    title: 'Where are you, right now, in your love life?',
-    helper: "There's no right answer. I just need to know so I speak to you, and not to a generic woman.",
-    options: [
-      {
-        v: 'casada' as const,
-        label: "I'm in a marriage or serious relationship.",
-        sub: 'And something in it no longer works the way it used to.'
-      },
-      {
-        v: 'sozinha' as const,
-        label: "I'm alone.",
-        sub: "I want to understand why I still don't have the relationship I want, or why the ones I have never last."
-      },
-      {
-        v: 'inicio' as const,
-        label: "I'm at the beginning of something.",
-        sub: "I met someone, or we're dating recently, and I don't want to ruin this one too."
-      }
-    ]
-  }
-};
+function readTargetCookie(): Target | null {
+  if (typeof document === 'undefined') return null;
+  const m = document.cookie.match(/(?:^|; )synchim_target=([^;]+)/);
+  if (!m) return null;
+  return m[1] === 'solteira' || m[1] === 'casada' ? m[1] : null;
+}
+
+function writeTargetCookie(t: Target) {
+  document.cookie = `${TARGET_COOKIE}=${t};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`;
+}
 
 export function DiagnosticForm() {
   const t = useTranslations('diagnostic');
   const tCommon = useTranslations('common');
   const locale = useLocale() as 'pt' | 'en';
   const router = useRouter();
-  const qMap = locale === 'pt' ? QUESTIONS_PT : QUESTIONS_EN;
   const ids = useMemo(() => questionIds(), []);
   const total = ids.length;
 
+  // step -1 = target picker; 0..total-1 = perguntas; total = email/password form.
   const [hydrated, setHydrated] = useState(false);
-  const [phase, setPhase] = useState<Phase>('bifurcacao');
-  const [step, setStep] = useState(0);
+  const [target, setTarget] = useState<Target | null>(null);
+  const [step, setStep] = useState(-1);
   const [answers, setAnswers] = useState<Record<string, 0 | 1 | 2 | 3>>({});
-  const [contexto, setContexto] = useState<Contexto | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -119,41 +79,53 @@ export function DiagnosticForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Hidratar localStorage + cookie/URL na primeira render.
   useEffect(() => {
     const d = loadDraft();
-    if (d.phase) setPhase(d.phase);
-    if (d.contexto) setContexto(d.contexto);
+    const url = new URL(window.location.href);
+    const param = url.searchParams.get('for');
+    const fromUrl = param === 'solteira' || param === 'casada' ? (param as Target) : null;
+    const found: Target | null = fromUrl ?? readTargetCookie() ?? (d.target ?? null);
+
     if (d.answers && Object.keys(d.answers).length) setAnswers(d.answers);
     if (d.name) setName(d.name);
     if (d.email) setEmail(d.email);
-    if (typeof d.step === 'number') {
-      setStep(Math.min(Math.max(d.step, 0), total));
+
+    if (found) {
+      setTarget(found);
+      writeTargetCookie(found);
+      // Se o draft tem um step >= 0, retomar; senão começar nas perguntas.
+      const restoreStep = typeof d.step === 'number' && d.step >= 0
+        ? Math.min(Math.max(d.step, 0), total)
+        : 0;
+      setStep(restoreStep);
     }
+    // Se found === null, mantém-se step === -1 (picker).
     setHydrated(true);
   }, [total]);
 
+  // Autosave.
   useEffect(() => {
     if (!hydrated) return;
-    saveDraft({ phase, step, answers, name, email, contexto });
-  }, [phase, step, answers, name, email, contexto, hydrated]);
+    saveDraft({ step, answers, name, email, target });
+  }, [step, answers, name, email, target, hydrated]);
 
-  function chooseContext(c: Contexto) {
-    setContexto(c);
-    setTimeout(() => setPhase('perguntas'), 220);
+  const qMap = useMemo(
+    () => questionMapFor(locale, coerceTarget(target)),
+    [locale, target]
+  );
+  const onQuestions = step >= 0 && step < total;
+  const progress = step < 0 ? 0 : onQuestions ? (step / total) * 100 : 100;
+
+  function pickTarget(tt: Target) {
+    setTarget(tt);
+    writeTargetCookie(tt);
+    setStep(0);
   }
 
   function selectAnswer(qid: string, v: 0 | 1 | 2 | 3) {
     setAnswers((a) => ({ ...a, [qid]: v }));
-    setTimeout(() => {
-      setStep((s) => {
-        const next = s + 1;
-        if (next >= total) {
-          setPhase('email');
-          return total;
-        }
-        return next;
-      });
-    }, 220);
+    setTimeout(() => setStep((s) => Math.min(s + 1, total)), 220);
   }
 
   async function submit() {
@@ -172,7 +144,11 @@ export function DiagnosticForm() {
       const res = await fetch('/api/diagnostico/calcular', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers, email, password, name, locale, turnstileToken, contexto: contexto ?? 'casada' })
+        body: JSON.stringify({
+          answers, email, password, name, locale,
+          target: coerceTarget(target),
+          turnstileToken
+        })
       });
       if (!res.ok) {
         const detail = await res.json().catch(() => ({}));
@@ -192,51 +168,69 @@ export function DiagnosticForm() {
     }
   }
 
-  // ============ BIFURCAÇÃO ============
-  if (phase === 'bifurcacao') {
-    const copy = BIFURCACAO[locale];
+  // ----- Step -1: escolher público -----
+  if (step === -1) {
     return (
       <div className="min-h-[60vh] flex items-center px-6 md:px-10 py-16">
         <div className="max-w-2xl mx-auto w-full">
-          <div className="mini-caps text-goldBright mb-6">{copy.eyebrow}</div>
-          <h2 className="font-serif text-3xl md:text-4xl text-bone leading-[1.2] mb-6 max-w-xl">
-            {copy.title}
+          <div className="mini-caps text-goldBright mb-4">
+            {locale === 'pt' ? 'ANTES DE COMEÇAR' : 'BEFORE WE START'}
+          </div>
+          <h2 className="font-serif text-2xl md:text-4xl text-bone leading-[1.25] mb-3">
+            {locale === 'pt' ? 'Onde estás, neste momento da tua vida?' : 'Where are you, right now in your life?'}
           </h2>
-          <p className="font-body italic text-bone/80 leading-relaxed mb-10 max-w-lg">
-            {copy.helper}
+          <p className="text-ash italic font-body text-sm mb-10">
+            {locale === 'pt'
+              ? 'As perguntas adaptam-se. Os 7 nós são os mesmos — o cenário onde os reconheces, não.'
+              : 'The questions adapt. The 7 knots are the same — the scenery where you recognise them is not.'}
           </p>
 
-          <div className="flex flex-col gap-3">
-            {copy.options.map((opt) => {
-              const selected = contexto === opt.v;
-              return (
-                <button
-                  key={opt.v}
-                  type="button"
-                  onClick={() => chooseContext(opt.v)}
-                  className={`text-left font-body px-5 md:px-6 py-5 border transition-all duration-200 ${
-                    selected
-                      ? 'border-goldBright bg-coal/60 text-bone'
-                      : 'border-separator text-bone/85 hover:border-gold hover:bg-coal/30 hover:translate-x-1'
-                  }`}
-                >
-                  <div className="font-serif text-lg md:text-xl mb-1">{opt.label}</div>
-                  <div className="text-ash text-sm italic">{opt.sub}</div>
-                </button>
-              );
-            })}
+          <div className="grid md:grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() => pickTarget('casada')}
+              className="text-left p-7 border border-separator hover:border-gold hover:bg-coal/30 transition-all group"
+            >
+              <div className="font-serif text-xl text-bone mb-2 group-hover:text-goldBright transition-colors">
+                {locale === 'pt' ? 'Num casamento' : 'In a marriage'}
+              </div>
+              <p className="font-body text-sm text-bone/70 leading-relaxed">
+                {locale === 'pt'
+                  ? 'Há anos juntos. Há filhos, ou não. Alguma coisa esfriou e tu já não sabes nomear o quê.'
+                  : 'Years together. Maybe children. Something has cooled and you cannot name what.'}
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => pickTarget('solteira')}
+              className="text-left p-7 border border-separator hover:border-gold hover:bg-coal/30 transition-all group"
+            >
+              <div className="font-serif text-xl text-bone mb-2 group-hover:text-goldBright transition-colors">
+                {locale === 'pt' ? 'Solteira, à procura de um sério' : 'Single, looking for something serious'}
+              </div>
+              <p className="font-body text-sm text-bone/70 leading-relaxed">
+                {locale === 'pt'
+                  ? 'Conheces homens. Eles esfriam. Repete-se. E começas a desconfiar que talvez não sejam só eles.'
+                  : 'You meet men. They cool off. It repeats. And you begin to suspect that maybe it is not only them.'}
+              </p>
+            </button>
           </div>
+
+          <p className="text-ash text-xs font-body mt-8">
+            {locale === 'pt'
+              ? 'Podes mudar depois. A escolha é só para enquadrar as perguntas.'
+              : 'You can change later. The choice only frames the questions.'}
+          </p>
         </div>
       </div>
     );
   }
 
-  // ============ 21 PERGUNTAS ============
-  if (phase === 'perguntas') {
+  if (onQuestions) {
     const qid = ids[step];
     const numero = String(step + 1).padStart(2, '0');
     const totalStr = String(total).padStart(2, '0');
-    const progress = (step / total) * 100;
 
     return (
       <div className="min-h-[60vh] flex flex-col">
@@ -286,14 +280,8 @@ export function DiagnosticForm() {
               <button
                 type="button"
                 disabled={step === 0}
-                onClick={() => {
-                  if (step === 0) {
-                    setPhase('bifurcacao');
-                  } else {
-                    setStep((s) => Math.max(0, s - 1));
-                  }
-                }}
-                className="text-ash hover:text-goldBright transition-colors"
+                onClick={() => setStep((s) => Math.max(0, s - 1))}
+                className="text-ash disabled:opacity-30 hover:text-goldBright transition-colors"
               >
                 ← {t('previous')}
               </button>
@@ -305,7 +293,6 @@ export function DiagnosticForm() {
     );
   }
 
-  // ============ EMAIL + PASSWORD ============
   return (
     <div className="min-h-[60vh] flex items-center px-6 md:px-10 py-16">
       <div className="max-w-xl mx-auto w-full">

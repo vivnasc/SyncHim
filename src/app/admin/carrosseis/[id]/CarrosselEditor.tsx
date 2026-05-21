@@ -13,6 +13,7 @@ type Item = {
   caption: string | null;
   hashtags: string | null;
   categoria: string | null;
+  target: 'casada' | 'solteira' | 'ambos';
   platforms: string[];
   scheduled_at: string | null;
   output_urls: any;
@@ -112,6 +113,27 @@ export function CarrosselEditor({
     dirtyRef.current = true;
   }
 
+  async function duplicateAs(target: 'casada' | 'solteira' | 'ambos') {
+    const word = target === 'solteira'
+      ? 'Duplicar como solteira? O texto será amaciado (marido→ele, casamento→relação) como ponto de partida — revê manualmente.'
+      : `Duplicar como ${target}?`;
+    if (!confirm(word)) return;
+    // garante save antes de duplicar
+    await fetch(`/api/admin/carrosseis/${item.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item, slides })
+    });
+    const res = await fetch(`/api/admin/items/${item.id}/duplicate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target })
+    });
+    const j = await res.json();
+    if (!res.ok) { alert(j.error || 'falhou'); return; }
+    window.location.href = `/admin/carrosseis/${j.id}`;
+  }
+
   async function submitRender() {
     if (!confirm('Submeter render? Vai disparar um workflow GitHub Actions.')) return;
     // Garante save antes.
@@ -132,7 +154,7 @@ export function CarrosselEditor({
     <>
       <div className="row between">
         <div>
-          <div className="mini">{item.code ?? 'sem código'} · carrossel</div>
+          <div className="mini">{item.code ?? 'sem código'} · carrossel · público: {item.target}</div>
           <input
             className="input"
             value={item.title}
@@ -143,6 +165,27 @@ export function CarrosselEditor({
         <div className="row">
           <span className={`pill ${item.status}`}>{item.status}</span>
           {savedAt && <span className="muted" style={{ fontSize: 12 }}>guardado às {savedAt}</span>}
+          <select
+            className="input"
+            value={item.target}
+            onChange={(e) => patchItem('target', e.target.value as Item['target'])}
+            style={{ width: 130 }}
+            title="Público alvo"
+          >
+            <option value="casada">casadas</option>
+            <option value="solteira">solteiras</option>
+            <option value="ambos">ambas</option>
+          </select>
+          {item.target !== 'solteira' && (
+            <button className="btn" onClick={() => duplicateAs('solteira')} title="Cria uma cópia com texto amaciado para solteiras">
+              duplicar como solteira →
+            </button>
+          )}
+          {item.target !== 'casada' && (
+            <button className="btn" onClick={() => duplicateAs('casada')} title="Cria uma cópia mantendo o texto, marcada como casadas">
+              duplicar como casada →
+            </button>
+          )}
           <Link href="/admin/carrosseis" className="btn">voltar</Link>
         </div>
       </div>

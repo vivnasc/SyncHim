@@ -20,7 +20,7 @@ const Body = z.object({
   password: z.string().min(8).max(120),
   name: z.string().max(120).optional().default(''),
   locale: z.enum(['pt', 'en']),
-  contexto: z.enum(['casada', 'sozinha', 'inicio']).default('casada'),
+  target: z.enum(['casada', 'solteira']).optional().default('casada'),
   turnstileToken: z.string().optional()
 });
 
@@ -32,7 +32,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
   }
 
-  const ip = req.headers.get('cf-connecting-ip') ?? req.headers.get('x-forwarded-for') ?? undefined;
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    ?? req.headers.get('x-real-ip')
+    ?? req.headers.get('cf-connecting-ip')
+    ?? undefined;
   const ok = await verifyTurnstile(payload.turnstileToken, ip ?? undefined);
   if (!ok) return NextResponse.json({ error: 'turnstile_failed' }, { status: 400 });
 
@@ -68,13 +71,7 @@ export async function POST(req: NextRequest) {
       email: payload.email,
       password: payload.password,
       email_confirm: true,
-      user_metadata: {
-        app: 'synchim',
-        nome: payload.name,
-        locale,
-        tier: 0,
-        contexto: payload.contexto
-      }
+      user_metadata: { app: 'synchim', nome: payload.name, locale, tier: 0, target: payload.target }
     });
     if (error || !created.user) {
       return NextResponse.json({ error: 'auth_create_failed', detail: error?.message }, { status: 500 });
@@ -87,10 +84,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'no_user' }, { status: 500 });
   }
 
-  // Update locale & name (in case of return visit).
+  // Update locale, name e target (in case of return visit ou troca de público).
   await admin
     .from('users')
-    .update({ locale, nome: payload.name || null })
+    .update({ locale, nome: payload.name || null, target: payload.target })
     .eq('id', userId);
 
   // Detect if repeat.
@@ -104,7 +101,8 @@ export async function POST(req: NextRequest) {
     no_dominante: dominante,
     no_secundario: secundario,
     pontuacoes,
-    respostas
+    respostas,
+    target: payload.target
   });
 
   await trackEvent(
@@ -155,7 +153,7 @@ export async function POST(req: NextRequest) {
     pontuacoes,
     respostas_dominante: respostasDominante,
     is_repeat: (count ?? 0) > 0,
-    contexto: payload.contexto
+    target: payload.target
   }), {
     httpOnly: true,
     sameSite: 'lax',
