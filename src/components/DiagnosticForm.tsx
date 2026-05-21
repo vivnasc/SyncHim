@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { questionIds } from '@/lib/diagnostic';
 import { questionMapFor } from '@/lib/diagnostic-variants';
 import { coerceTarget, fromOpcao, type Target, type SubPerfil, type ContextoOpcao } from '@/lib/target';
-import { Turnstile } from './Turnstile';
 
 const SCALE: Array<{ v: 0 | 1 | 2 | 3; key: '0' | '1' | '2' | '3' }> = [
   { v: 0, key: '0' },
@@ -79,7 +78,6 @@ export function DiagnosticForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [consent, setConsent] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -156,8 +154,7 @@ export function DiagnosticForm() {
         body: JSON.stringify({
           answers, email, password, name, locale,
           target: coerceTarget(target),
-          subPerfil, opcao,
-          turnstileToken
+          subPerfil, opcao
         })
       });
       if (!res.ok) {
@@ -375,8 +372,6 @@ export function DiagnosticForm() {
           />
           <span>{t('consent')}</span>
         </label>
-
-        <Turnstile onToken={setTurnstileToken} />
 
         {error && (
           <p className="text-bordeaux font-body my-5 border-l-2 border-bordeaux pl-4">{error}</p>
