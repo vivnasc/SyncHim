@@ -6,6 +6,7 @@ export function NovoVideoForm({ subtipos }: { subtipos: { key: string; label: st
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [subtype, setSubtype] = useState(subtipos[1].key); // default kinetic-text
+  const [target, setTarget] = useState<'casada' | 'solteira' | 'ambos'>('casada');
   const [sceneCount, setSceneCount] = useState(6);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -17,7 +18,7 @@ export function NovoVideoForm({ subtipos }: { subtipos: { key: string; label: st
       const res = await fetch('/api/admin/videos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, subtype, sceneCount })
+        body: JSON.stringify({ title, subtype, sceneCount, target })
       });
       const j = await res.json();
       if (!res.ok) { setErr(j.error || 'falhou'); return; }
@@ -35,6 +36,14 @@ export function NovoVideoForm({ subtipos }: { subtipos: { key: string; label: st
         <label>Subtipo</label>
         <select className="input" value={subtype} onChange={(e) => setSubtype(e.target.value)}>
           {subtipos.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+        </select>
+      </div>
+      <div>
+        <label>Público</label>
+        <select className="input" value={target} onChange={(e) => setTarget(e.target.value as any)}>
+          <option value="casada">Casadas</option>
+          <option value="solteira">Solteiras (relacionamento sério)</option>
+          <option value="ambos">Ambas (copy neutro)</option>
         </select>
       </div>
       <div>

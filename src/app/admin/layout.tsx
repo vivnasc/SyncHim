@@ -30,6 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link href="/admin/carrosseis">Carrosséis</Link>
               <Link href="/admin/videos">Vídeos</Link>
               <Link href="/admin/calendario">Calendário</Link>
+              <Link href="/admin/metricool">Metricool</Link>
               <Link href="/admin/render-jobs">Render jobs</Link>
             </nav>
             <div className="admin-foot">

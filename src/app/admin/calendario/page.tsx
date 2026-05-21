@@ -22,7 +22,7 @@ export default async function Calendario() {
 
   const { data: items } = await supabase
     .from('content_items')
-    .select('id, code, title, type, subtype, categoria, status, scheduled_at')
+    .select('id, code, title, type, subtype, target, categoria, status, scheduled_at')
     .gte('scheduled_at', start.toISOString())
     .lt('scheduled_at', end.toISOString())
     .order('scheduled_at', { ascending: true });
@@ -61,10 +61,11 @@ export default async function Calendario() {
                   key={it.id}
                   href={`/admin/${it.type === 'video' ? 'videos' : 'carrosseis'}/${it.id}`}
                   className={`it ${it.type} ${it.categoria === 'cta' ? 'cta' : ''}`}
-                  title={`${it.code} · ${it.title}`}
+                  title={`${it.code} · ${it.title} · público: ${it.target ?? 'casada'}`}
                   style={{ textDecoration: 'none', color: 'inherit' }}
                 >
-                  {it.code} · {it.title.slice(0, 22)}
+                  <span style={{ opacity: 0.7, fontSize: 10 }}>{(it.target ?? 'casada').slice(0, 1).toUpperCase()}</span>{' '}
+                  {it.code} · {it.title.slice(0, 20)}
                 </Link>
               ))}
             </div>

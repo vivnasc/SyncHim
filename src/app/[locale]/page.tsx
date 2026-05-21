@@ -269,6 +269,23 @@ export default async function LandingPage({ params }: { params: { locale: string
                 <Arrow />
               </Link>
               <p className="text-ash italic font-body text-sm mt-5">{d.hero.subCta}</p>
+              <p className="text-ash font-body text-sm mt-4 max-w-[34rem]">
+                {locale === 'pt' ? (
+                  <>
+                    Não estás casada? Os mesmos 7 nós operam em quem ainda procura. {' '}
+                    <Link href={`/${locale}/diagnostico?for=solteira`} className="cta-ghost" style={{ display: 'inline' }}>
+                      Começar como solteira <span className="arrow" aria-hidden="true">→</span>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    Not married? The same 7 knots operate in those still looking. {' '}
+                    <Link href={`/${locale}/diagnostico?for=solteira`} className="cta-ghost" style={{ display: 'inline' }}>
+                      Start as single <span className="arrow" aria-hidden="true">→</span>
+                    </Link>
+                  </>
+                )}
+              </p>
             </div>
           </FadeIn>
 

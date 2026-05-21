@@ -6,6 +6,7 @@ import Link from 'next/link';
 type Item = {
   id: string; code: string | null; title: string; status: string;
   subtype: string | null; caption: string | null; hashtags: string | null;
+  target: 'casada' | 'solteira' | 'ambos';
   platforms: string[]; scheduled_at: string | null; output_urls: any; last_job_id: string | null;
   metadata: any;
 };
@@ -73,6 +74,23 @@ export function VideoEditor({
     } finally { setVoicing(null); }
   }
 
+  async function duplicateAs(target: 'casada' | 'solteira' | 'ambos') {
+    if (!confirm(target === 'solteira'
+      ? 'Duplicar como solteira? Texto será amaciado como ponto de partida — revê.'
+      : `Duplicar como ${target}?`)) return;
+    await fetch(`/api/admin/videos/${item.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item, scenes })
+    });
+    const res = await fetch(`/api/admin/items/${item.id}/duplicate`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target })
+    });
+    const j = await res.json();
+    if (!res.ok) { alert(j.error || 'falhou'); return; }
+    window.location.href = `/admin/videos/${j.id}`;
+  }
+
   async function submitRender() {
     if (!confirm('Submeter render? Vai disparar um workflow GitHub Actions com FFmpeg.')) return;
     await fetch(`/api/admin/videos/${item.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ item, scenes }) });
@@ -88,13 +106,30 @@ export function VideoEditor({
     <>
       <div className="row between">
         <div>
-          <div className="mini">{item.code ?? 'sem código'} · vídeo · {item.subtype}</div>
+          <div className="mini">{item.code ?? 'sem código'} · vídeo · {item.subtype} · público: {item.target}</div>
           <input className="input" value={item.title} onChange={(e) => patchItem('title', e.target.value)}
             style={{ background: 'transparent', border: 'none', fontFamily: 'var(--serif)', fontSize: 26, padding: 0, marginTop: 4 }} />
         </div>
         <div className="row">
           <span className={`pill ${item.status}`}>{item.status}</span>
           {savedAt && <span className="muted" style={{ fontSize: 12 }}>guardado às {savedAt}</span>}
+          <select
+            className="input"
+            value={item.target}
+            onChange={(e) => patchItem('target', e.target.value as Item['target'])}
+            style={{ width: 130 }}
+            title="Público alvo"
+          >
+            <option value="casada">casadas</option>
+            <option value="solteira">solteiras</option>
+            <option value="ambos">ambas</option>
+          </select>
+          {item.target !== 'solteira' && (
+            <button className="btn" onClick={() => duplicateAs('solteira')}>duplicar como solteira →</button>
+          )}
+          {item.target !== 'casada' && (
+            <button className="btn" onClick={() => duplicateAs('casada')}>duplicar como casada →</button>
+          )}
           <Link href="/admin/videos" className="btn">voltar</Link>
         </div>
       </div>

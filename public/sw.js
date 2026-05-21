@@ -1,84 +1,118 @@
-// SyncHim service worker. Cache-first for static assets, network-first
-// for navigations so content stays fresh. Versioned so deploys evict the
-// old cache automatically.
+/* SyncHim · service worker
+ *
+ * Estratégia:
+ *   - Static assets (/_next/static/*, /icons/*, /icon-*.png, /marina/*,
+ *     fontes, css, js): cache-first com revalidação em background.
+ *   - HTML pages (navigation requests): network-first com fallback
+ *     para a última versão em cache, e fallback final para /offline.
+ *   - APIs (/api/*): sempre network. Nunca cacheadas.
+ *
+ * Versionamento: muda CACHE_VERSION para forçar invalidação total.
+ */
 
-const CACHE_VERSION = 'v1';
-const STATIC_CACHE = `synchim-static-${CACHE_VERSION}`;
-const RUNTIME_CACHE = `synchim-runtime-${CACHE_VERSION}`;
+const CACHE_VERSION = 'v2';
+const STATIC_CACHE  = `synchim-static-${CACHE_VERSION}`;
+const HTML_CACHE    = `synchim-html-${CACHE_VERSION}`;
+const OFFLINE_URL   = '/offline';
 
-const STATIC_ASSETS = [
-  '/manifest.webmanifest',
+const PRECACHE_URLS = [
+  '/offline',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/apple-touch-icon.png',
   '/icon-192.png',
   '/icon-512.png',
-  '/marina/editorial.png'
+  '/icon.svg',
+  '/marina/editorial.png',
+  '/manifest.webmanifest'
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => cache.addAll(STATIC_ASSETS)).then(() => self.skipWaiting())
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(STATIC_CACHE);
+    // Cada add() pode falhar (ficheiro ausente em dev); allSettled evita
+    // abortar o install se um asset opcional não estiver presente.
+    await Promise.allSettled(PRECACHE_URLS.map((u) => cache.add(u).catch(() => {})));
+    self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((k) => k !== STATIC_CACHE && k !== RUNTIME_CACHE)
-          .map((k) => caches.delete(k))
-      )
-    ).then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys
+        .filter((k) => k.startsWith('synchim-') && !k.endsWith(`-${CACHE_VERSION}`))
+        .map((k) => caches.delete(k))
+    );
+    await self.clients.claim();
+  })());
 });
+
+function isStaticAsset(url) {
+  return (
+    url.pathname.startsWith('/_next/static/') ||
+    url.pathname.startsWith('/icons/') ||
+    url.pathname.startsWith('/marina/') ||
+    url.pathname.startsWith('/icon-') ||
+    url.pathname === '/icon.svg' ||
+    /\.(?:woff2?|ttf|eot|svg|png|jpg|jpeg|webp|avif|ico|css|js)$/i.test(url.pathname)
+  );
+}
+
+function isApi(url) {
+  return url.pathname.startsWith('/api/') || url.pathname.startsWith('/_next/data/');
+}
+
+async function cacheFirst(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  const hit = await cache.match(request);
+  if (hit) {
+    // revalidação em background
+    fetch(request).then((res) => { if (res.ok) cache.put(request, res.clone()); }).catch(() => {});
+    return hit;
+  }
+  const res = await fetch(request);
+  if (res.ok) cache.put(request, res.clone());
+  return res;
+}
+
+async function networkFirst(request, cacheName) {
+  const cache = await caches.open(cacheName);
+  try {
+    const res = await fetch(request);
+    if (res.ok) cache.put(request, res.clone());
+    return res;
+  } catch (err) {
+    const hit = await cache.match(request);
+    if (hit) return hit;
+    if (request.mode === 'navigate') {
+      const offline = await cache.match(OFFLINE_URL) || await caches.match(OFFLINE_URL);
+      if (offline) return offline;
+    }
+    throw err;
+  }
+}
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
-
   const url = new URL(req.url);
 
-  // Don't touch APIs, auth callbacks, or anything cross-origin.
+  // Só lidamos com same-origin para evitar cachear PayPal, Turnstile, Resend, etc.
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith('/api/')) return;
-  if (url.pathname.startsWith('/_next/data/')) return;
 
-  // Page navigations: network-first, fall back to cached page.
-  if (req.mode === 'navigate') {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(RUNTIME_CACHE).then((c) => c.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req).then((m) => m || caches.match('/')))
-    );
+  if (isApi(url)) return;                                 // sempre rede
+  if (isStaticAsset(url)) {
+    event.respondWith(cacheFirst(req, STATIC_CACHE));
     return;
   }
-
-  // Static assets and Next bundles: cache-first.
-  if (
-    url.pathname.startsWith('/_next/static/') ||
-    url.pathname.startsWith('/marina/') ||
-    url.pathname.startsWith('/icon-') ||
-    url.pathname === '/icon.svg' ||
-    url.pathname.endsWith('.png') ||
-    url.pathname.endsWith('.svg') ||
-    url.pathname.endsWith('.woff2') ||
-    url.pathname.endsWith('.css') ||
-    url.pathname.endsWith('.js')
-  ) {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        if (cached) return cached;
-        return fetch(req).then((res) => {
-          if (res.status === 200) {
-            const copy = res.clone();
-            caches.open(STATIC_CACHE).then((c) => c.put(req, copy));
-          }
-          return res;
-        });
-      })
-    );
+  if (req.mode === 'navigate' || req.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(networkFirst(req, HTML_CACHE));
+    return;
   }
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') self.skipWaiting();
 });

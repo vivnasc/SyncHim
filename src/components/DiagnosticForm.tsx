@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { questionIds, QUESTIONS_PT, QUESTIONS_EN } from '@/lib/diagnostic';
+import { questionIds } from '@/lib/diagnostic';
+import { questionMapFor } from '@/lib/diagnostic-variants';
+import { coerceTarget, type Target } from '@/lib/target';
 import { Turnstile } from './Turnstile';
 
 const SCALE: Array<{ v: 0 | 1 | 2 | 3; key: '0' | '1' | '2' | '3' }> = [
@@ -13,13 +15,15 @@ const SCALE: Array<{ v: 0 | 1 | 2 | 3; key: '0' | '1' | '2' | '3' }> = [
   { v: 3, key: '3' }
 ];
 
-const DRAFT_KEY = 'synchim_draft_v1';
+const DRAFT_KEY = 'synchim_draft_v2';
+const TARGET_COOKIE = 'synchim_target';
 
 type Draft = {
   step: number;
   answers: Record<string, 0 | 1 | 2 | 3>;
   name: string;
   email: string;
+  target: Target | null;
 };
 
 function loadDraft(): Partial<Draft> {
@@ -35,9 +39,7 @@ function loadDraft(): Partial<Draft> {
 
 function saveDraft(d: Draft) {
   if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
-  } catch { /* quota or disabled */ }
+  try { window.localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch { /* */ }
 }
 
 function clearDraft() {
@@ -45,17 +47,29 @@ function clearDraft() {
   try { window.localStorage.removeItem(DRAFT_KEY); } catch { /* */ }
 }
 
+function readTargetCookie(): Target | null {
+  if (typeof document === 'undefined') return null;
+  const m = document.cookie.match(/(?:^|; )synchim_target=([^;]+)/);
+  if (!m) return null;
+  return m[1] === 'solteira' || m[1] === 'casada' ? m[1] : null;
+}
+
+function writeTargetCookie(t: Target) {
+  document.cookie = `${TARGET_COOKIE}=${t};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`;
+}
+
 export function DiagnosticForm() {
   const t = useTranslations('diagnostic');
   const tCommon = useTranslations('common');
   const locale = useLocale() as 'pt' | 'en';
   const router = useRouter();
-  const qMap = locale === 'pt' ? QUESTIONS_PT : QUESTIONS_EN;
   const ids = useMemo(() => questionIds(), []);
   const total = ids.length;
 
+  // step -1 = target picker; 0..total-1 = perguntas; total = email/password form.
   const [hydrated, setHydrated] = useState(false);
-  const [step, setStep] = useState(0);
+  const [target, setTarget] = useState<Target | null>(null);
+  const [step, setStep] = useState(-1);
   const [answers, setAnswers] = useState<Record<string, 0 | 1 | 2 | 3>>({});
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -65,26 +79,49 @@ export function DiagnosticForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Hydrate from localStorage on first render.
+  // Hidratar localStorage + cookie/URL na primeira render.
   useEffect(() => {
     const d = loadDraft();
+    const url = new URL(window.location.href);
+    const param = url.searchParams.get('for');
+    const fromUrl = param === 'solteira' || param === 'casada' ? (param as Target) : null;
+    const found: Target | null = fromUrl ?? readTargetCookie() ?? (d.target ?? null);
+
     if (d.answers && Object.keys(d.answers).length) setAnswers(d.answers);
     if (d.name) setName(d.name);
     if (d.email) setEmail(d.email);
-    if (typeof d.step === 'number') {
-      setStep(Math.min(Math.max(d.step, 0), total));
+
+    if (found) {
+      setTarget(found);
+      writeTargetCookie(found);
+      // Se o draft tem um step >= 0, retomar; senão começar nas perguntas.
+      const restoreStep = typeof d.step === 'number' && d.step >= 0
+        ? Math.min(Math.max(d.step, 0), total)
+        : 0;
+      setStep(restoreStep);
     }
+    // Se found === null, mantém-se step === -1 (picker).
     setHydrated(true);
   }, [total]);
 
-  // Autosave whenever the relevant state changes.
+  // Autosave.
   useEffect(() => {
     if (!hydrated) return;
-    saveDraft({ step, answers, name, email });
-  }, [step, answers, name, email, hydrated]);
+    saveDraft({ step, answers, name, email, target });
+  }, [step, answers, name, email, target, hydrated]);
 
-  const onQuestions = step < total;
-  const progress = onQuestions ? (step / total) * 100 : 100;
+  const qMap = useMemo(
+    () => questionMapFor(locale, coerceTarget(target)),
+    [locale, target]
+  );
+  const onQuestions = step >= 0 && step < total;
+  const progress = step < 0 ? 0 : onQuestions ? (step / total) * 100 : 100;
+
+  function pickTarget(tt: Target) {
+    setTarget(tt);
+    writeTargetCookie(tt);
+    setStep(0);
+  }
 
   function selectAnswer(qid: string, v: 0 | 1 | 2 | 3) {
     setAnswers((a) => ({ ...a, [qid]: v }));
@@ -107,7 +144,11 @@ export function DiagnosticForm() {
       const res = await fetch('/api/diagnostico/calcular', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers, email, password, name, locale, turnstileToken })
+        body: JSON.stringify({
+          answers, email, password, name, locale,
+          target: coerceTarget(target),
+          turnstileToken
+        })
       });
       if (!res.ok) {
         const detail = await res.json().catch(() => ({}));
@@ -125,6 +166,65 @@ export function DiagnosticForm() {
       setError(err instanceof Error ? err.message : t('errorGeneric'));
       setSubmitting(false);
     }
+  }
+
+  // ----- Step -1: escolher público -----
+  if (step === -1) {
+    return (
+      <div className="min-h-[60vh] flex items-center px-6 md:px-10 py-16">
+        <div className="max-w-2xl mx-auto w-full">
+          <div className="mini-caps text-goldBright mb-4">
+            {locale === 'pt' ? 'ANTES DE COMEÇAR' : 'BEFORE WE START'}
+          </div>
+          <h2 className="font-serif text-2xl md:text-4xl text-bone leading-[1.25] mb-3">
+            {locale === 'pt' ? 'Onde estás, neste momento da tua vida?' : 'Where are you, right now in your life?'}
+          </h2>
+          <p className="text-ash italic font-body text-sm mb-10">
+            {locale === 'pt'
+              ? 'As perguntas adaptam-se. Os 7 nós são os mesmos — o cenário onde os reconheces, não.'
+              : 'The questions adapt. The 7 knots are the same — the scenery where you recognise them is not.'}
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() => pickTarget('casada')}
+              className="text-left p-7 border border-separator hover:border-gold hover:bg-coal/30 transition-all group"
+            >
+              <div className="font-serif text-xl text-bone mb-2 group-hover:text-goldBright transition-colors">
+                {locale === 'pt' ? 'Num casamento' : 'In a marriage'}
+              </div>
+              <p className="font-body text-sm text-bone/70 leading-relaxed">
+                {locale === 'pt'
+                  ? 'Há anos juntos. Há filhos, ou não. Alguma coisa esfriou e tu já não sabes nomear o quê.'
+                  : 'Years together. Maybe children. Something has cooled and you cannot name what.'}
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => pickTarget('solteira')}
+              className="text-left p-7 border border-separator hover:border-gold hover:bg-coal/30 transition-all group"
+            >
+              <div className="font-serif text-xl text-bone mb-2 group-hover:text-goldBright transition-colors">
+                {locale === 'pt' ? 'Solteira, à procura de um sério' : 'Single, looking for something serious'}
+              </div>
+              <p className="font-body text-sm text-bone/70 leading-relaxed">
+                {locale === 'pt'
+                  ? 'Conheces homens. Eles esfriam. Repete-se. E começas a desconfiar que talvez não sejam só eles.'
+                  : 'You meet men. They cool off. It repeats. And you begin to suspect that maybe it is not only them.'}
+              </p>
+            </button>
+          </div>
+
+          <p className="text-ash text-xs font-body mt-8">
+            {locale === 'pt'
+              ? 'Podes mudar depois. A escolha é só para enquadrar as perguntas.'
+              : 'You can change later. The choice only frames the questions.'}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (onQuestions) {

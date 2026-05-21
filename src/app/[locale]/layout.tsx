@@ -36,7 +36,7 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider locale={params.locale} messages={messages}>
       <Header />
-      <main className="flex-1">{children}</main>
+      <main data-page className="flex-1">{children}</main>
       <Footer />
       <CookieConsent />
     </NextIntlClientProvider>
