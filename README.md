@@ -87,16 +87,33 @@ webhook write user data on the server.
 2. Set `RESEND_FROM` to a verified address (e.g. `Marina <marina@your-domain>`).
 3. The first email a user receives is a Supabase magic link rendered through Resend's API.
 
-## Cloudflare Pages deploy
+## Vercel deploy (current host)
 
-```bash
-npm run build:cf       # produces .vercel/output/static
-npx wrangler pages deploy .vercel/output/static
-```
+The repository targets Vercel. Push to `main`, Vercel auto-deploys. Set every env var from the table above in **Project → Settings → Environment Variables** for both Production and Preview.
 
-Set every env var from the table above in **Pages → Settings → Environment variables** (both Production and Preview). Mark anything starting with `NEXT_PUBLIC_` as public.
+### Admin studio extras
 
-All API routes run on the **Node runtime** (`runtime = 'nodejs'`) because they call PayPal and Supabase admin from the server — Cloudflare Pages will translate this to the Edge-compatible runtime via `@cloudflare/next-on-pages`. The PayPal helper uses native `fetch` so it works edge-side.
+The admin studio (`/admin`) needs these in addition:
+
+| Var | Why |
+|---|---|
+| `ADMIN_EMAILS` | Comma-separated allow-list of emails that can log in to `/admin/login` |
+| `ADMIN_PASSWORD` | Shared password for that allow-list. Also signs the admin cookie |
+| `SUPABASE_STORAGE_BUCKET` | Bucket for carousel/video render outputs (default `synchim-assets`) |
+| `GITHUB_DISPATCH_TOKEN`, `GITHUB_REPO_OWNER`, `GITHUB_REPO_NAME`, `GITHUB_DISPATCH_REF` | For GitHub Actions render workflow |
+| `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `ELEVENLABS_TTS_MODEL` | For voice generation on video render |
+
+If `ADMIN_EMAILS` or `ADMIN_PASSWORD` are missing the admin login refuses the request with `credenciais inválidas`.
+
+### Magic-link fallback (preview without Resend)
+
+When `RESEND_API_KEY` is missing or still set to a placeholder, the magic-link login endpoint returns the action link in the JSON response and the login form renders it on screen. This makes the funnel testable end to end on preview deployments without a real Resend setup. As soon as a valid key lands, behaviour reverts to "email sent, check inbox".
+
+### PWA
+
+`public/manifest.webmanifest`, `public/sw.js`, and `<PwaRegistration />` in the root layout register a service worker on https + localhost. The worker caches static assets (`/_next/static`, images, fonts, css, js) cache-first and serves cached pages on offline navigations. Cache name is versioned so a redeploy evicts the previous one. API and Next data URLs bypass the worker.
+
+To install: open the site on Chrome/Edge desktop or any mobile browser, then "Add to Home Screen" / "Install app".
 
 ## Phase 1 scope (what is live)
 

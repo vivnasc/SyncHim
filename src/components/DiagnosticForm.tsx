@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { questionIds, QUESTIONS_PT, QUESTIONS_EN } from '@/lib/diagnostic';
@@ -13,6 +13,38 @@ const SCALE: Array<{ v: 0 | 1 | 2 | 3; key: '0' | '1' | '2' | '3' }> = [
   { v: 3, key: '3' }
 ];
 
+const DRAFT_KEY = 'synchim_draft_v1';
+
+type Draft = {
+  step: number;
+  answers: Record<string, 0 | 1 | 2 | 3>;
+  name: string;
+  email: string;
+};
+
+function loadDraft(): Partial<Draft> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = window.localStorage.getItem(DRAFT_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) as Partial<Draft>;
+  } catch {
+    return {};
+  }
+}
+
+function saveDraft(d: Draft) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+  } catch { /* quota or disabled */ }
+}
+
+function clearDraft() {
+  if (typeof window === 'undefined') return;
+  try { window.localStorage.removeItem(DRAFT_KEY); } catch { /* */ }
+}
+
 export function DiagnosticForm() {
   const t = useTranslations('diagnostic');
   const tCommon = useTranslations('common');
@@ -20,17 +52,37 @@ export function DiagnosticForm() {
   const router = useRouter();
   const qMap = locale === 'pt' ? QUESTIONS_PT : QUESTIONS_EN;
   const ids = useMemo(() => questionIds(), []);
+  const total = ids.length;
 
+  const [hydrated, setHydrated] = useState(false);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, 0 | 1 | 2 | 3>>({});
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [consent, setConsent] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const total = ids.length;
+  // Hydrate from localStorage on first render.
+  useEffect(() => {
+    const d = loadDraft();
+    if (d.answers && Object.keys(d.answers).length) setAnswers(d.answers);
+    if (d.name) setName(d.name);
+    if (d.email) setEmail(d.email);
+    if (typeof d.step === 'number') {
+      setStep(Math.min(Math.max(d.step, 0), total));
+    }
+    setHydrated(true);
+  }, [total]);
+
+  // Autosave whenever the relevant state changes.
+  useEffect(() => {
+    if (!hydrated) return;
+    saveDraft({ step, answers, name, email });
+  }, [step, answers, name, email, hydrated]);
+
   const onQuestions = step < total;
   const progress = onQuestions ? (step / total) * 100 : 100;
 
@@ -46,23 +98,31 @@ export function DiagnosticForm() {
       return;
     }
     if (!email || !consent) return;
+    if (password.length < 8) {
+      setError(t('errorPasswordShort'));
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch('/api/diagnostico/calcular', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers, email, name, locale, turnstileToken })
+        body: JSON.stringify({ answers, email, password, name, locale, turnstileToken })
       });
       if (!res.ok) {
         const detail = await res.json().catch(() => ({}));
         console.error('diagnostico/calcular failed', res.status, detail);
-        throw new Error(detail.error || 'submit_failed');
+        if (detail?.detail?.includes('password') || detail?.detail?.includes('Password')) {
+          throw new Error(t('errorPasswordShort'));
+        }
+        throw new Error(t('errorGeneric'));
       }
       const data = await res.json() as { ok: boolean; redirect: string };
+      clearDraft();
       router.push(data.redirect);
     } catch (err) {
       console.error('submit error', err);
-      setError(t('errorGeneric'));
+      setError(err instanceof Error ? err.message : t('errorGeneric'));
       setSubmitting(false);
     }
   }
@@ -74,7 +134,6 @@ export function DiagnosticForm() {
 
     return (
       <div className="min-h-[60vh] flex flex-col">
-        {/* progress bar fixed at top of section */}
         <div className="px-6 md:px-10 pt-10">
           <div className="max-w-2xl mx-auto">
             <div className="flex items-baseline justify-between mb-3 mini-caps text-ash">
@@ -90,7 +149,6 @@ export function DiagnosticForm() {
           </div>
         </div>
 
-        {/* question */}
         <div
           key={qid}
           className="flex-1 flex items-center px-6 md:px-10 py-12 md:py-16 fade-in-section is-visible"
@@ -150,6 +208,7 @@ export function DiagnosticForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder={locale === 'pt' ? 'O teu primeiro nome' : 'Your first name'}
+            autoComplete="given-name"
           />
         </label>
 
@@ -162,7 +221,25 @@ export function DiagnosticForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="email@dominio.com"
+            autoComplete="email"
           />
+        </label>
+
+        <label className="block mb-3">
+          <span className="block mini-caps text-ash mb-2">{t('passwordLabel')}</span>
+          <input
+            className="input"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            autoComplete="new-password"
+            minLength={8}
+          />
+          <span className="block font-body italic text-ash text-xs mt-2">
+            {t('passwordHint')}
+          </span>
         </label>
 
         <label className="flex items-start gap-3 my-8 text-sm text-bone/80 font-body cursor-pointer">
@@ -183,7 +260,7 @@ export function DiagnosticForm() {
 
         <button
           type="button"
-          disabled={!email || !consent || submitting}
+          disabled={!email || !consent || password.length < 8 || submitting}
           onClick={submit}
           className="cta-living large mt-4 disabled:opacity-40 disabled:cursor-not-allowed"
         >

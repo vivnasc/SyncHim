@@ -36,6 +36,9 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   html, body {
     background: var(--bg);
     color: var(--texto);
@@ -45,6 +48,16 @@
     font-weight: 300;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+  /* Keyboard focus ring across all interactive elements,
+     visible without disrupting mouse hover styling. */
+  :focus-visible {
+    outline: 2px solid var(--ouro-folha);
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
   }
   h1, h2, h3, h4 {
     font-family: var(--serif);
