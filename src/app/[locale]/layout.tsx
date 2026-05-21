@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { locales } from '@/i18n';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { CookieConsent } from '@/components/CookieConsent';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
@@ -37,6 +38,7 @@ export default async function LocaleLayout({
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
+      <CookieConsent />
     </NextIntlClientProvider>
   );
 }

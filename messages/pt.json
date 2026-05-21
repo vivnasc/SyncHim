@@ -35,7 +35,10 @@
     "namePrompt": "Como queres que te chame?",
     "nameLabel": "Primeiro nome",
     "consent": "Concordo com os termos e a política de privacidade.",
+    "passwordLabel": "Password",
+    "passwordHint": "Pelo menos 8 caracteres. Vais usar para entrar de volta.",
     "errorAllRequired": "Responde a todas as 21 situações antes de continuar.",
+    "errorPasswordShort": "A password tem de ter pelo menos 8 caracteres.",
     "errorGeneric": "Algo correu mal a guardar o teu diagnóstico. Verifica o email e tenta de novo."
   },
   "result": {
@@ -87,11 +90,19 @@
   },
   "login": {
     "title": "Entrar",
-    "subtitle": "Digita o teu email. Mando-te um link de acesso.",
+    "subtitle": "Bem-vinda de volta.",
     "emailLabel": "Email",
-    "cta": "Enviar link",
+    "passwordLabel": "Password",
+    "cta": "Entrar",
+    "forgotPassword": "Esqueci a password",
+    "backToLogin": "← Voltar a entrar",
+    "resetTitle": "Recuperar password",
+    "resetSubtitle": "Vou enviar-te um link para criares uma nova.",
+    "resetCta": "Enviar link",
+    "resetSent": "Enviado. Verifica o teu email.",
     "sent": "Enviado. Verifica o teu email.",
-    "errorGeneric": "Não consegui enviar. Tenta outra vez."
+    "errorWrongPassword": "Email ou password não correspondem. Tenta outra vez.",
+    "errorGeneric": "Algo correu mal. Tenta outra vez."
   },
   "dashboard": {
     "title": "A tua travessia",
