@@ -11,7 +11,6 @@ import {
 } from '@/lib/diagnostic';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { createSupabaseServer } from '@/lib/supabase/server';
-import { verifyTurnstile } from '@/lib/turnstile';
 import { trackEvent } from '@/lib/events';
 import { sendOnce } from '@/lib/resend';
 const Body = z.object({
@@ -22,8 +21,7 @@ const Body = z.object({
   locale: z.enum(['pt', 'en']),
   target: z.enum(['casada', 'solteira']).optional().default('casada'),
   subPerfil: z.enum(['sozinha', 'inicio']).nullable().optional().default(null),
-  opcao: z.enum(['A', 'B', 'C']).nullable().optional().default(null),
-  turnstileToken: z.string().optional()
+  opcao: z.enum(['A', 'B', 'C']).nullable().optional().default(null)
 });
 
 export async function POST(req: NextRequest) {
@@ -33,13 +31,6 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
   }
-
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    ?? req.headers.get('x-real-ip')
-    ?? req.headers.get('cf-connecting-ip')
-    ?? undefined;
-  const ok = await verifyTurnstile(payload.turnstileToken, ip ?? undefined);
-  if (!ok) return NextResponse.json({ error: 'turnstile_failed' }, { status: 400 });
 
   const ids = questionIds();
   for (const id of ids) {
@@ -55,19 +46,30 @@ export async function POST(req: NextRequest) {
   const admin = createSupabaseAdmin();
   const locale = payload.locale as Locale;
 
-  // Find or create auth user.
+  // Find or create auth user. We look up via GoTrue admin (auth.users) instead
+  // of the synchim.users mirror, because admin accounts created in the Supabase
+  // dashboard may exist in auth.users but never get a row in synchim.users.
   let userId: string | null = null;
   let createdNow = false;
-  const { data: existing } = await admin
-    .from('users')
-    .select('id')
-    .eq('email', payload.email)
-    .maybeSingle();
 
-  if (existing && existing.id) {
-    userId = existing.id as string;
-    // Update the password so the woman can sign in again with what she just typed.
-    await admin.auth.admin.updateUserById(existing.id as string, { password: payload.password });
+  const lookupRes = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(payload.email)}`,
+    {
+      headers: {
+        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`
+      },
+      cache: 'no-store'
+    }
+  );
+  const lookupJson = lookupRes.ok ? await lookupRes.json().catch(() => null) : null;
+  const existingAuth = Array.isArray(lookupJson?.users)
+    ? lookupJson.users.find((u: { email?: string }) => u?.email?.toLowerCase() === payload.email.toLowerCase())
+    : null;
+
+  if (existingAuth?.id) {
+    userId = existingAuth.id as string;
+    await admin.auth.admin.updateUserById(userId, { password: payload.password });
   } else {
     const { data: created, error } = await admin.auth.admin.createUser({
       email: payload.email,
@@ -89,16 +91,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'no_user' }, { status: 500 });
   }
 
-  // Update locale, name e target (in case of return visit ou troca de público).
+  // Ensure a row exists in synchim.users (the trigger may not have run for
+  // accounts created directly in the dashboard). Upsert is idempotent.
   await admin
     .from('users')
-    .update({
-      locale,
-      nome: payload.name || null,
-      target: payload.target,
-      sub_perfil: payload.subPerfil
-    })
-    .eq('id', userId);
+    .upsert(
+      {
+        id: userId,
+        email: payload.email,
+        locale,
+        nome: payload.name || null,
+        target: payload.target,
+        sub_perfil: payload.subPerfil
+      },
+      { onConflict: 'id' }
+    );
 
   // Detect if repeat.
   const { count } = await admin
