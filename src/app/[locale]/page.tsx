@@ -309,7 +309,7 @@ export default async function LandingPage({ params }: { params: { locale: string
 
       <Vesica className="w-20 h-12 mx-auto text-gold my-4" />
 
-      {/* ============ 01 — O CORTE ============ */}
+      {/* ============ 01, O CORTE ============ */}
       <FadeIn as="section" className="px-6 md:px-10 py-20 md:py-24">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[180px_1fr] gap-10">
           <div className="md:pt-3">
@@ -397,7 +397,7 @@ export default async function LandingPage({ params }: { params: { locale: string
 
       <Vesica className="w-20 h-12 mx-auto text-gold my-4" />
 
-      {/* ============ 02 — A RECUSA ============ */}
+      {/* ============ 02, A RECUSA ============ */}
       <FadeIn as="section" className="px-6 md:px-10 py-20 md:py-24 bg-coal/60 relative overflow-hidden">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[1fr_minmax(0,380px)] gap-10 md:gap-16 items-start">
           <div>
@@ -486,7 +486,7 @@ export default async function LandingPage({ params }: { params: { locale: string
 
       <Vesica className="w-20 h-12 mx-auto text-gold my-4" />
 
-      {/* ============ 03 — A PORTA ============ */}
+      {/* ============ 03, A PORTA ============ */}
       <FadeIn as="section" className="px-6 md:px-10 py-24 md:py-32 bg-coal/60 text-center">
         <div className="max-w-2xl mx-auto">
           <div className="font-serif text-bordeaux text-6xl md:text-7xl leading-none mb-6">

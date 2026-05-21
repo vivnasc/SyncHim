@@ -96,7 +96,4 @@ Em 3 dias, abre-se a Sessão 4. Vamos descer à origem deste abandono.
 
 ---
 
-[ estrela persa ]
-
-—
-Marina Vale
+[ estrela persa ], Marina Vale

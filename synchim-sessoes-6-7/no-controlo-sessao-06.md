@@ -74,7 +74,4 @@ Em 3 dias, abre-se a Sessão 7. A última.
 
 ---
 
-[ estrela persa ]
-
-—
-Marina Vale
+[ estrela persa ], Marina Vale

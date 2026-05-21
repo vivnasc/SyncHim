@@ -21,6 +21,8 @@ const Body = z.object({
   name: z.string().max(120).optional().default(''),
   locale: z.enum(['pt', 'en']),
   target: z.enum(['casada', 'solteira']).optional().default('casada'),
+  subPerfil: z.enum(['sozinha', 'inicio']).nullable().optional().default(null),
+  opcao: z.enum(['A', 'B', 'C']).nullable().optional().default(null),
   turnstileToken: z.string().optional()
 });
 
@@ -71,7 +73,10 @@ export async function POST(req: NextRequest) {
       email: payload.email,
       password: payload.password,
       email_confirm: true,
-      user_metadata: { app: 'synchim', nome: payload.name, locale, tier: 0, target: payload.target }
+      user_metadata: {
+        app: 'synchim', nome: payload.name, locale, tier: 0,
+        target: payload.target, sub_perfil: payload.subPerfil
+      }
     });
     if (error || !created.user) {
       return NextResponse.json({ error: 'auth_create_failed', detail: error?.message }, { status: 500 });
@@ -87,7 +92,12 @@ export async function POST(req: NextRequest) {
   // Update locale, name e target (in case of return visit ou troca de público).
   await admin
     .from('users')
-    .update({ locale, nome: payload.name || null, target: payload.target })
+    .update({
+      locale,
+      nome: payload.name || null,
+      target: payload.target,
+      sub_perfil: payload.subPerfil
+    })
     .eq('id', userId);
 
   // Detect if repeat.
@@ -102,7 +112,8 @@ export async function POST(req: NextRequest) {
     no_secundario: secundario,
     pontuacoes,
     respostas,
-    target: payload.target
+    target: payload.target,
+    sub_perfil: payload.subPerfil
   });
 
   await trackEvent(
@@ -153,7 +164,8 @@ export async function POST(req: NextRequest) {
     pontuacoes,
     respostas_dominante: respostasDominante,
     is_repeat: (count ?? 0) > 0,
-    target: payload.target
+    target: payload.target,
+    sub_perfil: payload.subPerfil
   }), {
     httpOnly: true,
     sameSite: 'lax',

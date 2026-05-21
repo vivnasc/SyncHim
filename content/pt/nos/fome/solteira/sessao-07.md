@@ -96,7 +96,4 @@ Ou, se preferires ter o mapa inteiro de uma vez:
 
 ---
 
-[ estrela persa ]
-
-—
-Marina Vale
+[ estrela persa ], Marina Vale

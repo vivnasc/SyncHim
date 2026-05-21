@@ -1,10 +1,10 @@
-# PRACTICES — THE HUNGER (EN)
+# PRACTICES, THE HUNGER (EN)
 
 5 practices, one between each pair of sessions.
 
 ---
 
-## PRACTICE 1 — After Session 2
+## PRACTICE 1, After Session 2
 
 **Don't Initiate.** 3 days.
 
@@ -16,17 +16,17 @@ You'll notice the urge to initiate appears 20, 30, 50 times across these 3 days.
 
 Rules:
 - If he initiates, reply normally.
-- Logistics and urgencies (kids, household) — communicate.
+- Logistics and urgencies (kids, household), communicate.
 - If he asks if you're okay, say "yes."
 - Each night, write: *How many times today did I want to initiate? What was I feeling before?*
 
 ---
 
-## PRACTICE 2 — After Session 3
+## PRACTICE 2, After Session 3
 
 **Don't Answer the Hunger.** 3 days.
 
-When you feel hunger for him — urge to message, ask where he is, check his phone — don't answer the hunger. Ask:
+When you feel hunger for him, urge to message, ask where he is, check his phone, don't answer the hunger. Ask:
 
 > *"What would I feel right now if he didn't exist?"*
 
@@ -39,7 +39,7 @@ Rules:
 
 ---
 
-## PRACTICE 3 — After Session 4
+## PRACTICE 3, After Session 4
 
 **Five Minutes of You.** 3 days.
 
@@ -50,12 +50,12 @@ Sit. Phone out of reach. Eyes closed. Stay.
 Rules:
 - If mind wanders to him, return.
 - Nothing might come. That's information.
-- Tiredness, small anger, empty sadness, boredom, a wish — stay with whatever appears.
+- Tiredness, small anger, empty sadness, boredom, a wish, stay with whatever appears.
 - Each night, one line: *Today, during the 5 minutes, I felt _____.*
 
 ---
 
-## PRACTICE 4 — After Session 5
+## PRACTICE 4, After Session 5
 
 **Arrive at Yourself First.** 3 days.
 
@@ -70,7 +70,7 @@ Rules:
 
 ---
 
-## PRACTICE 5 — After Session 6
+## PRACTICE 5, After Session 6
 
 **Return.** 3 days (and the rest of life).
 

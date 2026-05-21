@@ -1,4 +1,4 @@
-# SESSÃO 2 — DIAGNÓSTICO
+# SESSÃO 2, DIAGNÓSTICO
 
 **Tier:** 0 (grátis)
 **Acesso:** Imediato após Sessão 1
@@ -14,7 +14,7 @@ O teu nó tem nome.
 
 Vou-te mostrar 21 situações.
 
-Para cada uma, escolhe com honestidade brutal — não a resposta certa, a resposta real. Quanto mais honesta fores, mais nítido o teu nó vai ficar.
+Para cada uma, escolhe com honestidade brutal, não a resposta certa, a resposta real. Quanto mais honesta fores, mais nítido o teu nó vai ficar.
 
 Ninguém vê excepto tu.
 
@@ -32,7 +32,7 @@ Para cada situação, a utilizadora escolhe uma de quatro opções:
 - **Frequentemente** (2 pontos)
 - **Sempre** (3 pontos)
 
-### Bloco — Nó da Fome (q1, q2, q3)
+### Bloco, Nó da Fome (q1, q2, q3)
 
 **q1.** Quando ele demora a responder a uma mensagem, eu reviso a conversa para perceber o que disse de errado.
 
@@ -40,15 +40,15 @@ Para cada situação, a utilizadora escolhe uma de quatro opções:
 
 **q3.** O meu humor do dia depende muito de como ele acordou.
 
-### Bloco — Nó do Controlo (q4, q5, q6)
+### Bloco, Nó do Controlo (q4, q5, q6)
 
 **q4.** Eu sei melhor do que ele o que ele precisa de fazer no dia-a-dia.
 
-**q5.** Já desisti de pedir e prefiro fazer eu — é mais rápido.
+**q5.** Já desisti de pedir e prefiro fazer eu, é mais rápido.
 
 **q6.** Quando ele toma uma decisão sem me consultar, sinto-me desrespeitada.
 
-### Bloco — Nó da Inferioridade (q7, q8, q9)
+### Bloco, Nó da Inferioridade (q7, q8, q9)
 
 **q7.** Sinto que ele podia ter alguém melhor do que eu.
 
@@ -56,7 +56,7 @@ Para cada situação, a utilizadora escolhe uma de quatro opções:
 
 **q9.** Quando ele me elogia, custa-me acreditar.
 
-### Bloco — Nó da Desconfiança (q10, q11, q12)
+### Bloco, Nó da Desconfiança (q10, q11, q12)
 
 **q10.** Já vi o telemóvel dele às escondidas mais de uma vez.
 
@@ -64,7 +64,7 @@ Para cada situação, a utilizadora escolhe uma de quatro opções:
 
 **q12.** Acredito que a maioria dos homens, mais cedo ou mais tarde, trai.
 
-### Bloco — Nó da Salvadora (q13, q14, q15)
+### Bloco, Nó da Salvadora (q13, q14, q15)
 
 **q13.** Eu vejo nele um potencial que ele próprio ainda não vê.
 
@@ -72,7 +72,7 @@ Para cada situação, a utilizadora escolhe uma de quatro opções:
 
 **q15.** Se ele estivesse bem sem mim, eu sentir-me-ia menos necessária.
 
-### Bloco — Nó do Abandono (q16, q17, q18)
+### Bloco, Nó do Abandono (q16, q17, q18)
 
 **q16.** Tenho medo, mesmo nos bons momentos, de que ele se vá embora um dia.
 
@@ -80,7 +80,7 @@ Para cada situação, a utilizadora escolhe uma de quatro opções:
 
 **q18.** Quando ele se afasta um pouco, eu já estou a preparar-me para o fim.
 
-### Bloco — Nó da Invisibilidade (q19, q20, q21)
+### Bloco, Nó da Invisibilidade (q19, q20, q21)
 
 **q19.** Já não sei dizer o que gosto de fazer fora de ser esposa ou mãe.
 
@@ -147,15 +147,15 @@ Após calcular, apresentar:
 >
 > **[NOME DO NÓ]**
 
-### Descrição (varia por nó — versões curtas para o resultado do Tier 0)
+### Descrição (varia por nó, versões curtas para o resultado do Tier 0)
 
 #### Se nó dominante = Fome:
 
 > Tu precisas que ele te preencha.
 >
-> Vives em fusão ansiosa. Observas. Antecipas. O teu humor sobe e desce com o tom da voz dele. Quando ele se afasta um pouco, tu vais buscar — e é exactamente esse ir buscar que o afasta mais.
+> Vives em fusão ansiosa. Observas. Antecipas. O teu humor sobe e desce com o tom da voz dele. Quando ele se afasta um pouco, tu vais buscar, e é exactamente esse ir buscar que o afasta mais.
 >
-> Não é amor. É fome. E a fome não tem culpa — tem origem. Vem de antes do teu marido.
+> Não é amor. É fome. E a fome não tem culpa, tem origem. Vem de antes do teu marido.
 >
 > O teu casamento não está a morrer porque ele esfriou. Está a morrer porque a tua fome esgotou-o.
 
@@ -163,7 +163,7 @@ Após calcular, apresentar:
 
 > Tu geres tudo.
 >
-> A casa, os filhos, as finanças, a agenda dele. Dizes que é porque tem de ser — mas no fundo, controlar é o único modo que conheces de te sentires segura.
+> A casa, os filhos, as finanças, a agenda dele. Dizes que é porque tem de ser, mas no fundo, controlar é o único modo que conheces de te sentires segura.
 >
 > Ele desistiu de propor. De decidir. De aparecer. Tu já decidiste por ambos.
 >
@@ -177,7 +177,7 @@ Após calcular, apresentar:
 >
 > E ele perde respeito por ti em silêncio. Não te diz. Só se afasta.
 >
-> Os homens não desejam quem se apaga para servir. Não é injustiça — é como sistemas funcionam. Tu não estás a ser punida. Estás a ser tratada como a mulher que tu te apresentas como sendo.
+> Os homens não desejam quem se apaga para servir. Não é injustiça, é como sistemas funcionam. Tu não estás a ser punida. Estás a ser tratada como a mulher que tu te apresentas como sendo.
 
 #### Se nó dominante = Desconfiança:
 
@@ -205,7 +205,7 @@ Após calcular, apresentar:
 >
 > Sempre. Mesmo em paz. Por antecipar, sabotas. Crias distância antes que ele crie. Pune-lo por crimes que ele não cometeu.
 >
-> Quando ele finalmente se afasta — exausto — tu dizes "eu sabia".
+> Quando ele finalmente se afasta, exausto, tu dizes "eu sabia".
 >
 > O teu nó não é a relação. É um abandono antigo que ainda dói, e que está a usar este homem como ensaio do fim que tu já viveste antes.
 
@@ -229,12 +229,12 @@ Após calcular, apresentar:
 >
 > Mas vê-lo não é dissolvê-lo.
 >
-> Se quiseres descer ao que está debaixo — a origem, o que ele está a fazer ao teu casamento, e como dissolvê-lo — há dois caminhos.
+> Se quiseres descer ao que está debaixo, a origem, o que ele está a fazer ao teu casamento, e como dissolvê-lo, há dois caminhos.
 
-**Atravessar este nó** — R$ 127
+**Atravessar este nó**, R$ 127
 > 5 sessões personalizadas + 5 práticas + acesso vitalício a este nó.
 
-**Biblioteca completa** — R$ 297
+**Biblioteca completa**, R$ 297
 > Os 7 nós, completos. Para refazeres o diagnóstico quantas vezes quiseres ao longo da vida e atravessares qualquer nó que aparecer.
 
 ---
@@ -247,7 +247,4 @@ Após calcular, apresentar:
 
 ---
 
-## ASSINATURA
-
-—
-Marina Vale
+## ASSINATURA, Marina Vale

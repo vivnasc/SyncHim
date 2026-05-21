@@ -94,7 +94,4 @@ Em 3 dias, abre-se a Sessão 4. Vamos descer à origem desta salvação.
 
 ---
 
-[ estrela persa ]
-
-—
-Marina Vale
+[ estrela persa ], Marina Vale

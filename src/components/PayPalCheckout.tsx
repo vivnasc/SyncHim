@@ -5,11 +5,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+type Tipo = 'tier1' | 'extra' | 'biblioteca';
+
 export function PayPalCheckout({
   no,
   email,
-  locale
-}: { no: string; email: string; locale: 'pt' | 'en' }) {
+  locale,
+  tipo = 'tier1'
+}: { no: string; email: string; locale: 'pt' | 'en'; tipo?: Tipo }) {
   const router = useRouter();
   const t = useTranslations('checkout');
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +21,12 @@ export function PayPalCheckout({
   if (!clientId) {
     return <p className="text-bordeaux">PayPal client id missing.</p>;
   }
+
+  // Mapeia o tipo de UI para o tier no payload do PayPal:
+  //   tier1     → tier=1, no=<dominante>
+  //   extra     → tier='upgrade', no=<próximo>
+  //   biblioteca → tier=2, no omitido
+  const tierPayload = tipo === 'extra' ? 'upgrade' : tipo === 'biblioteca' ? 2 : 1;
 
   return (
     <div>
@@ -34,7 +43,7 @@ export function PayPalCheckout({
             const res = await fetch('/api/paypal/create-order', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ tier: 1, no, email, locale })
+              body: JSON.stringify({ tier: tierPayload, no: no || undefined, email, locale })
             });
             if (!res.ok) {
               setError(t('errorGeneric'));

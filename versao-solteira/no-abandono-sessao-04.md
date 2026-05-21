@@ -94,7 +94,4 @@ Em 3 dias, abre-se a Sessão 5. Vamos ver o que o abandono está a fazer às tua
 
 ---
 
-[ estrela persa ]
-
-—
-Marina Vale
+[ estrela persa ], Marina Vale

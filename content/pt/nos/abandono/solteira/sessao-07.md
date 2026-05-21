@@ -88,7 +88,4 @@ Ou, se preferires o mapa inteiro:
 
 ---
 
-[ estrela persa ]
-
-—
-Marina Vale
+[ estrela persa ], Marina Vale
