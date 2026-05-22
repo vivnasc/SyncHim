@@ -83,4 +83,4 @@ The urge to initiate is the sound of hunger asking for food. In these 3 days, yo
 - If he asks if everything's okay, say "yes, it is."
 - Before bed, write down: *How many times today did I want to initiate? What was I feeling before?*
 
-In 3 days, Session 4 opens., Marina Vale
+In 3 days, Session 4 opens., Vivianne dos Santos

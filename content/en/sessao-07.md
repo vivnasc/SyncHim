@@ -65,4 +65,4 @@ There is no Session 8. No upsell. Your access is lifetime. You can return to thi
 
 If a friend of yours stands where you stood 21 days ago, you know where to send her.
 
-Welcome back to yourself., Marina Vale
+Welcome back to yourself., Vivianne dos Santos

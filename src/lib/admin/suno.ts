@@ -1,5 +1,5 @@
 /**
- * SyncHim · geração de música ambiente Marina Vale via Suno-compatible API.
+ * SyncHim · geração de música ambiente via Suno-compatible API.
  *
  * Compatível com qualquer provider que siga o padrão Suno-style:
  *   POST <SUNO_API_URL>/generate  { prompt, ... } → { taskId }
@@ -159,7 +159,7 @@ export async function generateMusic(args: SunoGenArgs): Promise<SunoResult> {
 }
 
 /**
- * Prompts pré-fabricados para a estética Marina Vale.
+ * Prompts pré-fabricados para a estética SyncHim.
  * A editora pode usar como ponto de partida e ajustar.
  */
 export const PROMPT_PRESETS: Record<string, { label: string; prompt: string }> = {

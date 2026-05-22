@@ -5,7 +5,7 @@
 
 ## Quem somos
 
-SyncHim é um produto digital criado por Marina Vale, distribuído sob a entidade legal **Sete Ecos SAS**, com sede em Maputo, Moçambique. Para contacto: contacto@syncehim.com.
+SyncHim é um produto digital criado por Vivianne dos Santos, distribuído sob a entidade legal **Sete Ecos SAS**, com sede em Maputo, Moçambique. Para contacto: contacto@synchim.viviannedossantos.com.
 
 ## O que é SyncHim
 
@@ -33,7 +33,7 @@ Os pagamentos são processados via PayPal. Os valores estão expressos em USD (D
 
 ## Propriedade intelectual
 
-Todo o conteúdo de SyncHim, textos, método, estrutura, marca, é propriedade de Marina Vale / Sete Ecos SAS. Não pode ser copiado, redistribuído, traduzido ou utilizado para criar produtos derivados sem autorização escrita.
+Todo o conteúdo de SyncHim, textos, método, estrutura, marca, é propriedade de Vivianne dos Santos / Sete Ecos SAS. Não pode ser copiado, redistribuído, traduzido ou utilizado para criar produtos derivados sem autorização escrita.
 
 ## Uso permitido
 

@@ -94,4 +94,4 @@ Em 3 dias, abre-se a Sessão 4. Vamos descer à origem desta desconfiança.
 
 ---
 
-[ estrela persa ], Marina Vale
+[ estrela persa ], Vivianne dos Santos

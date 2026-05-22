@@ -57,11 +57,11 @@ You have the right to:
 4. **Export** your data in JSON format. Button at `/account/export`.
 5. **Withdraw consent** at any time.
 
-For any data-related request, write to **privacy@syncehim.com**. We respond within 10 business days.
+For any data-related request, write to **privacy@synchim.viviannedossantos.com**. We respond within 10 business days.
 
 ## Cookies
 
-We use a single essential technical cookie: `syncehim_locale` (saves your language preference). We don't use tracking cookies.
+We use a single essential technical cookie: `synchim_locale` (saves your language preference). We don't use tracking cookies.
 
 ## Minors
 
@@ -69,7 +69,7 @@ SyncHim is for adult women. We do not intentionally collect data from anyone und
 
 ## Data Protection Officer
 
-Marina Vale (Sete Ecos SAS), privacy@syncehim.com
+Vivianne dos Santos (Sete Ecos SAS), privacy@synchim.viviannedossantos.com
 
 ---
 

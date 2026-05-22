@@ -86,4 +86,4 @@ End of each day, write one line: *Today, during the 5 minutes, I felt _____.*
 
 If nothing came, write "nothing." That's information.
 
-In 3 days, Session 5 opens., Marina Vale
+In 3 days, Session 5 opens., Vivianne dos Santos

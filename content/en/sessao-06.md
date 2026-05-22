@@ -88,4 +88,4 @@ Anything counts. The question matters, not the answer.
 
 The question reminds your system that you exist outside of him. Each time you ask, the knot loosens a millimetre.
 
-In 3 days, Session 7 opens. The last., Marina Vale
+In 3 days, Session 7 opens. The last., Vivianne dos Santos

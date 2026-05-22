@@ -92,4 +92,4 @@ Em 3 dias, abre-se a Sessão 5. Vamos ver o que a tua inferioridade está a faze
 
 ---
 
-[ estrela persa ], Marina Vale
+[ estrela persa ], Vivianne dos Santos

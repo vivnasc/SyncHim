@@ -9,7 +9,7 @@
  *                    de escrever (typewriter via drawtext + animação).
  *
  * Para 'talking-head' a primeira versão usa a mesma base que kinetic-text
- * (Marina é "sem rosto", não há frame de cara). Pode ser estendido depois.
+ * (sem frame de cara por agora). Pode ser estendido depois.
  *
  * O texto da cena é renderizado primeiro num PNG (Puppeteer) e depois
  * o vídeo é montado em FFmpeg num único filter graph: clips PNG estáticos

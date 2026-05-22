@@ -115,7 +115,7 @@ body > * {
   .prose-mv li { @apply mb-2; }
   .prose-mv hr { @apply border-ash/30 my-10; }
 
-  /* Spaced caps label — "MARINA VALE", "SECTION 03", "TIER 1" */
+  /* Spaced caps label, "VIVIANNE DOS SANTOS", "SECTION 03", "TIER 1" */
   .mini-caps {
     font-family: var(--sans);
     font-size: var(--t-mini);

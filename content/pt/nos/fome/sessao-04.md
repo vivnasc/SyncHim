@@ -97,4 +97,4 @@ Pode ser que não sintas nada. Escreve "nada". É informação.
 
 Em 3 dias, abre-se a Sessão 5. Vamos ver o que esta fome está a fazer ao teu casamento, sem julgamento, sem culpa, apenas para veres.
 
----, Marina Vale
+---, Vivianne dos Santos

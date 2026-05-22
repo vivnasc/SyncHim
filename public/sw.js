@@ -1,7 +1,7 @@
 /* SyncHim · service worker
  *
  * Estratégia:
- *   - Static assets (/_next/static/*, /icons/*, /icon-*.png, /marina/*,
+ *   - Static assets (/_next/static/*, /icons/*, /icon-*.png, /vivianne/*,
  *     fontes, css, js): cache-first com revalidação em background.
  *   - HTML pages (navigation requests): network-first com fallback
  *     para a última versão em cache, e fallback final para /offline.
@@ -23,7 +23,7 @@ const PRECACHE_URLS = [
   '/icon-192.png',
   '/icon-512.png',
   '/icon.svg',
-  '/marina/editorial.png',
+  '/vivianne/hero.jpeg',
   '/manifest.webmanifest'
 ];
 
@@ -53,7 +53,7 @@ function isStaticAsset(url) {
   return (
     url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/icons/') ||
-    url.pathname.startsWith('/marina/') ||
+    url.pathname.startsWith('/vivianne/') ||
     url.pathname.startsWith('/icon-') ||
     url.pathname === '/icon.svg' ||
     /\.(?:woff2?|ttf|eot|svg|png|jpg|jpeg|webp|avif|ico|css|js)$/i.test(url.pathname)

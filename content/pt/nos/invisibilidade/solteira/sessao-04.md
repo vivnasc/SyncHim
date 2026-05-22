@@ -94,4 +94,4 @@ Em 3 dias, abre-se a Sessão 5. Vamos ver o que a invisibilidade está a fazer �
 
 ---
 
-[ estrela persa ], Marina Vale
+[ estrela persa ], Vivianne dos Santos
