@@ -92,7 +92,7 @@ const PT: CopySection = {
     eyebrow: 'QUEM TE ESCREVE',
     lines: [
       'Eu chamo-me **Vivianne dos Santos**.',
-      'Terapeuta sistémica em formação, escritora e criadora.',
+      'Escritora, criadora, em formação em psicologia transpessoal, em psicologia e espiritualidade, e em terapia da constelação familiar sistémica.',
       'Não vim dizer-te o que fazer no teu amor. Vim ajudar-te a ver o nó que o sabota, esse que vem de trás, dos padrões que herdaste sem escolher.',
       'Estudo os sistemas que nos formam, e foi disso que nasceu a SyncHim.',
       'Os casais não morrem por falta de amor. Morrem por dessincronia.',
@@ -185,7 +185,7 @@ const EN: CopySection = {
     eyebrow: 'WHO WRITES TO YOU',
     lines: [
       'My name is **Vivianne dos Santos**.',
-      'Systemic therapist in training, writer and creator.',
+      'Writer, creator, in training in transpersonal psychology, in psychology and spirituality, and in systemic family constellation therapy.',
       "I did not come to tell you what to do in your love. I came to help you see the knot that sabotages it, the one that comes from before, from the patterns you inherited without choosing.",
       'I study the systems that form us, and from that, SyncHim was born.',
       "Couples don't die from lack of love. They die from desynchrony.",

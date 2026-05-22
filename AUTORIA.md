@@ -1,6 +1,38 @@
 # Autoria
 
-SyncHim é assinada por **Vivianne dos Santos** — terapeuta sistémica em formação, escritora e criadora.
+SyncHim é assinada por **Vivianne dos Santos** — escritora, criadora, em formação em três pós-graduações Unyleya (360h cada, reconhecidas MEC):
+
+1. Psicologia Transpessoal
+2. Psicologia e Espiritualidade (abordagem interdisciplinar)
+3. Terapia da Constelação Familiar Sistémica
+
+## Versões da bio
+
+**Agora (em formação)**
+
+> Escritora, criadora, em formação em psicologia transpessoal, em psicologia e espiritualidade, e em terapia da constelação familiar sistémica.
+
+Versão curta para espaços apertados:
+
+> Escritora e terapeuta sistémica em formação.
+
+**Quando concluir**
+
+> Escritora, criadora, pós-graduada em psicologia transpessoal, em psicologia e espiritualidade, e em terapia da constelação familiar sistémica.
+
+Versão curta:
+
+> Escritora e psicóloga transpessoal.
+
+(Confirmar a aplicabilidade legal do termo "psicóloga" no contexto profissional antes de usar publicamente.)
+
+## Como cada formação fundamenta a SyncHim
+
+| Formação | Fundamenta na SyncHim |
+|---|---|
+| Constelação Familiar Sistémica | A teoria das ordens do amor no casal. O nó como lealdade sistémica herdada. |
+| Psicologia Transpessoal | A camada de presença, símbolo e arquétipo que atravessa as sessões. |
+| Psicologia e Espiritualidade | O trabalho de sentido e o tema do vazio, transversal aos sete nós. |
 
 ## Bio curta (para landing, e-mail, OG)
 
