@@ -291,7 +291,7 @@ export default async function LandingPage({ params }: { params: { locale: string
 
           {/* Right column: author photo */}
           <FadeIn delay={250} className="order-1 md:order-2">
-            <div className="relative aspect-[3/4] max-w-[420px] mx-auto md:mx-0 md:ml-auto">
+            <div className="relative aspect-[2/3] max-w-[420px] mx-auto md:mx-0 md:ml-auto">
               <div className="absolute inset-0 ring-1 ring-separator" />
               <Image
                 src="/vivianne/hero.jpeg"
@@ -299,7 +299,7 @@ export default async function LandingPage({ params }: { params: { locale: string
                 fill
                 priority
                 sizes="(max-width: 768px) 100vw, 440px"
-                className="object-cover grayscale-[0.05] contrast-[1.02]"
+                className="object-cover object-top grayscale-[0.05] contrast-[1.02]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent" />
             </div>
