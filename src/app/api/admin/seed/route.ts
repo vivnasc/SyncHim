@@ -1,44 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
 import { getAdminEmailFromRequest } from '@/lib/admin/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { softenForSingle } from '@/lib/admin/soften-for-single';
 
+// Markdowns importados estaticamente. O webpack rule `.md → asset/source`
+// (em next.config.mjs) transforma cada import na string do ficheiro.
+// Isto garante que os ficheiros vão no bundle da função em Vercel, sem
+// depender de outputFileTracingIncludes.
+import didaticosMd from '@assets/insta-60-carrosseis/insta-60-carrosseis/carrosseis-didaticos.md';
+import reconhecimentoMd from '@assets/insta-60-carrosseis/insta-60-carrosseis/carrosseis-reconhecimento.md';
+import ctaMd from '@assets/insta-60-carrosseis/insta-60-carrosseis/carrosseis-cta.md';
+
 export const runtime = 'nodejs';
 
 /**
- * Faz parsing dos markdowns em assets/insta-60-carrosseis/ e cria
- * um item + slides por carrossel. Idempotente por code (SC-NNN).
+ * Importa os 60 carrosséis dos markdowns e cria items + slides.
  *
- * Importa todos como `target='ambos'`, neutralizando o texto via
- * softenForSingle (marido → ele, casamento → relação, esposa →
- * mulher). Razão: o produto serve ambos os públicos com a mesma
- * voz e um item deve servir os dois. Quando um carrossel específico
- * precisar de duas variantes, há um botão "duplicar" no editor.
+ * Default `target='ambos'`. Aplica `softenForSingle` ao texto na
+ * entrada para neutralizar marido/casamento/esposa — um item serve
+ * os dois públicos sem precisar de duplicação.
+ *
+ * Idempotente por code (SC-NNN). Re-correr não cria duplicados.
  */
 export async function POST(req: NextRequest) {
-  if (!getAdminEmailFromRequest(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!getAdminEmailFromRequest(req)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
   const supabase = createSupabaseAdmin();
 
-  const sources: { file: string; categoria: string | null; codeBase: number }[] = [
-    { file: 'assets/insta-60-carrosseis/insta-60-carrosseis/carrosseis-didaticos.md',     categoria: null,             codeBase: 1  },
-    { file: 'assets/insta-60-carrosseis/insta-60-carrosseis/carrosseis-reconhecimento.md', categoria: 'reconhecimento', codeBase: 41 },
-    { file: 'assets/insta-60-carrosseis/insta-60-carrosseis/carrosseis-cta.md',           categoria: 'cta',            codeBase: 56 }
+  const sources: { text: string; categoria: string | null; codeBase: number }[] = [
+    { text: didaticosMd as unknown as string,      categoria: null,             codeBase: 1  },
+    { text: reconhecimentoMd as unknown as string, categoria: 'reconhecimento', codeBase: 41 },
+    { text: ctaMd as unknown as string,            categoria: 'cta',            codeBase: 56 }
   ];
 
   const errors: string[] = [];
   let imported = 0;
   let skipped = 0;
   let parsed = 0;
-  let missingFiles = 0;
 
   for (const src of sources) {
-    const full = path.join(process.cwd(), src.file);
-    const text = await fs.readFile(full, 'utf-8').catch(() => '');
-    if (!text) { missingFiles++; errors.push(`ficheiro em falta: ${src.file}`); continue; }
+    if (!src.text || !src.text.trim()) {
+      errors.push('markdown vazio (bundling falhou?)');
+      continue;
+    }
 
-    const carrosseis = parseCarrosseis(text);
+    const carrosseis = parseCarrosseis(src.text);
     parsed += carrosseis.length;
 
     for (const c of carrosseis) {
@@ -48,7 +55,6 @@ export async function POST(req: NextRequest) {
       const { data: existing, error: lookupError } = await supabase
         .from('content_items').select('id').eq('code', code).maybeSingle();
       if (lookupError) {
-        // Mais provável: tabela synchim.content_items não existe → migration por aplicar.
         return reportError(req, lookupError.message, {
           hint: 'Aplica supabase/admin-schema.sql no SQL editor do Supabase e confirma que synchim está em "Exposed schemas".'
         });
@@ -91,12 +97,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Redireccionar com um query param para a UI mostrar o resumo.
   const url = new URL('/admin/carrosseis', req.url);
   url.searchParams.set('seed', `${imported}/${parsed}`);
   if (skipped > 0) url.searchParams.set('skipped', String(skipped));
-  if (missingFiles > 0) url.searchParams.set('missing', String(missingFiles));
-  if (errors.length > 0) url.searchParams.set('errors', String(errors.length));
+  if (errors.length > 0) url.searchParams.set('errors', errors.slice(0, 3).join(' | ').slice(0, 300));
   return NextResponse.redirect(url, { status: 303 });
 }
 
@@ -117,7 +121,6 @@ function parseCarrosseis(text: string) {
     const postNumber = parseInt(titleMatch[1], 10);
     const rawTitle = titleMatch[2].trim().replace(/^["“]|["”]$/g, '');
 
-    // Slides: aceita `### Slide N` ou `**Slide N (capa)**:`
     const slidePattern = /(?:^###\s+Slide\s+\d+[^\n]*$|^\*\*Slide\s+\d+[^*]*\*\*:?)/gim;
     const parts = block.split(slidePattern).slice(1);
     const captionIdx = parts.findIndex((p) => /^###?\s+Caption/im.test(p) || p.includes('### Caption'));
@@ -133,10 +136,7 @@ function parseCarrosseis(text: string) {
       hashtags = hashMatch?.[1]?.trim();
     }
 
-    const cleanSlides = slides
-      .map(stripSlideBody)
-      .filter((s) => s.length > 0);
-
+    const cleanSlides = slides.map(stripSlideBody).filter((s) => s.length > 0);
     if (cleanSlides.length === 0) continue;
     out.push({ title: rawTitle, postNumber, slides: cleanSlides, caption, hashtags });
   }
@@ -144,7 +144,6 @@ function parseCarrosseis(text: string) {
 }
 
 function stripSlideBody(s: string): string {
-  // Apaga blocos de imagem-base, headings vazios, prefixos `> `
   return s
     .replace(/\*\*Imagem-base:[^\n]*\n?/gi, '')
     .replace(/^#+\s.*$/gm, '')
