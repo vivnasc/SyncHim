@@ -98,4 +98,4 @@ A vontade de iniciar é o som da fome a pedir comida. E nestes 3 dias, tu vais o
 
 Em 3 dias, abre-se a Sessão 4. Vamos descer à origem desta fome.
 
----, Marina Vale
+---, Vivianne dos Santos

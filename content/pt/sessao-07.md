@@ -78,4 +78,4 @@ Se uma amiga tua estiver onde tu estavas há 21 dias, tu sabes onde a mandar.
 
 Bem-vinda de volta a ti.
 
----, Marina Vale
+---, Vivianne dos Santos

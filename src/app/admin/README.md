@@ -71,10 +71,10 @@ numero ghost, override de paleta por slide, etc.
 
 ## Estender
 
-- **Talking-head real:** quando houver assets de Marina em vídeo, trocar
+- **Talking-head real:** quando houver assets de Vivianne em vídeo, trocar
   o template kinetic por composite Puppeteer + clip de fundo no FFmpeg.
 - **Geração com Claude:** adicionar `/api/admin/generate-copy` que pega
-  no system prompt da Marina + tool calling para devolver JSON estrito
+  no system prompt da Vivianne + tool calling para devolver JSON estrito
   (ver padrão Véus em `escola-veus-app/src/lib/carousel-generate.ts`).
 - **Metricool CSV:** exportar agendamento → CSV no formato Metricool.
 - **Legendas burned-in:** Scribe STT (ElevenLabs) → SRT → `subtitles=`

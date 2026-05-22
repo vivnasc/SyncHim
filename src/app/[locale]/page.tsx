@@ -22,7 +22,7 @@ type CopySection = {
 
 const PT: CopySection = {
   hero: {
-    eyebrow: 'MARINA VALE',
+    eyebrow: 'VIVIANNE DOS SANTOS',
     tag: 'Para casadas e solteiras em relações sérias',
     h1: ['Não é frieza dele.', 'É outra coisa.', 'E tu já sentes há meses.'],
     sub: 'Em 8 minutos, sabes o nome do padrão antigo que está a sabotar a tua relação, casada há vinte anos ou a construir agora.',
@@ -91,12 +91,12 @@ const PT: CopySection = {
   autora: {
     eyebrow: 'QUEM TE ESCREVE',
     lines: [
-      'Eu chamo-me **Marina Vale**.',
-      'Não dou entrevistas. Não vendo cursos. Não estou em mais lado nenhum.',
-      'Construí SyncHim a partir da minha própria travessia, e do que aprendi acompanhando mulheres no mesmo processo.',
-      'Não te vou prometer que o teu marido volta em 21 dias.',
-      'Vou prometer-te que **vais ver, pela primeira vez, o que está a acontecer.**',
-      'E o que se vê, dissolve.'
+      'Eu chamo-me **Vivianne dos Santos**.',
+      'Terapeuta sistémica em formação, escritora e criadora.',
+      'Não vim dizer-te o que fazer no teu amor. Vim ajudar-te a ver o nó que o sabota, esse que vem de trás, dos padrões que herdaste sem escolher.',
+      'Estudo os sistemas que nos formam, e foi disso que nasceu a SyncHim.',
+      'Os casais não morrem por falta de amor. Morrem por dessincronia.',
+      'E a sincronia começa **quando voltas a ti**.'
     ]
   },
   porta: {
@@ -115,7 +115,7 @@ const PT: CopySection = {
 
 const EN: CopySection = {
   hero: {
-    eyebrow: 'MARINA VALE',
+    eyebrow: 'VIVIANNE DOS SANTOS',
     tag: 'For married women and singles in serious relationships',
     h1: ["It isn't his coldness.", "It's something else.", "And you've felt it for months."],
     sub: "In 8 minutes, you'll know the name of the old pattern that is sabotaging your relationship, whether you've been married for twenty years or are building one now.",
@@ -184,12 +184,12 @@ const EN: CopySection = {
   autora: {
     eyebrow: 'WHO WRITES TO YOU',
     lines: [
-      'My name is **Marina Vale**.',
-      'I do not give interviews. I do not sell courses. I am nowhere else.',
-      'I built SyncHim from my own crossing, and from what I learned walking with other women through the same process.',
-      "I won't promise your husband will come back in 21 days.",
-      "I'll promise you'll **see, for the first time, what is happening.**",
-      'And what is seen, dissolves.'
+      'My name is **Vivianne dos Santos**.',
+      'Systemic therapist in training, writer and creator.',
+      "I did not come to tell you what to do in your love. I came to help you see the knot that sabotages it, the one that comes from before, from the patterns you inherited without choosing.",
+      'I study the systems that form us, and from that, SyncHim was born.',
+      "Couples don't die from lack of love. They die from desynchrony.",
+      'And synchrony begins **when you return to yourself**.'
     ]
   },
   porta: {
@@ -289,13 +289,13 @@ export default async function LandingPage({ params }: { params: { locale: string
             </div>
           </FadeIn>
 
-          {/* Right column: Marina photo */}
+          {/* Right column: author photo */}
           <FadeIn delay={250} className="order-1 md:order-2">
             <div className="relative aspect-[3/4] max-w-[420px] mx-auto md:mx-0 md:ml-auto">
               <div className="absolute inset-0 ring-1 ring-separator" />
               <Image
-                src="/marina/editorial.png"
-                alt="Marina Vale"
+                src="/vivianne/hero.jpeg"
+                alt="Vivianne dos Santos"
                 fill
                 priority
                 sizes="(max-width: 768px) 100vw, 440px"
@@ -422,7 +422,7 @@ export default async function LandingPage({ params }: { params: { locale: string
           <div className="relative aspect-[3/4] max-w-[380px] mx-auto md:mx-0 hidden md:block">
             <div className="absolute inset-0 ring-1 ring-separator" />
             <Image
-              src="/marina/maos-escrita.png"
+              src="/vivianne/escrita.jpeg"
               alt=""
               fill
               sizes="380px"
@@ -466,8 +466,8 @@ export default async function LandingPage({ params }: { params: { locale: string
           <div className="relative aspect-[3/4] max-w-[360px] mx-auto md:mx-0">
             <div className="absolute inset-0 ring-1 ring-separator" />
             <Image
-              src="/marina/janela.png"
-              alt="Marina Vale"
+              src="/vivianne/quem-sou.jpeg"
+              alt="Vivianne dos Santos"
               fill
               sizes="(max-width: 768px) 100vw, 360px"
               className="object-cover"

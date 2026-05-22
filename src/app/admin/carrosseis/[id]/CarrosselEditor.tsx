@@ -319,7 +319,7 @@ export function CarrosselEditor({
                 className="input"
                 value={item.hashtags ?? ''}
                 onChange={(e) => patchItem('hashtags', e.target.value)}
-                placeholder="#synchim #marinavale ..."
+                placeholder="#synchim #synchimapp ..."
               />
             </div>
           </div>

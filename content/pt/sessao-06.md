@@ -99,4 +99,4 @@ A pergunta lembra ao teu sistema que tu existes fora dele. Cada vez que tu a faz
 
 Em 3 dias, abre-se a Sessão 7. A última.
 
----, Marina Vale
+---, Vivianne dos Santos

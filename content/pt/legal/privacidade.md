@@ -57,11 +57,11 @@ Tens direito a:
 4. **Exportar** os teus dados em formato JSON. Botão em `/conta/exportar`.
 5. **Retirar consentimento** a qualquer momento.
 
-Para qualquer pedido relacionado com dados, escreve para **privacidade@syncehim.com**. Respondemos em até 10 dias úteis.
+Para qualquer pedido relacionado com dados, escreve para **privacidade@synchim.viviannedossantos.com**. Respondemos em até 10 dias úteis.
 
 ## Cookies
 
-Usamos um único cookie técnico essencial: `syncehim_locale` (guarda a tua preferência de língua). Não usamos cookies de tracking.
+Usamos um único cookie técnico essencial: `synchim_locale` (guarda a tua preferência de língua). Não usamos cookies de tracking.
 
 ## Menores
 
@@ -69,7 +69,7 @@ SyncHim é para mulheres adultas. Não recolhemos intencionalmente dados de meno
 
 ## Encarregada de Protecção de Dados
 
-Marina Vale (Sete Ecos SAS), privacidade@syncehim.com
+Vivianne dos Santos (Sete Ecos SAS), privacidade@synchim.viviannedossantos.com
 
 ---
 

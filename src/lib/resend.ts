@@ -7,7 +7,7 @@ function client() {
   return new Resend(process.env.RESEND_API_KEY!);
 }
 
-const FROM = () => process.env.RESEND_FROM || 'Marina <marina@synchim.local>';
+const FROM = () => process.env.RESEND_FROM || 'Vivianne <vivianne@synchim.viviannedossantos.com>';
 
 export interface SendOnceArgs {
   userId: string;
