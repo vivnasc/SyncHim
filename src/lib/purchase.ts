@@ -63,7 +63,9 @@ export async function applyPurchase(orderId: string, capture: CaptureRaw) {
   // Idempotency: if already captured, stop.
   if (orderRow?.status === 'COMPLETED') return;
 
-  // Find or create user.
+  // Find or create user. Look up via GoTrue admin to catch accounts
+  // that exist in auth.users but not in synchim.users (created by
+  // other products sharing the same Supabase project).
   let userId: string | null = null;
   let nome: string | null = null;
   const { data: existing } = await admin
@@ -76,12 +78,32 @@ export async function applyPurchase(orderId: string, capture: CaptureRaw) {
     userId = existing.id;
     nome = existing.nome ?? null;
   } else {
-    const { data: created } = await admin.auth.admin.createUser({
-      email,
-      email_confirm: true,
-      user_metadata: { app: 'synchim', locale, tier }
-    });
-    userId = created.user?.id ?? null;
+    // Check auth.users directly (may exist from another product).
+    const lookupRes = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`,
+      {
+        headers: {
+          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY!}`
+        },
+        cache: 'no-store'
+      }
+    );
+    const lookupJson = lookupRes.ok ? await lookupRes.json().catch(() => null) : null;
+    const authUser = Array.isArray(lookupJson?.users)
+      ? lookupJson.users.find((u: { email?: string }) => u?.email?.toLowerCase() === email.toLowerCase())
+      : null;
+
+    if (authUser?.id) {
+      userId = authUser.id as string;
+    } else {
+      const { data: created } = await admin.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: { app: 'synchim' }
+      });
+      userId = created.user?.id ?? null;
+    }
   }
 
   if (!userId) {
@@ -92,6 +114,12 @@ export async function applyPurchase(orderId: string, capture: CaptureRaw) {
     }).eq('order_id', orderId);
     return;
   }
+
+  // Ensure synchim.users row exists (may be missing if the account was
+  // created by another product on the same Supabase project).
+  await admin
+    .from('users')
+    .upsert({ id: userId, email, locale: locale ?? 'pt' }, { onConflict: 'id' });
 
   // Patch tier and no_comprado.
   const update: Record<string, unknown> = {

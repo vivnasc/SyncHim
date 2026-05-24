@@ -75,10 +75,7 @@ export async function POST(req: NextRequest) {
       email: payload.email,
       password: payload.password,
       email_confirm: true,
-      user_metadata: {
-        app: 'synchim', nome: payload.name, locale, tier: 0,
-        target: payload.target, sub_perfil: payload.subPerfil
-      }
+      user_metadata: { app: 'synchim' }
     });
     if (error || !created.user) {
       return NextResponse.json({ error: 'auth_create_failed', detail: error?.message }, { status: 500 });
