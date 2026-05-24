@@ -269,6 +269,11 @@ export default async function LandingPage({ params }: { params: { locale: string
                 <Arrow />
               </Link>
               <p className="text-ash italic font-body text-sm mt-5">{d.hero.subCta}</p>
+              <p className="text-ash/60 font-body text-xs mt-3">
+                {locale === 'pt'
+                  ? 'Vive no teu telefone. Discreto. Sem notificações. Sem ninguém a ver.'
+                  : 'Lives on your phone. Discreet. No notifications. No one watching.'}
+              </p>
               <p className="text-ash font-body text-sm mt-4 max-w-[34rem]">
                 {locale === 'pt' ? (
                   <>
@@ -506,6 +511,11 @@ export default async function LandingPage({ params }: { params: { locale: string
               <Arrow />
             </Link>
             <p className="text-ash italic font-body text-sm mt-6">{d.porta.subCta}</p>
+            <p className="text-ash/60 font-body text-xs mt-3">
+              {locale === 'pt'
+                ? 'Vive no teu telefone. Discreto. Sem notificações. Sem ninguém a ver.'
+                : 'Lives on your phone. Discreet. No notifications. No one watching.'}
+            </p>
           </div>
         </div>
       </FadeIn>
