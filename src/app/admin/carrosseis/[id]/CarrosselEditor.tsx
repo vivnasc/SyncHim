@@ -218,6 +218,24 @@ export function CarrosselEditor({
                 </select>
               </div>
               <div>
+                <label>Prompt visual (copia para MJ)</label>
+                <div className="row" style={{ gap: 4 }}>
+                  <input
+                    className="input"
+                    value={current.design.imagePrompt ?? ''}
+                    onChange={(e) => patchSlide(active, { design: { ...current.design, imagePrompt: e.target.value || null } })}
+                    placeholder="(preenchido pelo Claude ao gerar conteúdo)"
+                    style={{ fontFamily: 'var(--sans)', fontSize: 12 }}
+                  />
+                  {current.design.imagePrompt && (
+                    <button className="btn" style={{ fontSize: 11, whiteSpace: 'nowrap' }}
+                      onClick={() => { navigator.clipboard.writeText(current.design.imagePrompt!); }}>
+                      copiar
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div>
                 <label>Imagem de fundo (arrasta de MJ ou clica)</label>
                 <ImageDropZone
                   itemId={item.id}
