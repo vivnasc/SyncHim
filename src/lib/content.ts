@@ -104,6 +104,13 @@ export async function getKnotSession(locale: Locale, no: No, n: 3 | 4 | 5 | 6 | 
   const other: Target = target === 'casada' ? 'solteira' : 'casada';
   const cross = readFile(knotSessionPath(locale, no, n, other));
   if (cross) return parse(cross);
+  // fallback EN → PT (para nós ainda não traduzidos)
+  if (locale === 'en') {
+    const ptDirect = readFile(knotSessionPath('pt', no, n, target));
+    if (ptDirect) return parse(ptDirect);
+    const ptCross = readFile(knotSessionPath('pt', no, n, other));
+    if (ptCross) return parse(ptCross);
+  }
   // último fallback: sessão comum (para 6/7 ainda em formato legacy)
   if (n === 6 || n === 7) return parse(COMMON_SESSIONS[locale]?.[n]);
   return null;
@@ -114,7 +121,14 @@ export async function getKnotPractices(locale: Locale, no: No, target: Target = 
   if (direct) return parse(direct);
   const other: Target = target === 'casada' ? 'solteira' : 'casada';
   const cross = readFile(knotPracticesPath(locale, no, other));
-  return parse(cross);
+  if (cross) return parse(cross);
+  // fallback EN → PT
+  if (locale === 'en') {
+    const ptDirect = readFile(knotPracticesPath('pt', no, target));
+    if (ptDirect) return parse(ptDirect);
+    return parse(readFile(knotPracticesPath('pt', no, other)));
+  }
+  return null;
 }
 
 export async function getSession(locale: Locale, no: No, n: number, target: Target = 'casada') {

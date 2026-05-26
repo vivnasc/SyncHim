@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { trackEvent } from '@/lib/events';
 import { Rosaceo } from '@/components/marks/Rosaceo';
 import { Vesica } from '@/components/marks/Vesica';
+import { InstallInstructions } from '@/components/InstallInstructions';
 import { EstrelaPersa } from '@/components/marks/EstrelaPersa';
 import { FadeIn } from '@/components/FadeIn';
 import { NOS } from '@/lib/diagnostic';
@@ -517,6 +518,26 @@ export default async function LandingPage({ params }: { params: { locale: string
                 : 'Lives on your phone. Discreet. No notifications. No one watching.'}
             </p>
           </div>
+        </div>
+      </FadeIn>
+
+      {/* ============ LEVA CONTIGO ============ */}
+      <FadeIn as="section" className="px-6 md:px-10 py-20 md:py-24 bg-coal/60">
+        <div className="max-w-3xl mx-auto">
+          <div className="mini-caps text-goldBright mb-6 text-center">
+            {locale === 'pt' ? 'Leva a SyncHim contigo' : 'Take SyncHim with you'}
+          </div>
+          <h2 className="font-serif text-2xl md:text-3xl text-bone text-center leading-snug mb-4 max-w-xl mx-auto">
+            {locale === 'pt'
+              ? 'Uma aplicação que vive no teu telefone.'
+              : 'An app that lives on your phone.'}
+          </h2>
+          <p className="font-body text-bone/80 text-center leading-relaxed mb-10 max-w-xl mx-auto">
+            {locale === 'pt'
+              ? 'A SyncHim é uma app web. Abre no telemóvel ou no computador, sem descarregar nada de uma loja. Podes instalar no ecrã inicial para aceder com um toque, como qualquer aplicação.'
+              : 'SyncHim is a web app. Open it on your phone or computer, no app store download needed. You can install it on your home screen for one-tap access, like any other app.'}
+          </p>
+          <InstallInstructions locale={locale} />
         </div>
       </FadeIn>
 
