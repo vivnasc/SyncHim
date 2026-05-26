@@ -3,18 +3,135 @@
 <head>
 <meta charset="utf-8" />
 <title>SyncHim · slide</title>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Spectral:ital,wght@0,300;0,400;0,500;1,400&family=Inter:wght@400;500&display=block" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=block" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1A1410;
+    --texto: #F2E8DC;
+    --ouro: #B8843D;
+    --ouro-folha: #D4A857;
+  }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--texto); }
+  body { width: 1080px; height: 1350px; overflow: hidden; font-family: 'EB Garamond', Georgia, serif; position: relative; }
+
+  /* Imagem de fundo full-bleed */
+  .bg-image {
+    position: absolute; inset: 0; z-index: 0;
+    background-size: cover; background-position: center;
+    filter: brightness(0.55) contrast(1.1) saturate(0.85);
+  }
+  /* Gradiente escuro no fundo para legibilidade do texto */
+  .bg-gradient {
+    position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(
+      to bottom,
+      rgba(26,20,16,0.15) 0%,
+      rgba(26,20,16,0.30) 35%,
+      rgba(26,20,16,0.85) 65%,
+      rgba(26,20,16,0.95) 100%
+    );
+  }
+  /* Sem imagem: fundo sólido com textura */
+  .bg-solid {
+    position: absolute; inset: 0; z-index: 0; background: var(--bg);
+  }
+  .bg-solid::after {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0.97  0 0 0 0 0.91  0 0 0 0 0.82  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    opacity: 0.04;
+  }
+
+  /* Container de conteúdo — posicionado na metade inferior */
+  #slide {
+    position: relative; z-index: 2;
+    width: 1080px; height: 1350px;
+    padding: 0;
+    box-sizing: border-box;
+    display: flex; flex-direction: column;
+    justify-content: flex-end;
+  }
+  .content-area {
+    padding: 60px 80px 80px;
+  }
+
+  /* Capa: texto centrado a meio */
+  .layout-capa { justify-content: center; }
+  .layout-capa .content-area { padding: 80px; text-align: center; }
+
+  /* CTA: centrado */
+  .layout-cta { justify-content: center; align-items: center; }
+  .layout-cta .content-area { text-align: center; }
+
+  .body { position: relative; }
+  .body p { margin: 0 0 18px; }
+  .body p:last-child { margin-bottom: 0; }
+  .body strong { color: var(--ouro-folha); font-weight: 600; }
+  .body em { color: var(--ouro); font-style: italic; }
+
+  /* Texto principal — grande, legível sobre imagem */
+  .layout-capa .body { font-size: 72px; line-height: 1.12; font-weight: 600; letter-spacing: -0.01em;
+    text-shadow: 0 2px 30px rgba(0,0,0,0.7), 0 1px 4px rgba(0,0,0,0.5); }
+  .layout-conteudo .body { font-size: 56px; line-height: 1.18; font-weight: 500;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.4); }
+  .layout-cta .body { font-size: 54px; line-height: 1.18; font-weight: 500; color: var(--ouro-folha);
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5); }
+  .layout-assinatura .body { font-size: 48px; font-style: italic; text-align: center;
+    text-shadow: 0 2px 15px rgba(0,0,0,0.5); }
+
+  /* Marca — estrela persa no canto superior direito */
+  .brand-mark {
+    position: absolute; top: 40px; right: 50px; z-index: 3;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand-mark .star { color: var(--ouro-folha); font-size: 22px; }
+  .brand-mark .name {
+    font-family: 'EB Garamond', serif; font-size: 16px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--texto); opacity: 0.9;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+  }
+
+  /* Número de slide — canto superior direito */
+  .slide-num {
+    position: absolute; top: 42px; left: 50px; z-index: 3;
+    font-family: 'EB Garamond', serif; font-size: 14px; letter-spacing: 0.15em;
+    color: var(--texto); opacity: 0.7;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+  }
+
+  /* Assinatura final */
+  .signature { margin-top: 28px; font-size: 26px; color: var(--texto); opacity: 0.85; letter-spacing: 0.04em; text-align: center; }
+  .estrela { color: var(--ouro-folha); font-size: 34px; text-align: center; margin-top: 24px; }
+
+  /* Linha dourada separadora (opcional, activa por design flag) */
+  .gold-line {
+    width: 80px; height: 2px; background: var(--ouro); margin: 0 0 24px;
+  }
+  .layout-capa .gold-line, .layout-cta .gold-line { margin: 0 auto 24px; }
+</style>
 </head>
 <body>
-<div id="slide" class="slide layout-conteudo">
-  <!-- preenchido via window.SLIDE_DATA -->
+<div id="slide" class="layout-conteudo">
+  <!-- camada de fundo -->
+  <div id="bg-layer"></div>
+  <!-- gradiente -->
+  <div id="gradient-layer" class="bg-gradient" style="display:none"></div>
+  <!-- marca -->
+  <div class="brand-mark">
+    <span class="star">✦</span>
+    <span class="name">SyncHim</span>
+  </div>
+  <!-- número do slide -->
+  <div class="slide-num" id="slide-num"></div>
+  <!-- conteúdo -->
+  <div class="content-area">
+    <div class="gold-line" id="gold-line" style="display:none"></div>
+    <div class="body" id="body"></div>
+    <div class="estrela" id="estrela" style="display:none">✦</div>
+    <div class="signature" id="signature" style="display:none"></div>
+  </div>
 </div>
 <script>
-  // Render funciona em duas vias:
-  //   a) Standalone: o gerador injecta window.SLIDE_DATA antes de carregar
-  //      o doc (evaluateOnNewDocument) — seguimos esse path.
-  //   b) Manual QA: ?data=<base64 json> no URL.
   function getData() {
     if (window.SLIDE_DATA) return window.SLIDE_DATA;
     const url = new URL(location.href);
@@ -28,8 +145,8 @@
   }
 
   function renderBody(src) {
-    return (src || '').split(/\n\n+/).map((par) => {
-      const inline = escapeHtml(par)
+    return (src || '').split(/\n\n+/).map(function(par) {
+      var inline = escapeHtml(par)
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/_(.+?)_/g, '<em>$1</em>')
         .replace(/\n/g, '<br/>');
@@ -37,77 +154,71 @@
     }).join('');
   }
 
-  // Tipografia adaptativa: reduz font-size até caber em altura.
   function fitToHeight(el, maxH, minPx) {
-    let size = parseFloat(getComputedStyle(el).fontSize);
-    let guard = 80;
+    var size = parseFloat(getComputedStyle(el).fontSize);
+    var guard = 80;
     while (el.scrollHeight > maxH && size > minPx && guard-- > 0) {
       size -= 2;
       el.style.fontSize = size + 'px';
     }
   }
 
-  function applyBrand(brand) {
-    if (!brand) return;
-    const r = document.documentElement.style;
-    if (brand.bg)        r.setProperty('--bg', brand.bg);
-    if (brand.bgElev)    r.setProperty('--bg-elev', brand.bgElev);
-    if (brand.texto)     r.setProperty('--texto', brand.texto);
-    if (brand.textoSuave)r.setProperty('--texto-suave', brand.textoSuave);
-    if (brand.ouro)      r.setProperty('--ouro', brand.ouro);
-    if (brand.ouroFolha) r.setProperty('--ouro-folha', brand.ouroFolha);
-    if (brand.bordeaux)  r.setProperty('--bordeaux', brand.bordeaux);
-    if (brand.linha)     r.setProperty('--linha', brand.linha);
-  }
-
   function render() {
-    const data = getData();
+    var data = getData();
     if (!data) return;
-    applyBrand(data.brand);
 
-    const root = document.getElementById('slide');
-    const layout = data.layout || 'conteudo';
-    root.className = 'slide layout-' + layout;
+    var root = document.getElementById('slide');
+    var layout = data.layout || 'conteudo';
+    root.className = 'layout-' + layout;
 
-    let inner = '';
-    const design = data.design || {};
-
-    // Ghost number (canto): apenas para 'conteudo'.
-    if (layout === 'conteudo' && design.numero != null) {
-      inner += '<span class="ghost-num">' + String(design.numero).padStart(2, '0') + '</span>';
+    // Fundo: imagem ou sólido
+    var bgLayer = document.getElementById('bg-layer');
+    var gradientLayer = document.getElementById('gradient-layer');
+    if (data.imageUrl || (data.design && data.design.imageUrl)) {
+      var imgUrl = data.imageUrl || data.design.imageUrl;
+      bgLayer.className = 'bg-image';
+      bgLayer.style.backgroundImage = 'url(' + imgUrl + ')';
+      gradientLayer.style.display = 'block';
+    } else {
+      bgLayer.className = 'bg-solid';
+      gradientLayer.style.display = 'none';
     }
 
-    // Body principal.
-    inner += '<div class="body">' + renderBody(data.body || '') + '</div>';
-
-    // Ornamento / marca.
-    if (layout === 'capa') {
-      inner += '<div class="rosaceo">' + rosaceoSvg() + '</div>';
-    }
-    if (layout === 'cta' || layout === 'assinatura' || design.ornamento === 'estrela') {
-      inner += '<div class="estrela">✦</div>';
-    }
-    if (design.ornamento === 'vesica') {
-      inner += '<div class="vesica">' + vesicaSvg() + '</div>';
+    // Número
+    var numEl = document.getElementById('slide-num');
+    var num = (data.design && data.design.numero != null) ? data.design.numero : (data.idx != null ? data.idx + 1 : null);
+    if (num != null && layout !== 'capa') {
+      numEl.textContent = String(num).padStart(2, '0') + ' / ' + (data.totalSlides || '08');
+    } else {
+      numEl.style.display = 'none';
     }
 
-    // Assinatura final ("— Marina Vale"): apenas para 'assinatura' ou último slide marcado.
+    // Linha dourada
+    var goldLine = document.getElementById('gold-line');
+    if (layout === 'capa' || layout === 'cta' || (data.design && data.design.goldLine)) {
+      goldLine.style.display = 'block';
+    }
+
+    // Body
+    document.getElementById('body').innerHTML = renderBody(data.body || '');
+
+    // Estrela + assinatura
+    if (layout === 'assinatura' || layout === 'cta') {
+      document.getElementById('estrela').style.display = 'block';
+    }
     if (layout === 'assinatura') {
-      inner += '<div class="signature">—<br/>Marina Vale</div>';
+      var sig = document.getElementById('signature');
+      sig.style.display = 'block';
+      sig.innerHTML = '&mdash;<br/>Vivianne dos Santos';
     }
 
-    root.innerHTML = inner;
-    fitToHeight(root.querySelector('.body'), root.clientHeight - 200, 28);
+    // Fit text
+    var contentArea = document.querySelector('.content-area');
+    var bodyEl = document.getElementById('body');
+    var maxH = layout === 'capa' ? 900 : 650;
+    fitToHeight(bodyEl, maxH, 28);
 
-    // Sinaliza ao Puppeteer que está pronto.
     document.body.dataset.ready = '1';
-  }
-
-  function rosaceoSvg() {
-    return '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="0.7"><circle cx="32" cy="32" r="22"/><circle cx="32" cy="32" r="14"/><circle cx="32" cy="32" r="6"/><path d="M32 10v44M10 32h44M16 16l32 32M48 16L16 48"/></svg>';
-  }
-  function vesicaSvg() {
-    return '<svg viewBox="0 0 120 60" fill="none" stroke="currentColor" stroke-width="0.7"><circle cx="48" cy="30" r="24"/><circle cx="72" cy="30" r="24"/></svg>';
   }
 
   document.fonts.ready.then(render);

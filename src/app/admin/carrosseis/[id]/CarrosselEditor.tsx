@@ -217,11 +217,31 @@ export function CarrosselEditor({
                 </select>
               </div>
               <div>
+                <label>Imagem de fundo (URL)</label>
+                <input
+                  className="input"
+                  value={current.design.imageUrl ?? ''}
+                  onChange={(e) => patchSlide(active, { design: { ...current.design, imageUrl: e.target.value || null } })}
+                  placeholder="https://... (Midjourney, DALL-E, ou upload Supabase)"
+                />
+              </div>
+              {!current.design.imageUrl && (
+                <div>
+                  <label>Prompt visual (para gerar a imagem depois)</label>
+                  <input
+                    className="input"
+                    value={current.design.imagePrompt ?? ''}
+                    onChange={(e) => patchSlide(active, { design: { ...current.design, imagePrompt: e.target.value || null } })}
+                    placeholder="ex: intimate candlelight, woman's hand on old letter, dark warm tones, cinematic"
+                  />
+                </div>
+              )}
+              <div>
                 <label>Texto (markdown leve: **bold**, _italic_, linha em branco = parágrafo)</label>
                 <textarea
                   value={current.body}
                   onChange={(e) => patchSlide(active, { body: e.target.value })}
-                  rows={12}
+                  rows={10}
                 />
               </div>
               <details>
