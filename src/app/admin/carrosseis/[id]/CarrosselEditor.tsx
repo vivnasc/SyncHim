@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { SlidePreview, renderBody } from '../../SlidePreview';
+import { ImageDropZone } from '../../ImageDropZone';
 import type { Slide, CarouselLayout } from '@/lib/admin/brand';
 
 type Item = {
@@ -217,25 +218,20 @@ export function CarrosselEditor({
                 </select>
               </div>
               <div>
-                <label>Imagem de fundo (URL)</label>
-                <input
-                  className="input"
-                  value={current.design.imageUrl ?? ''}
-                  onChange={(e) => patchSlide(active, { design: { ...current.design, imageUrl: e.target.value || null } })}
-                  placeholder="https://... (Midjourney, DALL-E, ou upload Supabase)"
+                <label>Imagem de fundo (arrasta de MJ ou clica)</label>
+                <ImageDropZone
+                  itemId={item.id}
+                  slideIdx={active}
+                  currentUrl={current.design.imageUrl ?? null}
+                  onUploaded={(url) => patchSlide(active, { design: { ...current.design, imageUrl: url } })}
                 />
+                {current.design.imageUrl && (
+                  <button className="btn" style={{ marginTop: 6, fontSize: 11 }}
+                    onClick={() => patchSlide(active, { design: { ...current.design, imageUrl: null } })}>
+                    remover imagem
+                  </button>
+                )}
               </div>
-              {!current.design.imageUrl && (
-                <div>
-                  <label>Prompt visual (para gerar a imagem depois)</label>
-                  <input
-                    className="input"
-                    value={current.design.imagePrompt ?? ''}
-                    onChange={(e) => patchSlide(active, { design: { ...current.design, imagePrompt: e.target.value || null } })}
-                    placeholder="ex: intimate candlelight, woman's hand on old letter, dark warm tones, cinematic"
-                  />
-                </div>
-              )}
               <div>
                 <label>Texto (markdown leve: **bold**, _italic_, linha em branco = parágrafo)</label>
                 <textarea
