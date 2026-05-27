@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Regra de escrita de Marina: nunca usar travessões (em-dash — nem
- * en-dash –) no corpo. A única excepção é a assinatura visual da
- * Marina, que é elemento de marca e está num componente (EstrelaPersa,
+ * Regra de escrita da SyncHim: nunca usar travessões (em-dash , nem
+ * en-dash –) no corpo. A única excepção é a assinatura visual,
+ * elemento de marca, que está num componente (EstrelaPersa,
  * não em texto).
  *
  * Este script substitui em-dash/en-dash por vírgula em ficheiros de

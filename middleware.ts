@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import { locales, defaultLocale } from './src/i18n';
 
-const PT_COUNTRIES = new Set(['BR', 'PT', 'MZ', 'AO', 'CV', 'GW', 'ST', 'TL']);
-
 const intlMiddleware = createMiddleware({
   locales: [...locales],
   defaultLocale,
@@ -18,7 +16,7 @@ export function middleware(request: NextRequest) {
   if (pathname === '/admin' || pathname.startsWith('/admin/')) {
     return NextResponse.next();
   }
-  // /offline é a fallback page do service worker — sem locale prefix.
+  // /offline é a fallback page do service worker, sem locale prefix.
   if (pathname === '/offline') {
     return NextResponse.next();
   }
@@ -28,18 +26,12 @@ export function middleware(request: NextRequest) {
   );
 
   if (!hasLocale && pathname === '/') {
+    // PT é o default global. EN só se a utilizadora tiver escolhido
+    // explicitamente via LocaleSwitcher (cookie NEXT_LOCALE).
     const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
-    // Vercel: `x-vercel-ip-country`. Fallback para o antigo cf-header
-    // mantém-se para casos onde a app continua a correr atrás de CF.
-    const country =
-      request.headers.get('x-vercel-ip-country') ??
-      request.geo?.country ??
-      request.headers.get('cf-ipcountry') ??
-      '';
-    const inferred = PT_COUNTRIES.has(country.toUpperCase()) ? 'pt' : 'en';
     const target = (cookieLocale && (locales as readonly string[]).includes(cookieLocale))
       ? cookieLocale
-      : inferred;
+      : defaultLocale;
 
     const url = request.nextUrl.clone();
     url.pathname = `/${target}`;

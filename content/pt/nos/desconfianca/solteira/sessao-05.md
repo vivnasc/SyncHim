@@ -104,4 +104,4 @@ Em 3 dias, abre-se a Sessão 6, a prática sustentada.
 
 ---
 
-[ estrela persa ], Marina Vale
+[ estrela persa ], Vivianne dos Santos

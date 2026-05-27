@@ -92,4 +92,4 @@ A subtle change. You'll feel the urge to revert: stand up, go to him, ask how it
 
 End of each day, write one line: *Today, when he arrived, I _____.*
 
-In 3 days, Session 6 opens, the sustained practice for the months ahead., Marina Vale
+In 3 days, Session 6 opens, the sustained practice for the months ahead., Vivianne dos Santos

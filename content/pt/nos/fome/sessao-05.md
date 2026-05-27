@@ -105,4 +105,4 @@ No fim de cada dia, escreve uma linha: *Hoje, quando ele chegou, eu _______.*
 
 Em 3 dias, abre-se a Sessão 6, a prática sustentada para os próximos meses.
 
----, Marina Vale
+---, Vivianne dos Santos

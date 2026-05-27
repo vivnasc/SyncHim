@@ -21,12 +21,12 @@ const layout = (body: string) => `<!doctype html>
 <html><body style="background:#0A0A0A;color:#F5F1EA;font-family:Georgia,serif;line-height:1.55;padding:32px;">
 <div style="max-width:520px;margin:0 auto;">
 ${body}
-<p style="margin-top:40px;color:#888880;font-size:14px;">—<br/>Marina</p>
+<p style="margin-top:40px;color:#888880;font-size:14px;">—<br/>Vivianne</p>
 </div>
 </body></html>`;
 
 function build(subject: string, body: string): Rendered {
-  const text = body.replace(/<[^>]+>/g, '').replace(/\n\s*\n/g, '\n\n').trim() + '\n\n—\nMarina';
+  const text = body.replace(/<[^>]+>/g, '').replace(/\n\s*\n/g, '\n\n').trim() + '\n\n—\nVivianne';
   return { subject, html: layout(body), text };
 }
 

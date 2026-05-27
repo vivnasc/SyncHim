@@ -146,6 +146,27 @@ export default async function ResultPage({ params }: { params: { locale: string 
         </div>
       </FadeIn>
 
+      {/* ============ CTA RÁPIDO (logo após a emoção) ============ */}
+      {sellable && (
+        <FadeIn as="section" className="px-6 md:px-10 py-10">
+          <div className="max-w-md mx-auto text-center">
+            <Link href={`/${locale}/checkout?no=${dominante}`} className="cta-living large">
+              <span>
+                {locale === 'pt'
+                  ? `Quero dissolver a ${dominanteName}`
+                  : `I want to dissolve ${dominanteName}`}
+              </span>
+              <Arrow />
+            </Link>
+            <p className="text-ash/60 font-body text-xs mt-4">
+              {locale === 'pt'
+                ? 'Podes continuar a ler antes de decidir.'
+                : 'You can keep reading before you decide.'}
+            </p>
+          </div>
+        </FadeIn>
+      )}
+
       <Vesica className="w-20 h-12 mx-auto text-gold my-4" />
 
       {/* ============ ESPELHO ============ */}

@@ -75,7 +75,7 @@ export default async function OG() {
           }}
         >
           <span style={{ fontStyle: 'italic' }}>
-            Método silencioso de 21 dias. Marina Vale.
+            Método silencioso de 21 dias. Vivianne dos Santos.
           </span>
           <span style={{ color: '#D4A857' }}>synchim.vercel.app</span>
         </div>

@@ -247,4 +247,4 @@ Após calcular, apresentar:
 
 ---
 
-## ASSINATURA, Marina Vale
+## ASSINATURA, Vivianne dos Santos

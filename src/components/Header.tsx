@@ -21,7 +21,7 @@ export async function Header() {
         href={`/${locale}`}
         className="flex items-center gap-3 font-serif text-2xl tracking-wider text-bone hover:text-bone"
       >
-        <EstrelaPersa className="w-6 h-6 text-goldBright" />
+        <EstrelaPersa className="w-10 h-10 text-goldBright" strokeWidth={1.2} />
         <span>SyncHim<span className="text-gold">.</span></span>
       </Link>
       <nav className="flex items-center gap-6 text-sm">

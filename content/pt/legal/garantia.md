@@ -13,7 +13,7 @@ Sem perguntas. Sem fricção. Sem ter que justificar.
 
 ## Como pedir
 
-1. Escreve para **reembolso@syncehim.com** dentro de 7 dias da compra.
+1. Escreve para **reembolso@synchim.viviannedossantos.com** dentro de 7 dias da compra.
 2. Inclui o email da tua conta.
 3. Em até 5 dias úteis processamos o reembolso integral via PayPal.
 4. O valor regressa ao teu cartão em 5-10 dias úteis (depende do banco).
@@ -34,4 +34,4 @@ Depois de 7 dias da compra, não há reembolso. Estamos disponíveis para falar 
 
 ## Por que 7 dias
 
-Porque depois da Sessão 3, vais ter visto material que só fará sentido se atravessares. Reembolsar depois da Sessão 3 seria pagar-te para leres o método. Não é o acordo., Marina Vale
+Porque depois da Sessão 3, vais ter visto material que só fará sentido se atravessares. Reembolsar depois da Sessão 3 seria pagar-te para leres o método. Não é o acordo., Vivianne dos Santos

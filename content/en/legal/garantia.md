@@ -13,7 +13,7 @@ No questions. No friction. No need to justify.
 
 ## How to request
 
-1. Write to **refund@syncehim.com** within 7 days of purchase.
+1. Write to **refund@synchim.viviannedossantos.com** within 7 days of purchase.
 2. Include the email associated with your account.
 3. Within 5 business days, we process the full refund via PayPal.
 4. The amount returns to your card in 5-10 business days (depending on your bank).
@@ -34,4 +34,4 @@ After 7 days from purchase, there's no refund. We're available to speak with you
 
 ## Why 7 days
 
-Because after Session 3, you'll have seen material that only makes sense if you complete the crossing. Refunding after Session 3 would be paying you to read the method. That's not the deal., Marina Vale
+Because after Session 3, you'll have seen material that only makes sense if you complete the crossing. Refunding after Session 3 would be paying you to read the method. That's not the deal., Vivianne dos Santos
