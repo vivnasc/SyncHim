@@ -1,12 +1,12 @@
 /**
- * SyncHim · Plano semanal de conteúdo (constante TypeScript).
+ * SyncHim · Plano semanal de conteúdo.
  *
- * Baseado no 04-calendario.md:
- *   - 09h: carrossel didático (A/B/C/D rotativos)
- *   - 20h: carrossel reconhecimento OU CTA (cada 6.o dia)
- *   - 14h (dias alternados): vídeo kinetic-text (futuro, ignorado no MVP)
+ * 2 carrosséis/dia × 7 dias = 14 por semana.
+ * Ambos ao meio-dia (12:00) — melhor horário para engagement.
+ * Publicados em sequência (Metricool agenda hora exacta por post).
  *
- * MVP: só gera CARROSSÉIS (manhã + noite). Vídeos ficam para v2.
+ *   - Post 1: didático (A/B/C/D rotativos)
+ *   - Post 2: reconhecimento OU CTA (cada 7.o dia)
  */
 
 export type CarouselSlotType =
@@ -18,9 +18,8 @@ export type CarouselSlotType =
   | 'cta';
 
 export interface WeekSlot {
-  /** 0 = segunda, 6 = domingo */
   dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  time: '09:00' | '20:00';
+  time: '12:00';
   type: CarouselSlotType;
   slideCount: number;
 }
@@ -42,7 +41,7 @@ export const KNOTS = [
 export type Knot = (typeof KNOTS)[number];
 
 // Rotação ABCD para os slots da manhã (7 dias)
-const MORNING_ROTATION: CarouselSlotType[] = [
+const DIDACTIC_ROTATION: CarouselSlotType[] = [
   'didatico-A',
   'didatico-B',
   'didatico-C',
@@ -70,13 +69,13 @@ const EVENING_ROTATION: CarouselSlotType[] = [
 export const WEEK_PLAN: WeekSlot[] = Array.from({ length: 7 }, (_, d) => [
   {
     dayOfWeek: d as WeekSlot['dayOfWeek'],
-    time: '09:00' as const,
-    type: MORNING_ROTATION[d],
+    time: '12:00' as const,
+    type: DIDACTIC_ROTATION[d],
     slideCount: 8,
   },
   {
     dayOfWeek: d as WeekSlot['dayOfWeek'],
-    time: '20:00' as const,
+    time: '12:00' as const,
     type: EVENING_ROTATION[d],
     slideCount: EVENING_ROTATION[d] === 'cta' ? 6 : 8,
   },
