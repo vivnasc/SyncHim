@@ -10,6 +10,7 @@
     "icons": "node scripts/generate-pwa-icons.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.99.0",
     "@paypal/react-paypal-js": "^8.7.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.46.1",

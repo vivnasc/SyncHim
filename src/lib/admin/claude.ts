@@ -1,89 +1,72 @@
 /**
- * SyncHim · cliente Claude API minimalista para geração de copy.
+ * SyncHim · cliente Claude API via SDK oficial (@anthropic-ai/sdk).
  *
- * Não usa o SDK (@anthropic-ai/sdk) para evitar adicionar dep pesada.
- * Chama directamente a Messages API com tool_choice para garantir
- * JSON estrito sem parsing defensivo.
+ * Padrão escola-veus: SDK lida com auth, retries, timeouts, streaming.
+ * Tool calling com tool_choice forçado para JSON estrito.
  *
- * Env:
- *   ANTHROPIC_API_KEY
- *   ANTHROPIC_MODEL (opcional, default claude-sonnet-4-6)
+ * Env: ANTHROPIC_API_KEY
  */
 
-const API_URL = 'https://api.anthropic.com/v1/messages';
-const ANTHROPIC_VERSION = '2023-06-01';
+import Anthropic from '@anthropic-ai/sdk';
+
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 
-type ToolBlock = { type: 'tool_use'; name: string; input: any; id: string };
-type TextBlock = { type: 'text'; text: string };
-type ContentBlock = ToolBlock | TextBlock;
+let _client: Anthropic | null = null;
+function client(): Anthropic {
+  if (_client) return _client;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY não configurado');
+  _client = new Anthropic({ apiKey });
+  return _client;
+}
 
 export type GenerateArgs = {
   system: string;
-  /** Mensagem da utilizadora — o "brief" desta peça. */
   prompt: string;
-  /** Schema JSON estrito (Anthropic tool input_schema). */
-  schema: { name: string; description: string; input_schema: any };
+  schema: { name: string; description?: string; input_schema: Record<string, unknown> };
   maxTokens?: number;
-  /** Few-shot opcional (cache_control ephemeral aplicado automaticamente). */
-  examples?: Array<{ role: 'user' | 'assistant'; content: string }>;
 };
 
 /**
- * Pede a Claude para preencher um JSON respeitando o schema.
- * Devolve o objecto directamente (input do tool_use block).
+ * Pede a Claude para preencher um JSON via tool_use forçado.
+ * System prompt com cache_control ephemeral (90% desconto em re-runs).
  */
 export async function generateStructured<T = any>(args: GenerateArgs): Promise<T> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY não configurado');
   const model = process.env.ANTHROPIC_MODEL || DEFAULT_MODEL;
 
-  // System como bloco com cache_control para descontar 90% em re-runs.
-  const systemBlocks: any[] = [
-    {
-      type: 'text',
-      text: args.system,
-      cache_control: { type: 'ephemeral' }
-    }
-  ];
-
-  const messages: any[] = [];
-  if (args.examples && args.examples.length > 0) {
-    for (const e of args.examples) {
-      messages.push({ role: e.role, content: e.content });
-    }
-  }
-  messages.push({ role: 'user', content: args.prompt });
-
-  const body = {
+  const response = await client().messages.create({
     model,
-    max_tokens: args.maxTokens ?? 4096,
-    system: systemBlocks,
-    messages,
-    tools: [args.schema],
-    tool_choice: { type: 'tool', name: args.schema.name }
-  };
-
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': ANTHROPIC_VERSION,
-      'content-type': 'application/json'
-    },
-    body: JSON.stringify(body)
+    max_tokens: args.maxTokens ?? 8192,
+    system: [
+      {
+        type: 'text' as const,
+        text: args.system,
+        cache_control: { type: 'ephemeral' as const }
+      }
+    ],
+    messages: [{ role: 'user' as const, content: args.prompt }],
+    tools: [
+      {
+        name: args.schema.name,
+        description: args.schema.description ?? '',
+        input_schema: args.schema.input_schema as Anthropic.Tool.InputSchema
+      }
+    ],
+    tool_choice: { type: 'tool' as const, name: args.schema.name }
   });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`Claude API ${res.status}: ${text.slice(0, 500)}`);
+  const toolBlock = response.content.find(
+    (c): c is Anthropic.ToolUseBlock => c.type === 'tool_use'
+  );
+  if (!toolBlock) {
+    const textBlock = response.content.find(
+      (c): c is Anthropic.TextBlock => c.type === 'text'
+    );
+    throw new Error(
+      `Claude não devolveu tool_use. stop_reason=${response.stop_reason}. ` +
+      `Texto: ${textBlock?.text?.slice(0, 200) ?? '(vazio)'}`
+    );
   }
 
-  const data = await res.json() as { content: ContentBlock[]; stop_reason: string };
-  const toolBlock = data.content.find((c) => c.type === 'tool_use') as ToolBlock | undefined;
-  if (!toolBlock) {
-    const textBlock = data.content.find((c) => c.type === 'text') as TextBlock | undefined;
-    throw new Error(`Claude não devolveu tool_use. Resposta: ${textBlock?.text?.slice(0, 200) ?? '(vazio)'}`);
-  }
   return toolBlock.input as T;
 }
