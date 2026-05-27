@@ -5,6 +5,7 @@ import { WEEK_PLAN, knotForSlot } from '@/lib/admin/calendar-plan';
 import { generateCarousel } from '@/lib/admin/content-generator';
 
 export const runtime = 'nodejs';
+export const maxDuration = 300;
 
 /**
  * POST /api/admin/plan-week
