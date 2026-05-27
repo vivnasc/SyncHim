@@ -7,7 +7,9 @@ function client() {
   return new Resend(process.env.RESEND_API_KEY!);
 }
 
-const FROM = () => process.env.RESEND_FROM || 'Vivianne <vivianne@synchim.viviannedossantos.com>';
+const FROM = () => process.env.RESEND_FROM || 'SyncHim <noreply@viviannedossantos.com>';
+
+const ADMIN_EMAIL = 'ola@viviannedossantos.com';
 
 export interface SendOnceArgs {
   userId: string;
@@ -75,4 +77,19 @@ export async function sendMagicLink(email: string, locale: Locale, nome?: string
   const actionLink = data?.properties?.action_link;
   if (!actionLink) throw new Error('No action link from Supabase');
   return sendMagicLinkEmail(email, locale, actionLink, nome);
+}
+
+export async function notifyAdminPurchase(vars: {
+  email: string; tier: string; no: string; amount: string; locale: Locale;
+}) {
+  const { subject, html, text } = renderEmail('compra_admin', vars.locale, vars);
+  const r = await client().emails.send({
+    from: FROM(),
+    to: ADMIN_EMAIL,
+    subject,
+    html,
+    text
+  });
+  if (r.error) throw new Error(r.error.message);
+  return r.data?.id;
 }

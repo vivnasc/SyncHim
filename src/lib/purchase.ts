@@ -1,5 +1,5 @@
 import { createSupabaseAdmin } from './supabase/admin';
-import { sendMagicLink, sendOnce } from './resend';
+import { sendMagicLink, sendOnce, notifyAdminPurchase } from './resend';
 import { trackEvent } from './events';
 import type { Locale, No } from './diagnostic';
 
@@ -167,6 +167,12 @@ export async function applyPurchase(orderId: string, capture: CaptureRaw) {
   }).eq('order_id', orderId);
 
   await trackEvent('compra_completada', { userId, metadata: { tier, no, orderId } });
+
+  // Notify admin (ola@viviannedossantos.com)
+  try {
+    const amount = cap.amount?.value ?? '?';
+    await notifyAdminPurchase({ email, tier: String(tier), no: no ?? 'biblioteca', amount, locale });
+  } catch { /* don't block on admin notification */ }
 
   // Send paid welcome with magic link.
   try {
