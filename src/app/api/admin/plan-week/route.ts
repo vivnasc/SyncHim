@@ -18,6 +18,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
+  // Verificação imediata antes de perder tempo
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json(
+      { error: 'ANTHROPIC_API_KEY não configurado em Vercel. Settings → Environment Variables.' },
+      { status: 503 },
+    );
+  }
+
   const body = await req.json().catch(() => null) as { startDate?: string } | null;
   if (!body?.startDate || !/^\d{4}-\d{2}-\d{2}$/.test(body.startDate)) {
     return NextResponse.json(
@@ -33,15 +41,12 @@ export async function POST(req: NextRequest) {
 
   const supabase = createSupabaseAdmin();
   const created: Array<{ id: string; code: string; title: string; scheduledAt: string }> = [];
+  const errors: string[] = [];
 
   // Sequencial para evitar rate limits do Claude API
   for (let i = 0; i < WEEK_PLAN.length; i++) {
     const slot = WEEK_PLAN[i];
     const knot = knotForSlot(i);
-
-    console.log(
-      `[plan-week] Slot ${i + 1}/${WEEK_PLAN.length}: dia ${slot.dayOfWeek} ${slot.time} tipo=${slot.type} no=${knot}`,
-    );
 
     // Calcula scheduled_at
     const scheduled = new Date(startDate);
@@ -55,8 +60,17 @@ export async function POST(req: NextRequest) {
     try {
       carousel = await generateCarousel(slot.type, knot, slot.dayOfWeek);
     } catch (err: any) {
-      console.error(`[plan-week] Erro ao gerar slot ${i + 1}:`, err?.message ?? err);
-      continue; // salta este slot, continua os restantes
+      const msg = `Slot ${i + 1} (${slot.type}): ${err?.message ?? String(err)}`;
+      errors.push(msg);
+      // Se o PRIMEIRO slot falhar, é provavelmente uma config issue.
+      // Devolve erro imediato para não esperar 14 falhas silenciosas.
+      if (i === 0) {
+        return NextResponse.json(
+          { error: `Claude API falhou no primeiro slot. Verifica ANTHROPIC_API_KEY. Detalhe: ${err?.message}`, errors: [msg] },
+          { status: 500 },
+        );
+      }
+      continue;
     }
 
     // Próximo código SC-XXX
@@ -112,7 +126,7 @@ export async function POST(req: NextRequest) {
     console.log(`[plan-week] Criado: ${code} "${carousel.title}" (${carousel.slides.length} slides)`);
   }
 
-  return NextResponse.json({ created: created.length, items: created });
+  return NextResponse.json({ created: created.length, items: created, errors });
 }
 
 /* ------------------------------------------------------------------ */
