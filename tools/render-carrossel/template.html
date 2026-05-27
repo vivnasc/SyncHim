@@ -15,13 +15,19 @@
   html, body { margin: 0; padding: 0; background: var(--bg); color: var(--texto); }
   body { width: 1080px; height: 1350px; overflow: hidden; font-family: 'EB Garamond', Georgia, serif; position: relative; }
 
-  /* === MARCA top-left (como FreeMe) === */
+  /* === MARCA top-left com ícone === */
   .brand {
-    position: absolute; top: 38px; left: 48px; z-index: 10;
-    font-size: 26px; font-style: italic; font-weight: 500;
+    position: absolute; top: 34px; left: 44px; z-index: 10;
+    display: flex; align-items: center; gap: 10px;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  }
+  .brand .icon {
+    font-size: 32px; color: var(--ouro-folha); line-height: 1;
+  }
+  .brand .name {
+    font-size: 24px; font-style: italic; font-weight: 500;
     color: var(--texto); opacity: 0.95;
     letter-spacing: 0.02em;
-    text-shadow: 0 2px 12px rgba(0,0,0,0.5);
   }
 
   /* === CRÉDITO bottom-left === */
@@ -113,7 +119,7 @@
 <body>
 <div id="slide">
   <div class="image-area" id="image-area" style="display:none"><img id="bg-img"/><div class="gradient"></div></div>
-  <div class="brand" id="brand">SyncHim</div>
+  <div class="brand" id="brand"><span class="icon">✦</span><span class="name">SyncHim</span></div>
   <div class="credit">© viviannedossantos</div>
   <div class="pagination" id="pagination"></div>
   <div class="text-area">
