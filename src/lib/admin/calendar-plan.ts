@@ -1,0 +1,91 @@
+/**
+ * SyncHim · Plano semanal de conteúdo (constante TypeScript).
+ *
+ * Baseado no 04-calendario.md:
+ *   - 09h: carrossel didático (A/B/C/D rotativos)
+ *   - 20h: carrossel reconhecimento OU CTA (cada 6.o dia)
+ *   - 14h (dias alternados): vídeo kinetic-text (futuro, ignorado no MVP)
+ *
+ * MVP: só gera CARROSSÉIS (manhã + noite). Vídeos ficam para v2.
+ */
+
+export type CarouselSlotType =
+  | 'didatico-A'
+  | 'didatico-B'
+  | 'didatico-C'
+  | 'didatico-D'
+  | 'reconhecimento'
+  | 'cta';
+
+export interface WeekSlot {
+  /** 0 = segunda, 6 = domingo */
+  dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  time: '09:00' | '20:00';
+  type: CarouselSlotType;
+  slideCount: number;
+}
+
+/**
+ * Os 7 nós da marca, em ordem canónica.
+ * Usados para rodar o foco ao longo da semana.
+ */
+export const KNOTS = [
+  'fome',
+  'controlo',
+  'inferioridade',
+  'desconfianca',
+  'salvadora',
+  'abandono',
+  'invisibilidade',
+] as const;
+
+export type Knot = (typeof KNOTS)[number];
+
+// Rotação ABCD para os slots da manhã (7 dias)
+const MORNING_ROTATION: CarouselSlotType[] = [
+  'didatico-A',
+  'didatico-B',
+  'didatico-C',
+  'didatico-D',
+  'didatico-A',
+  'didatico-B',
+  'didatico-C',
+];
+
+// Noite: reconhecimento nos 6 primeiros dias, CTA no 7.o
+const EVENING_ROTATION: CarouselSlotType[] = [
+  'reconhecimento',
+  'reconhecimento',
+  'reconhecimento',
+  'reconhecimento',
+  'reconhecimento',
+  'reconhecimento',
+  'cta',
+];
+
+/**
+ * Plano fixo de uma semana: 14 slots (7 manhãs + 7 noites).
+ * Cada slot indica dia, hora, tipo e n.o de slides.
+ */
+export const WEEK_PLAN: WeekSlot[] = Array.from({ length: 7 }, (_, d) => [
+  {
+    dayOfWeek: d as WeekSlot['dayOfWeek'],
+    time: '09:00' as const,
+    type: MORNING_ROTATION[d],
+    slideCount: 8,
+  },
+  {
+    dayOfWeek: d as WeekSlot['dayOfWeek'],
+    time: '20:00' as const,
+    type: EVENING_ROTATION[d],
+    slideCount: EVENING_ROTATION[d] === 'cta' ? 6 : 8,
+  },
+]).flat();
+
+/**
+ * Dado o index do slot (0..13), devolve o nó em foco.
+ * Roda pelos 7 nós de modo que cada nó seja tocado pelo menos 2x por semana.
+ */
+export function knotForSlot(slotIndex: number): Knot {
+  return KNOTS[slotIndex % KNOTS.length];
+}
