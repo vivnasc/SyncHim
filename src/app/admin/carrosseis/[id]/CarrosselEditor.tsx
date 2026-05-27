@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { SlidePreview, renderBody } from '../../SlidePreview';
+import { ImageDropZone } from '../../ImageDropZone';
 import type { Slide, CarouselLayout } from '@/lib/admin/brand';
 
 type Item = {
@@ -217,11 +218,44 @@ export function CarrosselEditor({
                 </select>
               </div>
               <div>
+                <label>Prompt visual (copia para MJ)</label>
+                <div className="row" style={{ gap: 4 }}>
+                  <input
+                    className="input"
+                    value={current.design.imagePrompt ?? ''}
+                    onChange={(e) => patchSlide(active, { design: { ...current.design, imagePrompt: e.target.value || null } })}
+                    placeholder="(preenchido pelo Claude ao gerar conteúdo)"
+                    style={{ fontFamily: 'var(--sans)', fontSize: 12 }}
+                  />
+                  {current.design.imagePrompt && (
+                    <button className="btn" style={{ fontSize: 11, whiteSpace: 'nowrap' }}
+                      onClick={() => { navigator.clipboard.writeText(current.design.imagePrompt!); }}>
+                      copiar
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label>Imagem de fundo (arrasta de MJ ou clica)</label>
+                <ImageDropZone
+                  itemId={item.id}
+                  slideIdx={active}
+                  currentUrl={current.design.imageUrl ?? null}
+                  onUploaded={(url) => patchSlide(active, { design: { ...current.design, imageUrl: url } })}
+                />
+                {current.design.imageUrl && (
+                  <button className="btn" style={{ marginTop: 6, fontSize: 11 }}
+                    onClick={() => patchSlide(active, { design: { ...current.design, imageUrl: null } })}>
+                    remover imagem
+                  </button>
+                )}
+              </div>
+              <div>
                 <label>Texto (markdown leve: **bold**, _italic_, linha em branco = parágrafo)</label>
                 <textarea
                   value={current.body}
                   onChange={(e) => patchSlide(active, { body: e.target.value })}
-                  rows={12}
+                  rows={10}
                 />
               </div>
               <details>

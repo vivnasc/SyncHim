@@ -33,6 +33,9 @@ export type SlideDesign = {
   italico?: boolean;
   alinhamento?: 'left' | 'center';
   tituloPx?: number;         // override do font-size
+  imageUrl?: string | null;  // imagem de fundo full-bleed (AI-generated ou foto)
+  imagePrompt?: string | null; // prompt para gerar a imagem (Midjourney, DALL-E, etc.)
+  goldLine?: boolean;        // linha dourada separadora antes do texto
 };
 
 export type Slide = {

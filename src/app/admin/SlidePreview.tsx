@@ -1,47 +1,98 @@
 import type { Slide } from '@/lib/admin/brand';
 
 /**
- * Preview do slide tal como ele será renderizado pelo template
- * Puppeteer. A intenção é fidelidade — qualquer mudança aqui deve
- * espelhar tools/render-carrossel/template.html.
- *
- * Renderiza dentro de um canvas escalado (.slide-canvas em admin.css).
+ * Preview do slide com imagem de fundo (espelha template.html).
+ * Se slide.design.imageUrl existir, mostra a imagem com gradiente
+ * escuro e texto sobreposto. Se não, fundo sólido.
  */
 export function SlidePreview({ slide }: { slide: Slide }) {
   const layout = slide.layout || slide.design.layout || 'conteudo';
   const html = renderBody(slide.body);
+  const imgUrl = slide.design.imageUrl;
   const numero = slide.design.numero ?? slide.idx;
 
   return (
-    <div className="slide-canvas">
-      {layout !== 'cta' && layout !== 'capa' && numero !== null && (
-        <span className="ghost-num">{String(numero).padStart(2, '0')}</span>
-      )}
-      <div className={`layer ${layout === 'capa' || layout === 'cta' || layout === 'assinatura' ? 'center' : ''}`}>
-        <div dangerouslySetInnerHTML={{ __html: html }} />
+    <div
+      className="slide-canvas"
+      style={{ justifyContent: layout === 'capa' || layout === 'cta' ? 'center' : 'flex-end' }}
+    >
+      {/* Fundo: imagem ou sólido */}
+      {imgUrl ? (
+        <>
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 0,
+            backgroundImage: `url(${imgUrl})`,
+            backgroundSize: 'cover', backgroundPosition: 'center',
+            filter: 'brightness(0.55) contrast(1.1) saturate(0.85)'
+          }} />
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 1,
+            background: 'linear-gradient(to bottom, rgba(26,20,16,0.15) 0%, rgba(26,20,16,0.30) 35%, rgba(26,20,16,0.85) 65%, rgba(26,20,16,0.95) 100%)'
+          }} />
+        </>
+      ) : null}
+
+      {/* Marca */}
+      <div style={{
+        position: 'absolute', top: 12, right: 16, zIndex: 3,
+        display: 'flex', alignItems: 'center', gap: 6,
+        fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase' as const,
+        color: 'var(--texto)', opacity: 0.9,
+        textShadow: imgUrl ? '0 1px 6px rgba(0,0,0,0.5)' : 'none'
+      }}>
+        <span style={{ color: 'var(--ouro-folha)', fontSize: 14 }}>✦</span>
+        <span>SyncHim</span>
       </div>
-      {(layout === 'assinatura' || layout === 'cta') && (
-        <div className="mark">✦</div>
+
+      {/* Número */}
+      {layout !== 'capa' && numero != null && (
+        <div style={{
+          position: 'absolute', top: 12, left: 16, zIndex: 3,
+          fontSize: 9, letterSpacing: '0.15em', color: 'var(--texto)', opacity: 0.7,
+          textShadow: imgUrl ? '0 1px 4px rgba(0,0,0,0.4)' : 'none'
+        }}>
+          {String(numero + 1).padStart(2, '0')} / 08
+        </div>
       )}
+
+      {/* Conteúdo */}
+      <div style={{
+        position: 'relative', zIndex: 2,
+        padding: layout === 'capa' ? '24px' : '18px 24px 24px',
+        textAlign: layout === 'capa' || layout === 'cta' || layout === 'assinatura' ? 'center' : 'left',
+        textShadow: imgUrl ? '0 2px 12px rgba(0,0,0,0.5)' : 'none'
+      }}>
+        {(layout === 'capa' || layout === 'cta' || slide.design.goldLine) && (
+          <div style={{ width: 30, height: 1.5, background: 'var(--ouro)', margin: layout === 'capa' || layout === 'cta' ? '0 auto 10px' : '0 0 10px' }} />
+        )}
+        <div dangerouslySetInnerHTML={{ __html: html }} />
+        {(layout === 'assinatura' || layout === 'cta') && (
+          <div style={{ color: 'var(--ouro-folha)', fontSize: 18, marginTop: 10 }}>✦</div>
+        )}
+        {layout === 'assinatura' && (
+          <div style={{ marginTop: 8, fontSize: 12, color: 'var(--texto)', opacity: 0.85, letterSpacing: '0.04em' }}>
+            &mdash;<br/>Vivianne dos Santos
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 export function SlideThumb({ slide }: { slide: Slide }) {
   const html = renderBody(slide.body);
+  const imgUrl = slide.design.imageUrl;
   return (
-    <div className="slide-thumb">
+    <div className="slide-thumb" style={imgUrl ? {
+      backgroundImage: `url(${imgUrl})`,
+      backgroundSize: 'cover', backgroundPosition: 'center'
+    } : undefined}>
       <span className="num">SLIDE {String(slide.idx + 1).padStart(2, '0')}</span>
       <div dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   );
 }
 
-/**
- * Markdown leve: **bold** -> <strong>, _italic_ -> <em>, quebras de linha.
- * Os utilizadores escrevem prosa, não HTML; sanitizamos restando só estas
- * regras + escape de < > &.
- */
 export function renderBody(src: string): string {
   const escaped = src
     .replace(/&/g, '&amp;')
