@@ -38,3 +38,4 @@ yarn-error.log*
 # os
 .DS_Store
 Thumbs.db
+tools/render-carrossel/package-lock.json
