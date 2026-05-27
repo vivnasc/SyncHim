@@ -541,6 +541,21 @@ export default async function LandingPage({ params }: { params: { locale: string
         </div>
       </FadeIn>
 
+      {/* ============ CONTACTO ============ */}
+      <FadeIn as="section" className="px-6 md:px-10 py-16 text-center">
+        <div className="max-w-xl mx-auto">
+          <div className="mini-caps text-goldBright mb-4">
+            {locale === 'pt' ? 'Contacto' : 'Contact'}
+          </div>
+          <a
+            href="mailto:ola@viviannedossantos.com"
+            className="font-serif text-xl md:text-2xl text-bone hover:text-goldBright transition-colors"
+          >
+            ola@viviannedossantos.com
+          </a>
+        </div>
+      </FadeIn>
+
       {/* ============ FECHO ============ */}
       <div className="flex flex-col items-center pt-14 pb-6 gap-4">
         <EstrelaPersa className="w-14 h-14 text-goldBright" />
