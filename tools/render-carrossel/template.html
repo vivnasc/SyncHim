@@ -3,10 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <title>SyncHim · slide</title>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=block" rel="stylesheet">
 <style>
   :root {
     --bg: #1A1410;
+    --bg-warm: #211A14;
     --texto: #F2E8DC;
     --ouro: #B8843D;
     --ouro-folha: #D4A857;
@@ -14,196 +15,216 @@
   html, body { margin: 0; padding: 0; background: var(--bg); color: var(--texto); }
   body { width: 1080px; height: 1350px; overflow: hidden; font-family: 'EB Garamond', Georgia, serif; position: relative; }
 
-  /* Imagem de fundo full-bleed */
-  .bg-image {
-    position: absolute; inset: 0; z-index: 0;
-    background-size: cover; background-position: center;
-    filter: brightness(0.55) contrast(1.1) saturate(0.85);
+  /* === MARCA (sempre visível, grande) === */
+  .brand {
+    position: absolute; z-index: 10;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
   }
-  /* Gradiente escuro no fundo para legibilidade do texto */
-  .bg-gradient {
-    position: absolute; inset: 0; z-index: 1;
-    background: linear-gradient(
-      to bottom,
-      rgba(26,20,16,0.15) 0%,
-      rgba(26,20,16,0.30) 35%,
-      rgba(26,20,16,0.85) 65%,
-      rgba(26,20,16,0.95) 100%
-    );
+  .brand .star { font-size: 28px; color: var(--ouro-folha); line-height: 1; }
+  .brand .name {
+    font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--texto); opacity: 0.95;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.6);
   }
-  /* Sem imagem: fundo sólido com textura */
-  .bg-solid {
-    position: absolute; inset: 0; z-index: 0; background: var(--bg);
+  .brand-top { top: 36px; left: 50%; transform: translateX(-50%); }
+  .brand-corner { top: 36px; right: 44px; }
+
+  /* Número do slide */
+  .slide-num {
+    position: absolute; top: 40px; left: 44px; z-index: 10;
+    font-size: 13px; letter-spacing: 0.12em; color: var(--texto); opacity: 0.6;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.4);
   }
-  .bg-solid::after {
-    content: '';
-    position: absolute; inset: 0; pointer-events: none;
+  /* Paginação */
+  .pagination {
+    position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); z-index: 10;
+    display: flex; gap: 8px;
+  }
+  .pagination .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(242,232,220,0.25); }
+  .pagination .dot.active { background: var(--ouro-folha); }
+  /* Swipe hint */
+  .swipe {
+    position: absolute; bottom: 40px; right: 44px; z-index: 10;
+    font-size: 14px; letter-spacing: 0.08em; color: var(--texto); opacity: 0.5;
+  }
+  .swipe .arrow { display: inline-block; margin-left: 6px; font-size: 18px; }
+
+  /* === MODO SPLIT: imagem topo, texto base === */
+  .mode-split .image-area {
+    position: absolute; top: 0; left: 0; right: 0; height: 55%;
+    overflow: hidden; z-index: 0;
+  }
+  .mode-split .image-area img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: brightness(0.85) contrast(1.05) saturate(0.9);
+  }
+  .mode-split .image-area .gradient {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
+    background: linear-gradient(to bottom, transparent, var(--bg));
+  }
+  .mode-split .text-area {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
+    padding: 40px 70px 90px;
+    display: flex; flex-direction: column; justify-content: center;
+    z-index: 2;
+  }
+
+  /* === MODO FULL: imagem cobre tudo === */
+  .mode-full .image-area {
+    position: absolute; inset: 0; z-index: 0; overflow: hidden;
+  }
+  .mode-full .image-area img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: brightness(0.5) contrast(1.1) saturate(0.85);
+  }
+  .mode-full .image-area .gradient {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom,
+      rgba(26,20,16,0.2) 0%, rgba(26,20,16,0.35) 30%,
+      rgba(26,20,16,0.8) 60%, rgba(26,20,16,0.95) 100%);
+  }
+  .mode-full .text-area {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 40px 70px 90px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    z-index: 2; min-height: 40%;
+  }
+
+  /* === MODO TEXT: sem imagem === */
+  .mode-text {
+    background: var(--bg);
+  }
+  .mode-text::before {
+    content: ''; position: absolute; inset: 0; z-index: 0;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0.97  0 0 0 0 0.91  0 0 0 0 0.82  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
     opacity: 0.04;
   }
-
-  /* Container de conteúdo — posicionado na metade inferior */
-  #slide {
-    position: relative; z-index: 2;
-    width: 1080px; height: 1350px;
-    padding: 0;
-    box-sizing: border-box;
-    display: flex; flex-direction: column;
-    justify-content: flex-end;
-  }
-  .content-area {
-    padding: 60px 80px 80px;
+  .mode-text .text-area {
+    position: absolute; inset: 0;
+    padding: 120px 80px 100px;
+    display: flex; flex-direction: column; justify-content: center;
+    z-index: 2;
   }
 
-  /* Capa: texto centrado a meio */
-  .layout-capa { justify-content: center; }
-  .layout-capa .content-area { padding: 80px; text-align: center; }
-
-  /* CTA: centrado */
-  .layout-cta { justify-content: center; align-items: center; }
-  .layout-cta .content-area { text-align: center; }
-
-  .body { position: relative; }
-  .body p { margin: 0 0 18px; }
+  /* === TEXTO === */
+  .body p { margin: 0 0 16px; }
   .body p:last-child { margin-bottom: 0; }
-  .body strong { color: var(--ouro-folha); font-weight: 600; }
+  .body strong { color: var(--ouro-folha); font-weight: 700; }
   .body em { color: var(--ouro); font-style: italic; }
 
-  /* Texto principal — grande, legível sobre imagem */
-  .layout-capa .body { font-size: 72px; line-height: 1.12; font-weight: 600; letter-spacing: -0.01em;
-    text-shadow: 0 2px 30px rgba(0,0,0,0.7), 0 1px 4px rgba(0,0,0,0.5); }
-  .layout-conteudo .body { font-size: 56px; line-height: 1.18; font-weight: 500;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.4); }
-  .layout-cta .body { font-size: 54px; line-height: 1.18; font-weight: 500; color: var(--ouro-folha);
-    text-shadow: 0 2px 20px rgba(0,0,0,0.5); }
-  .layout-assinatura .body { font-size: 48px; font-style: italic; text-align: center;
-    text-shadow: 0 2px 15px rgba(0,0,0,0.5); }
-
-  /* Marca — estrela persa no canto superior direito */
-  .brand-mark {
-    position: absolute; top: 40px; right: 50px; z-index: 3;
-    display: flex; align-items: center; gap: 12px;
+  .mode-split .body, .mode-full .body {
+    font-size: 52px; line-height: 1.15; font-weight: 500;
+    text-shadow: 0 2px 16px rgba(0,0,0,0.4);
   }
-  .brand-mark .star { color: var(--ouro-folha); font-size: 22px; }
-  .brand-mark .name {
-    font-family: 'EB Garamond', serif; font-size: 16px; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--texto); opacity: 0.9;
-    text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+  .mode-text .body {
+    font-size: 58px; line-height: 1.15; font-weight: 500;
   }
 
-  /* Número de slide — canto superior direito */
-  .slide-num {
-    position: absolute; top: 42px; left: 50px; z-index: 3;
-    font-family: 'EB Garamond', serif; font-size: 14px; letter-spacing: 0.15em;
-    color: var(--texto); opacity: 0.7;
-    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
-  }
+  /* Capa: mais bold */
+  .layout-capa .body { font-size: 64px; font-weight: 700; line-height: 1.1; }
+  /* CTA: dourado, centrado */
+  .layout-cta .text-area { text-align: center; justify-content: center; }
+  .layout-cta .body { font-size: 50px; }
+  .layout-cta .body strong { font-weight: 700; }
+  /* Assinatura */
+  .layout-assinatura .text-area { text-align: center; justify-content: center; }
 
-  /* Assinatura final */
-  .signature { margin-top: 28px; font-size: 26px; color: var(--texto); opacity: 0.85; letter-spacing: 0.04em; text-align: center; }
-  .estrela { color: var(--ouro-folha); font-size: 34px; text-align: center; margin-top: 24px; }
+  .gold-line { width: 60px; height: 2px; background: var(--ouro); margin: 0 0 20px; }
+  .layout-cta .gold-line, .layout-assinatura .gold-line { margin: 0 auto 20px; }
 
-  /* Linha dourada separadora (opcional, activa por design flag) */
-  .gold-line {
-    width: 80px; height: 2px; background: var(--ouro); margin: 0 0 24px;
-  }
-  .layout-capa .gold-line, .layout-cta .gold-line { margin: 0 auto 24px; }
+  .signature { margin-top: 24px; font-size: 22px; color: var(--texto); opacity: 0.8; letter-spacing: 0.05em; }
+  .estrela-bottom { color: var(--ouro-folha); font-size: 28px; margin-top: 20px; }
 </style>
 </head>
 <body>
-<div id="slide" class="layout-conteudo">
-  <!-- camada de fundo -->
-  <div id="bg-layer"></div>
-  <!-- gradiente -->
-  <div id="gradient-layer" class="bg-gradient" style="display:none"></div>
-  <!-- marca -->
-  <div class="brand-mark">
+<div id="slide">
+  <div class="image-area" id="image-area" style="display:none"><img id="bg-img"/><div class="gradient"></div></div>
+  <div class="brand brand-top" id="brand">
     <span class="star">✦</span>
     <span class="name">SyncHim</span>
   </div>
-  <!-- número do slide -->
   <div class="slide-num" id="slide-num"></div>
-  <!-- conteúdo -->
-  <div class="content-area">
+  <div class="text-area">
     <div class="gold-line" id="gold-line" style="display:none"></div>
     <div class="body" id="body"></div>
-    <div class="estrela" id="estrela" style="display:none">✦</div>
+    <div class="estrela-bottom" id="estrela" style="display:none">✦</div>
     <div class="signature" id="signature" style="display:none"></div>
   </div>
+  <div class="swipe" id="swipe" style="display:none">Arraste para o lado <span class="arrow">→</span></div>
 </div>
 <script>
   function getData() {
     if (window.SLIDE_DATA) return window.SLIDE_DATA;
-    const url = new URL(location.href);
-    const enc = url.searchParams.get('data');
-    if (enc) return JSON.parse(decodeURIComponent(escape(atob(enc))));
     return null;
   }
-
-  function escapeHtml(s) {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
+  function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function renderBody(src) {
-    return (src || '').split(/\n\n+/).map(function(par) {
-      var inline = escapeHtml(par)
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/_(.+?)_/g, '<em>$1</em>')
-        .replace(/\n/g, '<br/>');
-      return '<p>' + inline + '</p>';
+    return (src||'').split(/\n\n+/).map(function(par) {
+      var inline = escapeHtml(par).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/_(.+?)_/g,'<em>$1</em>').replace(/\n/g,'<br/>');
+      return '<p>'+inline+'</p>';
     }).join('');
   }
-
   function fitToHeight(el, maxH, minPx) {
     var size = parseFloat(getComputedStyle(el).fontSize);
     var guard = 80;
-    while (el.scrollHeight > maxH && size > minPx && guard-- > 0) {
-      size -= 2;
-      el.style.fontSize = size + 'px';
-    }
+    while (el.scrollHeight > maxH && size > minPx && guard-- > 0) { size -= 2; el.style.fontSize = size+'px'; }
   }
 
   function render() {
     var data = getData();
     if (!data) return;
-
     var root = document.getElementById('slide');
     var layout = data.layout || 'conteudo';
-    root.className = 'layout-' + layout;
+    var imgUrl = data.imageUrl || (data.design && data.design.imageUrl);
+    var imagePos = (data.design && data.design.imagePosition) || 'split';
 
-    // Fundo: imagem ou sólido
-    var bgLayer = document.getElementById('bg-layer');
-    var gradientLayer = document.getElementById('gradient-layer');
-    if (data.imageUrl || (data.design && data.design.imageUrl)) {
-      var imgUrl = data.imageUrl || data.design.imageUrl;
-      bgLayer.className = 'bg-image';
-      bgLayer.style.backgroundImage = 'url(' + imgUrl + ')';
-      gradientLayer.style.display = 'block';
+    // Decide modo
+    var mode = 'text';
+    if (imgUrl) {
+      mode = imagePos === 'full' ? 'full' : 'split';
+    }
+    root.className = 'mode-' + mode + ' layout-' + layout;
+
+    // Imagem
+    if (imgUrl) {
+      var imgArea = document.getElementById('image-area');
+      imgArea.style.display = 'block';
+      document.getElementById('bg-img').src = imgUrl;
+    }
+
+    // Marca: centrada no topo para split/text, canto para full
+    var brand = document.getElementById('brand');
+    if (mode === 'full') {
+      brand.className = 'brand brand-corner';
     } else {
-      bgLayer.className = 'bg-solid';
-      gradientLayer.style.display = 'none';
+      brand.className = 'brand brand-top';
     }
 
     // Número
     var numEl = document.getElementById('slide-num');
-    var num = (data.design && data.design.numero != null) ? data.design.numero : (data.idx != null ? data.idx + 1 : null);
-    if (num != null && layout !== 'capa') {
-      numEl.textContent = String(num).padStart(2, '0') + ' / ' + (data.totalSlides || '08');
+    var idx = data.idx != null ? data.idx : 0;
+    var total = data.totalSlides || 8;
+    if (layout !== 'capa' && mode !== 'full') {
+      numEl.textContent = String(idx + 1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
     } else {
       numEl.style.display = 'none';
     }
 
-    // Linha dourada
-    var goldLine = document.getElementById('gold-line');
-    if (layout === 'capa' || layout === 'cta' || (data.design && data.design.goldLine)) {
-      goldLine.style.display = 'block';
+    // Gold line
+    if (layout === 'capa' || layout === 'cta') {
+      document.getElementById('gold-line').style.display = 'block';
     }
 
     // Body
     document.getElementById('body').innerHTML = renderBody(data.body || '');
 
+    // Swipe hint (capa only)
+    if (layout === 'capa') {
+      document.getElementById('swipe').style.display = 'block';
+    }
+
     // Estrela + assinatura
-    if (layout === 'assinatura' || layout === 'cta') {
+    if (layout === 'cta' || layout === 'assinatura') {
       document.getElementById('estrela').style.display = 'block';
     }
     if (layout === 'assinatura') {
@@ -213,14 +234,12 @@
     }
 
     // Fit text
-    var contentArea = document.querySelector('.content-area');
     var bodyEl = document.getElementById('body');
-    var maxH = layout === 'capa' ? 900 : 650;
+    var maxH = mode === 'split' ? 500 : (mode === 'full' ? 550 : 800);
     fitToHeight(bodyEl, maxH, 28);
 
     document.body.dataset.ready = '1';
   }
-
   document.fonts.ready.then(render);
 </script>
 </body>
