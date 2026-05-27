@@ -44,19 +44,42 @@ function appendHashtags(caption: string, hashtags?: string): string {
   return `${caption}\n\n${hashtags.trim()}`;
 }
 
-/** Linha IG para carrossel-foto. */
-export function buildCarouselRow(post: CsvCarouselPost): string[] {
-  const { row, set } = makeRow();
-  set('Date', normalizeDate(post.date));
-  set('Time', normalizeTime(post.time || '10:00'));
-  set('Text', appendHashtags(post.caption, post.hashtags));
-  set('Instagram', 'TRUE');
-  set('Instagram Post Type', 'CAROUSEL');
-  set('Instagram Show Reel On Feed', 'TRUE');
-  // Slides em Picture Url 1..N (max 10 no IG)
-  post.slides.slice(0, 10).forEach((url, i) => set(`Picture Url ${i + 1}`, url));
-  if (post.firstComment) set('First Comment Text', post.firstComment);
-  return row;
+/** 2 linhas por carrossel: IG CAROUSEL + TikTok (sempre). */
+export function buildCarouselRows(post: CsvCarouselPost): string[][] {
+  const date = normalizeDate(post.date);
+  const time = normalizeTime(post.time || '12:00');
+  const rows: string[][] = [];
+
+  // Linha IG
+  const ig = makeRow();
+  ig.set('Date', date);
+  ig.set('Time', time);
+  ig.set('Text', appendHashtags(post.caption, post.hashtags));
+  ig.set('Instagram', 'TRUE');
+  ig.set('Instagram Post Type', 'CAROUSEL');
+  ig.set('Instagram Show Reel On Feed', 'TRUE');
+  post.slides.slice(0, 10).forEach((url, i) => ig.set(`Picture Url ${i + 1}`, url));
+  if (post.firstComment) ig.set('First Comment Text', post.firstComment);
+  rows.push(ig.row);
+
+  // Linha TikTok
+  const tk = makeRow();
+  tk.set('Date', date);
+  tk.set('Time', time);
+  tk.set('Text', appendHashtags(post.caption, post.hashtags));
+  tk.set('TikTok', 'TRUE');
+  tk.set('TikTok Post Privacy', 'PUBLIC_TO_EVERYONE');
+  tk.set('TikTok Auto Add Music', 'FALSE');
+  tk.set('TikTok is AI generated content', 'FALSE');
+  tk.set('TikTok disable comments', 'FALSE');
+  tk.set('TikTok disable duet', 'TRUE');
+  tk.set('TikTok disable stitch', 'TRUE');
+  tk.set('TikTok Branded Content', 'FALSE');
+  tk.set('TikTok Title', post.title);
+  post.slides.slice(0, 10).forEach((url, i) => tk.set(`Picture Url ${i + 1}`, url));
+  rows.push(tk.row);
+
+  return rows;
 }
 
 /** Uma linha por plataforma para vídeo MP4 9:16. */
@@ -111,7 +134,7 @@ export function buildCsv(opts: {
   videos?: CsvVideoPost[];
 }): string {
   const rows: string[][] = [];
-  for (const p of opts.carousels ?? []) rows.push(buildCarouselRow(p));
+  for (const p of opts.carousels ?? []) rows.push(...buildCarouselRows(p));
   for (const p of opts.videos ?? []) rows.push(...buildVideoRows(p));
   return serializeCsv(rows);
 }
