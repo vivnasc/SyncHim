@@ -18,6 +18,23 @@ const WEEK_OPTIONS = [
   { value: 5, label: '5 semanas — campanha 30 dias (70 carrosseis)' },
 ];
 
+const MODEL_OPTIONS = [
+  {
+    value: 'black-forest-labs/flux-1.1-pro',
+    label: 'Flux 1.1 Pro · qualidade editorial (~$0.04/img, ~15s)',
+    pricePerImg: 0.04,
+  },
+  {
+    value: 'black-forest-labs/flux-schnell',
+    label: 'Flux Schnell · rápido e barato (~$0.003/img, ~4s)',
+    pricePerImg: 0.003,
+  },
+];
+
+// Numero de imagens por semana (110): 7 didactic * 8 + 6 reconhecimento * 8 + 1 cta * 6
+const IMAGES_PER_WEEK = 110;
+const IMAGES_PER_SLOT_AVG = IMAGES_PER_WEEK / 14; // ~7.86
+
 type CreatedItem = { id: string; code: string; title: string; scheduledAt: string };
 type TestResult = {
   ok?: boolean;
@@ -48,7 +65,10 @@ async function fetchWithTimeout(url: string, init: RequestInit, ms: number) {
 export function PlanearForm() {
   const [startDate, setStartDate] = useState(nextMonday);
   const [weeksCount, setWeeksCount] = useState(1);
+  const [testMode, setTestMode] = useState(true);
+  const [testSlots, setTestSlots] = useState(3);
   const [autoImages, setAutoImages] = useState(true);
+  const [model, setModel] = useState(MODEL_OPTIONS[0].value);
   const [running, setRunning] = useState(false);
   const [current, setCurrent] = useState(0);
   const [imgCurrent, setImgCurrent] = useState(0);
@@ -61,7 +81,11 @@ export function PlanearForm() {
   const [testing, setTesting] = useState<'claude' | 'replicate' | null>(null);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
 
-  const totalSlots = weeksCount * 14;
+  const fullSlots = weeksCount * 14;
+  const totalSlots = testMode ? Math.min(testSlots, fullSlots) : fullSlots;
+  const estImages = Math.round(totalSlots * IMAGES_PER_SLOT_AVG);
+  const modelInfo = MODEL_OPTIONS.find((m) => m.value === model) ?? MODEL_OPTIONS[0];
+  const estCost = (estImages * modelInfo.pricePerImg).toFixed(2);
 
   async function testEndpoint(kind: 'claude' | 'replicate') {
     setTesting(kind);
@@ -154,7 +178,7 @@ export function PlanearForm() {
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ itemId: item.id }),
+              body: JSON.stringify({ itemId: item.id, model }),
             },
             IMG_TIMEOUT_MS,
           );
@@ -258,10 +282,48 @@ export function PlanearForm() {
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
-          <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
-            Texto: ~5-15s por carrossel · Imagens (Replicate Flux Schnell): ~30-60s por carrossel de 8 slides.
-            Total estimado para {totalSlots} carrosseis: ~{Math.ceil((totalSlots * (autoImages ? 50 : 10)) / 60)} min.
-          </div>
+        </div>
+
+        <div style={{ marginBottom: 16, padding: 12, border: '1px dashed var(--linha)', borderRadius: 4 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 8 }}>
+            <input
+              type="checkbox"
+              checked={testMode}
+              onChange={(e) => setTestMode(e.target.checked)}
+              disabled={running}
+            />
+            <span><strong>Modo teste</strong> · gera apenas os primeiros N carrosseis para validar qualidade antes de produzir tudo.</span>
+          </label>
+          {testMode && (
+            <div className="row" style={{ gap: 8, marginTop: 6 }}>
+              <input
+                className="input"
+                type="number"
+                min={1}
+                max={fullSlots}
+                value={testSlots}
+                onChange={(e) => setTestSlots(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                disabled={running}
+                style={{ maxWidth: 100 }}
+              />
+              <span className="muted" style={{ fontSize: 12 }}>carrosseis de teste (recomendado: 3)</span>
+            </div>
+          )}
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <label>Modelo de imagem (Replicate)</label>
+          <select
+            className="input"
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            disabled={running}
+            style={{ maxWidth: 480 }}
+          >
+            {MODEL_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
         </div>
 
         <div style={{ marginBottom: 16 }}>
@@ -276,13 +338,25 @@ export function PlanearForm() {
           </label>
         </div>
 
+        <div className="card" style={{ marginBottom: 16, padding: 12, background: 'var(--bg)' }}>
+          <div className="mini" style={{ marginBottom: 4 }}>Estimativa</div>
+          <div style={{ fontSize: 13, lineHeight: 1.7 }}>
+            <strong>{totalSlots}</strong> carrosseis ·{' '}
+            <strong>~{estImages}</strong> imagens ·{' '}
+            <strong>~${estCost}</strong> de Replicate ·{' '}
+            ~{Math.ceil((totalSlots * (autoImages ? (modelInfo.value.includes('schnell') ? 30 : 60) : 10)) / 60)} min
+          </div>
+        </div>
+
         <div className="row" style={{ gap: 8 }}>
           <button className="btn primary" type="submit" disabled={running}>
             {running
               ? phase === 'images'
                 ? `Imagens ${imgCurrent} / ${imgTotal}...`
                 : `Texto ${current} / ${totalSlots}...`
-              : `Planear ${weeksCount === 1 ? 'semana' : `${weeksCount} semanas`}`}
+              : testMode
+                ? `Teste · ${totalSlots} carrosseis`
+                : `Planear ${weeksCount === 1 ? 'semana' : `${weeksCount} semanas`}`}
           </button>
           {errorSlot !== null && !running && (
             <button

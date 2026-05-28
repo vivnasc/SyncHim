@@ -14,7 +14,9 @@
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { publicUrl, storageBucket } from './storage';
 
-const DEFAULT_MODEL = 'black-forest-labs/flux-schnell';
+// Pro por defeito: cinematografico, editorial, sem artefactos.
+// Schnell e mais barato mas notavelmente pior em luz/sombra e maos.
+const DEFAULT_MODEL = 'black-forest-labs/flux-1.1-pro';
 
 export interface GenerateImageOptions {
   aspectRatio?: '4:5' | '1:1' | '9:16' | '16:9';
@@ -28,6 +30,40 @@ export interface GeneratedImage {
   replicateUrl: string; // URL original (expira)
   model: string;
   latencyMs: number;
+}
+
+/**
+ * Cada modelo Replicate tem um shape diferente de input. Esta funcao
+ * normaliza para o que cada um espera.
+ */
+function buildModelInput(model: string, prompt: string, aspectRatio: string) {
+  const base: Record<string, unknown> = { prompt };
+  if (model.includes('flux-1.1-pro') || model.includes('flux-pro')) {
+    return {
+      ...base,
+      aspect_ratio: aspectRatio,
+      output_format: 'png',
+      output_quality: 95,
+      safety_tolerance: 5,
+      prompt_upsampling: true,
+    };
+  }
+  if (model.includes('flux-schnell')) {
+    return {
+      ...base,
+      aspect_ratio: aspectRatio,
+      output_format: 'png',
+      output_quality: 90,
+      num_outputs: 1,
+    };
+  }
+  // Fallback generico (SDXL, etc.)
+  return {
+    ...base,
+    width: 1080,
+    height: 1350,
+    num_outputs: 1,
+  };
 }
 
 /**
@@ -73,13 +109,7 @@ export async function generateImage(
         Prefer: 'wait=60',
       },
       body: JSON.stringify({
-        input: {
-          prompt: cleanPrompt,
-          aspect_ratio: aspectRatio,
-          output_format: 'png',
-          output_quality: 90,
-          num_outputs: 1,
-        },
+        input: buildModelInput(model, cleanPrompt, aspectRatio),
       }),
     },
   );
