@@ -30,6 +30,10 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
     27;
   const bodyWeight = layout === 'capa' ? 700 : 500;
 
+  // Numero fantasma so em slides de conteudo texto-puro (sem imagem):
+  // da identidade editorial sem ser decorativo (e o numero do slide).
+  const showGhostNum = mode === 'text' && layout === 'conteudo';
+
   return (
     <div
       className="slide-canvas"
@@ -41,6 +45,25 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
         padding: 0,
       }}
     >
+      {/* Textura pergaminho subtilissima (matches template.html) */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1,
+        opacity: 0.05,
+        backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0.97  0 0 0 0 0.91  0 0 0 0 0.82  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")`,
+      }} />
+
+      {/* Numero fantasma editorial */}
+      {showGhostNum && (
+        <div style={{
+          position: 'absolute', top: 44, right: 30, zIndex: 1,
+          fontFamily: 'EB Garamond, Georgia, serif', fontStyle: 'italic',
+          fontSize: 110, lineHeight: 1, color: acento,
+          opacity: 0.18, letterSpacing: '-0.04em',
+          pointerEvents: 'none',
+        }}>
+          {String(idx + 1).padStart(2, '0')}
+        </div>
+      )}
       {/* Imagem de fundo · modo split = topo, modo full = inteira */}
       {mode === 'split' && (
         <>
