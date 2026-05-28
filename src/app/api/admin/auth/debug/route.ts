@@ -31,6 +31,12 @@ export async function GET() {
     GITHUB_REPO_OWNER: { value: process.env.GITHUB_REPO_OWNER ?? null },
     GITHUB_REPO_NAME: { value: process.env.GITHUB_REPO_NAME ?? null },
     ELEVENLABS_API_KEY: { set: !!process.env.ELEVENLABS_API_KEY },
+    ANTHROPIC_API_KEY: {
+      set: !!process.env.ANTHROPIC_API_KEY,
+      length: (process.env.ANTHROPIC_API_KEY ?? '').length,
+      prefix: (process.env.ANTHROPIC_API_KEY ?? '').slice(0, 8),
+    },
+    ANTHROPIC_MODEL: { value: process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6 (default)' },
     NODE_ENV: process.env.NODE_ENV,
     VERCEL_ENV: process.env.VERCEL_ENV ?? null,
     VERCEL_GIT_COMMIT_SHA: (process.env.VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7) || null
