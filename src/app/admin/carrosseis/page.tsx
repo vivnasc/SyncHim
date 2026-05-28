@@ -5,6 +5,7 @@ import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { CATEGORIAS_CARROSSEL } from '@/lib/admin/brand';
 import { BulkDuplicateButton } from './BulkDuplicateButton';
 import { CleanupTestsButton } from './CleanupTestsButton';
+import { BulkRenderButton } from './BulkRenderButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,6 +76,7 @@ export default async function CarrosseisList({
         {counts.casada > 0 && counts.solteira === 0 && (
           <BulkDuplicateButton count={counts.casada} />
         )}
+        <BulkRenderButton />
         <CleanupTestsButton />
       </div>
 
