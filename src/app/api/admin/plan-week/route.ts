@@ -64,20 +64,39 @@ export async function POST(req: NextRequest) {
   scheduled.setUTCHours(h, m, 0, 0);
   const scheduledAt = scheduled.toISOString();
 
+  // Tenta 1 retry quando a Claude viola a regra de cobertura de imagens
+  // (capa + cta + 2 conteudo). Outros erros propagam imediatamente.
   let carousel;
   try {
     carousel = await generateCarousel(slot.type, knot, slot.dayOfWeek);
   } catch (err: any) {
-    return NextResponse.json(
-      {
-        error: `Claude falhou no slot ${slotIndex + 1}: ${err?.message}`,
-        slot: slotIndex,
-        type: slot.type,
-        knot,
-        cause: err?.error?.type ?? err?.name ?? null,
-      },
-      { status: 500 },
-    );
+    if (err?.code === 'IMAGE_COVERAGE') {
+      try {
+        carousel = await generateCarousel(slot.type, knot, slot.dayOfWeek);
+      } catch (err2: any) {
+        return NextResponse.json(
+          {
+            error: `Claude falhou cobertura de imagens 2x no slot ${slotIndex + 1}: ${err2?.message}`,
+            slot: slotIndex,
+            type: slot.type,
+            knot,
+            cause: 'image_coverage',
+          },
+          { status: 500 },
+        );
+      }
+    } else {
+      return NextResponse.json(
+        {
+          error: `Claude falhou no slot ${slotIndex + 1}: ${err?.message}`,
+          slot: slotIndex,
+          type: slot.type,
+          knot,
+          cause: err?.error?.type ?? err?.name ?? null,
+        },
+        { status: 500 },
+      );
+    }
   }
 
   const supabase = createSupabaseAdmin();

@@ -217,6 +217,21 @@ export async function generateCarousel(
     `\nGera exactamente ${slideCount} slides. O primeiro deve ter layout "capa" (titulo/hook). O ultimo deve ter layout "cta" ou "assinatura". Os do meio sao "conteudo".`,
   );
   parts.push(
+    `\nIMAGENS — regra obrigatoria que sera validada:`,
+  );
+  parts.push(
+    `  - Slide 1 (capa): imagePrompt OBRIGATORIO nao vazio. E o hook visual.`,
+  );
+  parts.push(
+    `  - Slide ${slideCount} (ultimo, cta/assinatura): imagePrompt OBRIGATORIO nao vazio.`,
+  );
+  parts.push(
+    `  - Pelo menos 2 dos slides de conteudo: imagePrompt nao vazio.`,
+  );
+  parts.push(
+    `  - Total: minimo 4 slides com imagePrompt em ${slideCount}. Os outros recebem string vazia "".`,
+  );
+  parts.push(
     '\nLembra-te: PT-PT, sem travessoes longos, sem emojis nos slides, sem jargao new-age.',
   );
 
@@ -229,5 +244,54 @@ export async function generateCarousel(
     maxTokens: 4096,
   });
 
+  // Pos-validacao: a regra "capa + cta + 2 conteudo com imagem" e tao
+  // importante que vale a pena chamar a Claude segunda vez quando falha.
+  // Se faltar, lancamos erro com descricao precisa para o caller decidir
+  // se quer retry.
+  validateImageCoverage(result, type);
+
   return result;
+}
+
+/**
+ * Valida a regra de cobertura de imagens. Lanca erro com mensagem que
+ * o caller pode usar para fazer retry com instrucao reforcada.
+ */
+function validateImageCoverage(c: GeneratedCarousel, type: CarouselSlotType): void {
+  const slides = c.slides ?? [];
+  const hasImage = (i: number) => !!slides[i]?.imagePrompt?.trim();
+
+  const problems: string[] = [];
+  const first = slides[0];
+  const last = slides[slides.length - 1];
+
+  if (!first || first.layout !== 'capa') {
+    problems.push('slide 1 nao tem layout=capa');
+  } else if (!hasImage(0)) {
+    problems.push('capa (slide 1) sem imagePrompt');
+  }
+
+  if (!last) {
+    problems.push('carrossel sem ultimo slide');
+  } else if (last.layout !== 'cta' && last.layout !== 'assinatura') {
+    problems.push(`ultimo slide tem layout=${last.layout} (esperado cta ou assinatura)`);
+  } else if (!hasImage(slides.length - 1)) {
+    problems.push(`ultimo slide (${last.layout}) sem imagePrompt`);
+  }
+
+  const contentSlides = slides.slice(1, -1);
+  const contentWithImage = contentSlides.filter((s) => s.imagePrompt?.trim()).length;
+  if (contentSlides.length > 0 && contentWithImage < 2) {
+    problems.push(
+      `apenas ${contentWithImage} slide(s) de conteudo com imagePrompt — minimo 2`,
+    );
+  }
+
+  if (problems.length > 0) {
+    const err = new Error(
+      `Cobertura de imagens insuficiente (${type}): ${problems.join('; ')}`,
+    );
+    (err as Error & { code?: string }).code = 'IMAGE_COVERAGE';
+    throw err;
+  }
 }
