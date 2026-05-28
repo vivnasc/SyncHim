@@ -74,6 +74,7 @@ export function ImageDropZone({ itemId, slideIdx, currentUrl, onUploaded }: Prop
     >
       <input ref={inputRef} type="file" accept="image/*" onChange={onPick} style={{ display: 'none' }} />
       {currentUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={currentUrl}
           alt=""
