@@ -25,7 +25,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const body = (await req.json().catch(() => null)) as { itemId?: string } | null;
+  const body = (await req.json().catch(() => null)) as {
+    itemId?: string;
+    model?: string;
+  } | null;
   if (!body?.itemId) {
     return NextResponse.json({ error: 'itemId em falta' }, { status: 400 });
   }
@@ -60,6 +63,7 @@ export async function POST(req: NextRequest) {
       const img = await generateImage(s.design.imagePrompt as string, {
         aspectRatio: '4:5',
         storagePath: path,
+        model: body.model,
       });
       const newDesign = { ...s.design, imageUrl: img.url };
       const { error: updErr } = await supabase
