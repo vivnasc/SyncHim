@@ -44,5 +44,5 @@ jobs:
         env:
           MANIFEST_URL: ${{ inputs.manifestUrl }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SYNCHIM_SUPABASE_SERVICE_ROLE_KEY }}
         run: node generate.mjs
