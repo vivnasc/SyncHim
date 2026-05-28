@@ -42,7 +42,7 @@ export async function GET() {
       length: (process.env.REPLICATE_API_TOKEN ?? '').length,
       prefix: (process.env.REPLICATE_API_TOKEN ?? '').slice(0, 6),
     },
-    REPLICATE_MODEL: { value: process.env.REPLICATE_MODEL ?? 'black-forest-labs/flux-schnell (default)' },
+    REPLICATE_MODEL: { value: process.env.REPLICATE_MODEL ?? 'black-forest-labs/flux-1.1-pro (default)' },
     NODE_ENV: process.env.NODE_ENV,
     VERCEL_ENV: process.env.VERCEL_ENV ?? null,
     VERCEL_GIT_COMMIT_SHA: (process.env.VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7) || null

@@ -57,13 +57,27 @@ Identidade visual dos slides:
 - Tipografia serifada (EB Garamond), íntima, editorial
 - Formato vertical 1080x1350 (carrossel Instagram)
 
-Regras dos image prompts (Midjourney):
-- Cinematográfico, escuro, íntimo
-- Formato retrato 1080x1350 (--ar 4:5)
-- SEM texto na imagem
-- Tons quentes, sombras profundas, luz dourada lateral
-- Figuras femininas quando relevante (silhuetas, mãos, fragmentos)
-- Termina cada prompt com: --ar 4:5 --style raw --v 6.1`;
+Imagens dos slides — DECISAO EDITORIAL:
+- Tu decides quais slides precisam de imagem e quais sao apenas texto sobre o
+  gradiente bordeaux→escuro. Nao ha quota: alguns carrosseis podem ter so 1 ou
+  2 imagens, outros podem ter mais. A regra unica e: imagem so quando reforca
+  ou amplia a mensagem do slide, nunca decorativa.
+- Quando NAO faz sentido (frases puramente confessionais, listas, definicoes
+  abstractas, slides de transicao) deixa imagePrompt vazio (string "" ou
+  omite o campo) e o slide fica so com a tipografia editorial.
+- Quando faz sentido, o imagePrompt deve descrever uma CENA, nao um close-up
+  decorativo. Pessoas em interaccao real, momentos de quotidiano, ambientes
+  com luz dourada lateral. NUNCA close-ups de cara colada ao ecra. NUNCA
+  retratos directos a olhar para a camara. Podem aparecer pessoas mas sempre
+  inseridas numa cena (de costas, de lado, em accao, em interaccao com outra
+  pessoa ou com o ambiente).
+- Estetica: cinematografico, escuro, intimo. Tons quentes. Sombras profundas.
+  Luz dourada lateral natural (vela, janela ao por do sol, candeeiro baixo).
+- Formato vertical 1080x1350 (4:5).
+- SEM texto na imagem. SEM logos. SEM marca de agua.
+- A imagem e a copia tem de CONVERSAR. Nao escolhas a mesma cena para 3 slides
+  seguidos do mesmo carrossel: cada imagem que metas tem de ser distinta e
+  responder ao slide concreto.`;
 
 /* ------------------------------------------------------------------ */
 /*  Tool schema (Anthropic format)                                     */
@@ -96,7 +110,7 @@ const CAROUSEL_TOOL = {
             imagePrompt: {
               type: 'string' as const,
               description:
-                'Midjourney prompt for this slide background image. Cinematic, dark, intimate, 1080x1350 portrait. NO text in image.',
+                'Prompt para imagem de fundo OU string vazia "" se o slide deve ser so texto. Quando preenchido: descreve uma cena (pessoas em interaccao, momento, ambiente com luz dourada lateral), nunca close-up de cara colada ao ecra. Cinematografico, escuro, intimo, 4:5 portrait, SEM texto na imagem.',
             },
           },
           required: ['layout', 'body', 'imagePrompt'],
