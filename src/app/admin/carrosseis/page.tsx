@@ -27,14 +27,22 @@ export default async function CarrosseisList({
     .from('content_items')
     .select('id, code, title, categoria, target, status, scheduled_at, platforms, updated_at, metadata')
     .eq('type', 'carousel')
-    // esconde arquivados (datados 2099-12-31); items sem scheduled_at passam
-    .or('scheduled_at.is.null,scheduled_at.lt.2099-01-01')
     .order('code', { ascending: true })
     .limit(500);
   if (filter && ['casada', 'solteira', 'ambos'].includes(filter)) {
     q = q.eq('target', filter);
   }
-  const { data: items } = await q;
+  const { data: rawItems } = await q;
+
+  // Filtro JS-side em vez de .or() do Supabase (sintaxe fragil com datas):
+  // esconde apenas items que sejam explicitamente arquivados (scheduled_at
+  // a partir de 2099) ou marcados em metadata.archived. Items sem
+  // scheduled_at passam normalmente (e.g. seed inicial).
+  const items = (rawItems ?? []).filter((i: any) => {
+    if ((i.metadata as any)?.archived === true) return false;
+    if (!i.scheduled_at) return true;
+    return new Date(i.scheduled_at) < new Date('2099-01-01');
+  });
 
   const counts = { casada: 0, solteira: 0, ambos: 0, total: 0 };
   (items ?? []).forEach((i: any) => {
