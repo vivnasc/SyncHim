@@ -376,3 +376,207 @@ queimar $20 + 80 min em retries.
 Em todos os casos: o trabalho gerado até ao erro **NÃO se perde**. Está em
 `/admin/biblioteca` (imagens) e `/admin/carrosseis` (texto). Continuas com
 "Retomar".
+
+---
+
+## 14. Bulk render — pattern para evitar 14 cliques
+
+A geração de texto + imagens cria items em `status='draft'`. Para
+publicar precisas dos **PNGs finais compostos** (1080×1350 com texto +
+imagem + marca + número fantasma + paginação). Isto é o **render**:
+Puppeteer abre o `template.html`, injecta `window.SLIDE_DATA`, faz
+screenshot.
+
+Cada render é **1 carrossel completo** (8 slides → 8 PNGs num ZIP),
+**não 1 slide**. Dispatch via GitHub Actions `workflow_dispatch`.
+
+### Extrair helper partilhado
+
+```typescript
+// src/lib/admin/render-dispatch.ts
+export async function dispatchCarouselRender(itemId: string) {
+  // 1. Carregar item + slides do Supabase
+  // 2. Construir manifest JSON
+  // 3. Upload manifest para Supabase Storage
+  // 4. Inserir render_jobs row (status='queued')
+  // 5. Marcar content_items.status='rendering'
+  // 6. Disparar GH Actions workflow
+  return { itemId, code, jobId, manifestUrl };
+}
+```
+
+### Endpoint bulk
+
+```typescript
+// POST /api/admin/carrosseis/bulk-render
+// Body: { codeFrom?, codeTo?, status?, dryRun?, confirm? }
+//
+// Loop sequencial (cada dispatch ~200-500ms; 14 items = ~7s).
+// GH Actions corre os jobs em paralelo (max 20 simultâneos Hobby).
+```
+
+### UI: botão com dry-run + confirm
+
+```typescript
+// 1. Click "Render bulk" → POST com dryRun: true → contagem
+// 2. Mostra "Render N carrosseis →"
+// 3. Click → confirm modal → POST com confirm: true
+// 4. Redirect para /admin/render-jobs
+```
+
+### Workflow GitHub Actions — gotchas
+
+```yaml
+jobs:
+  render:
+    # NUNCA ubuntu-latest. Em 24.04 (Noble) muitos pacotes ganharam
+    # sufixo -t64 (libasound2 -> libasound2t64, libatk1.0-0 -> ...-t64).
+    # O nosso apt install rebenta com 'no installation candidate'.
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          # NUNCA 'cache: npm' se package-lock.json está no .gitignore.
+          # Setup-node falha com 'Some specified paths were not resolved'.
+```
+
+---
+
+## 15. Lições aprendidas — bugs que custaram tempo hoje
+
+Para outras Claude sessions evitarem cair nestes:
+
+### Editorial / regras de copy
+
+1. **Claude ignora regras de cobertura** se forem prosa.
+   Solução: post-validação no servidor + retry com instrução cirúrgica.
+   Code em `content-generator.ts:validateImageCoverage()`.
+
+2. **Claude alucina contexto temporal**. Vê `scheduled_at = segunda` e
+   gera CTA "Na segunda-feira que vem continuamos".
+   Solução: brief explícito **proíbe** referências a cadência semanal.
+
+3. **Estética "close-up de cara" é a default da Claude/Flux**. Para
+   evitar, system prompt tem que dizer **EXPLICITAMENTE** "cenas,
+   pessoas em interacção, NUNCA cara colada ao ecrã".
+
+### Render / GitHub Actions
+
+4. **`ubuntu-latest` é roleta russa.** Pin a `ubuntu-22.04`.
+
+5. **`setup-node@v4` com `cache: npm` + lockfile no `.gitignore`** quebra
+   o step inteiro. Remover o cache (perde-se ~30s, ganha-se sanidade).
+
+6. **`workflow_dispatch` via PAT precisa de scope `workflow`** (classic)
+   ou **Actions: Read and write** (fine-grained). Token sem este scope
+   devolve 403 "Resource not accessible".
+
+7. **Quando o runner morre antes do script começar, `result.json` fica
+   em 'queued' para sempre**. UI mostra status preso. Solução: botão
+   "Re-render" deve estar visível em qualquer status, não só `done|failed`.
+
+### Frontend / preview
+
+8. **Regex `\*\*(.+?)\*\*`** não atravessa newlines. Para markdown a 2
+   linhas usa `\*\*([\\s\\S]+?)\*\*`.
+
+9. **Supabase `.or('col.is.null,col.lt.date')`** com literais de data é
+   frágil. Substitui por filtro JS-side depois do `await`.
+
+10. **`setUTCHours(9)` armazena 09:00 UTC**. Se o display é em CAT
+    (UTC+2), o user vê 11:00. Constrói ISO string com offset explícito:
+    `${date}T09:00:00+02:00`.
+
+### Vercel
+
+11. **Push intermédios sem build local consomem quota.** Hobby tem 100
+    deploys/dia. Cada force-push = novo build. Build local antes do push.
+
+12. **Push directo a main em vez de PR + merge** poupa 50% das builds
+    (preview + production → só production).
+
+13. **Envs novos no Vercel NÃO propagam sem redeploy.** Mesmo com toggle
+    "Apply to all environments" — precisa de Redeploy manual.
+
+### Supabase
+
+14. **Bucket Storage tem que ser PÚBLICO** para o runner Puppeteer
+    descarregar manifest sem token. RLS continua a proteger inserts.
+
+15. **`metadata` jsonb** é o sítio certo para flags como `archived`,
+    `campaignWeek`, `knot` em vez de adicionar colunas SQL.
+
+---
+
+## 16. Como passar a outra Claude session
+
+Cola este texto no início da sessão da outra Claude:
+
+> Vamos seguir o padrão de UX para produção de conteúdo que está
+> documentado em `PIPELINE-UX-PRODUCAO.md` (no repo SyncHim do user).
+> Lê o documento completo antes de propor qualquer página. Princípios
+> obrigatórios:
+>
+> 1. **Diagnóstico antes de produção.** Cada provider (Claude, Replicate,
+>    ElevenLabs, Suno) tem um endpoint `/api/admin/test-{nome}` dedicado
+>    que faz 1 chamada mínima e devolve JSON com `{ ok, stage, latencyMs,
+>    keyPrefix }`. UI tem botão por cima do form de geração.
+>
+> 2. **Estimar antes de executar.** Card visível com `N items · ~M
+>    assets · ~$X custo · ~Y minutos` que se actualiza ao vivo conforme
+>    as opções.
+>
+> 3. **Retomar, nunca recomeçar.** Operações longas guardam `errorSlot`
+>    e mostram botão "Retomar a partir do slot X". Cada slot/item é uma
+>    chamada HTTP isolada — não há transacção entre items.
+>
+> 4. **Arquivar, nunca apagar por defeito.** `metadata.archived = true`
+>    + reagenda para 2099-12-31 esconde dos calendarios sem perder
+>    trabalho. `bulk-delete` continua a existir para casos definitivos.
+>
+> 5. **Reuso automático de assets caros.** Antes de chamar Replicate/
+>    ElevenLabs, procura na biblioteca um asset compatível (mesmo
+>    layout + categoria). Se há match, usa. Senão, gera. Strategy
+>    3-way: `prefer-existing` | `always-new` | `reuse-only`.
+>
+> 6. **Post-validação com retry.** Quando o LLM pode entregar algo
+>    que viola regras editoriais, valida no servidor e dispara 1 retry
+>    automático. Custo: 2× Claude no pior caso. Recompensa: nunca
+>    publicar algo com 1/8 imagens só no CTA.
+>
+> 7. **Sempre testar single antes de bulk.** Botão "Modo teste · N
+>    items" com default 3. Só desliga depois de aprovar visualmente.
+>
+> Stack assumida: Next.js 14 App Router + Supabase (auth + Storage +
+> Postgres) + GitHub Actions (Puppeteer/FFmpeg render) + Vercel (host).
+> Adapta para outra stack mantendo os princípios.
+>
+> Ficheiros para copiar verbatim e adaptar:
+>
+> - `src/lib/admin/auth.ts` (allowlist + cookie HMAC)
+> - `src/lib/admin/storage.ts` (uploadJson + publicUrl)
+> - `src/lib/admin/replicate.ts` ou outro provider
+> - `src/lib/admin/image-pool.ts` (reuso por layout + categoria)
+> - `src/lib/admin/content-generator.ts` (Claude tool-use + validação)
+> - `src/lib/admin/render-dispatch.ts` (helper partilhado de render)
+> - `src/app/admin/layout.tsx` (shell + sidebar nav)
+> - `src/app/admin/admin.css` (paleta + densidade-info)
+> - `src/app/admin/planear/PlanearForm.tsx` (pipeline UX completo)
+> - `src/app/admin/biblioteca/page.tsx` (galeria de assets reusáveis)
+> - `src/app/api/admin/test-*/route.ts` (diagnóstico por provider)
+> - `src/app/api/admin/items/bulk-archive/route.ts` (arquivar)
+> - `src/app/api/admin/{type}/bulk-render/route.ts` (render em massa)
+> - `.github/workflows/render-*.yml` (Puppeteer/FFmpeg)
+>
+> Adapta editorialmente:
+> - `categoriaPool()` em `image-pool.ts` para os grupos do teu domínio
+> - `WEEK_PLAN` em `calendar-plan.ts` para a cadência editorial
+> - `SYSTEM_PROMPT` + `TYPE_BRIEFS` para a voz da marca
+>
+> Antes de pushar qualquer commit:
+> 1. `npm run build` local (zero warnings, zero erros)
+> 2. Push directo a main (não PR — poupa quota Vercel)
+> 3. Vercel auto-deploya. Confirma `VERCEL_GIT_COMMIT_SHA` em `/debug`.
