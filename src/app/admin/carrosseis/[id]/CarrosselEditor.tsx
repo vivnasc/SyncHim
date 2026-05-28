@@ -376,8 +376,12 @@ export function CarrosselEditor({
                     {job.output.zip && <a className="btn" href={job.output.zip}>↓ ZIP de todos os PNGs</a>}
                   </div>
                 )}
-                {(job.status === 'done' || job.status === 'failed') && (
-                  <button className="btn" onClick={submitRender}>Re-render</button>
+                {(job.status === 'done' || job.status === 'failed' || job.status === 'queued' || job.status === 'running') && (
+                  <button className="btn" onClick={submitRender}>
+                    {job.status === 'done' ? 'Re-render' :
+                     job.status === 'failed' ? 'Re-render (tentar de novo)' :
+                     'Disparar novo render (job anterior preso)'}
+                  </button>
                 )}
               </div>
             )}
