@@ -22,8 +22,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: tools/render-carrossel/package-lock.json
+          # sem cache: package-lock.json esta no .gitignore (commit 8f57e45);
+          # cache no setup-node sem path produz warning, npm install corre na
+          # mesma. ~30s de install nao vale a pena versionar o lockfile.
 
       - name: System libs for Chromium
         run: |
