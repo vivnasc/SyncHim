@@ -420,7 +420,7 @@ export function PlanearForm() {
             </option>
           </select>
           <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
-            As imagens dos testes ficam no pool e juntam-se às das 5 semanas. A partir da semana 6 muda para "Reusar quando há match".
+            As imagens dos testes ficam no pool e juntam-se às das 5 semanas. A partir da semana 6 muda para &ldquo;Reusar quando há match&rdquo;.
           </div>
         </div>
 
