@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 function nextMonday(): string {
   const d = new Date();
@@ -473,8 +474,17 @@ export function PlanearForm() {
                 : `Texto ${current} / ${totalSlots}...`
               : testMode
                 ? `Teste · ${totalSlots} carrosseis`
-                : `Planear ${weeksCount === 1 ? 'semana' : `${weeksCount} semanas`}`}
+                : `Planear ${weeksCount === 1 ? 'semana' : `${weeksCount} semanas`} (no browser)`}
           </button>
+          {!testMode && !running && (
+            <BackgroundPlanButton
+              startDate={startDate}
+              weeksCount={weeksCount}
+              autoImages={autoImages}
+              model={model}
+              imageStrategy={imageStrategy}
+            />
+          )}
           {errorSlot !== null && !running && (
             <button
               type="button"
@@ -576,6 +586,58 @@ export function PlanearForm() {
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Dispara workflow plan-campaign.yml no GitHub Actions e redirecciona
+ * para /admin/campaign-jobs/{id}. Browser pode fechar — workflow corre
+ * no runner ate concluir e actualiza campaign_jobs no Supabase.
+ */
+function BackgroundPlanButton(props: {
+  startDate: string;
+  weeksCount: number;
+  autoImages: boolean;
+  model: string;
+  imageStrategy: 'prefer-existing' | 'always-new' | 'reuse-only';
+}) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function start() {
+    if (!confirm(
+      `Disparar campanha em background (${props.weeksCount * 14} carrosseis)?\n\n` +
+      `Workflow GitHub Actions corre no runner — podes fechar o browser.\n` +
+      `Acompanhas em /admin/campaign-jobs/{id} (auto-refresh).\n` +
+      `O runner tem 6h de limite — chega.`
+    )) return;
+    setBusy(true); setMsg(null);
+    try {
+      const res = await fetch('/api/admin/campaigns/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          startDate: props.startDate,
+          weeksCount: props.weeksCount,
+          autoImages: props.autoImages,
+          model: props.model,
+          reuseStrategy: props.imageStrategy,
+        }),
+      });
+      const j = await res.json();
+      if (!res.ok) { setMsg(`Erro: ${j.error || res.status}`); return; }
+      router.push(`/admin/campaign-jobs/${j.jobId}`);
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <>
+      <button type="button" className="btn" disabled={busy} onClick={start} title="Workflow GitHub Actions, browser pode fechar">
+        {busy ? '…' : 'Planear em background ⤤'}
+      </button>
+      {msg && <span style={{ color: 'var(--bordeaux)', fontSize: 12 }}>{msg}</span>}
+    </>
   );
 }
 

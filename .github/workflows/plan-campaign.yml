@@ -1,0 +1,88 @@
+name: Plan campaign SyncHim
+
+on:
+  workflow_dispatch:
+    inputs:
+      jobId:
+        description: 'id do campaign_jobs row'
+        required: true
+        type: string
+      siteUrl:
+        description: 'URL base do SyncHim (ex: https://synchim.viviannedossantos.com)'
+        required: true
+        type: string
+      startDate:
+        description: 'YYYY-MM-DD da segunda inicial'
+        required: true
+        type: string
+      weeksCount:
+        description: 'numero de semanas (1-8)'
+        required: true
+        type: string
+      autoImages:
+        description: 'true/false'
+        required: false
+        default: 'true'
+        type: string
+      model:
+        description: 'modelo Replicate'
+        required: false
+        default: 'black-forest-labs/flux-1.1-pro'
+        type: string
+      reuseStrategy:
+        description: 'prefer-existing | always-new | reuse-only'
+        required: false
+        default: 'always-new'
+        type: string
+
+jobs:
+  generate:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    steps:
+      - name: Calcula slots
+        id: calc
+        run: |
+          weeks=${{ inputs.weeksCount }}
+          total=$((weeks * 14))
+          echo "total=$total" >> "$GITHUB_OUTPUT"
+          echo "Total slots: $total"
+
+      - name: Loop slots
+        env:
+          SITE_URL: ${{ inputs.siteUrl }}
+          JOB_ID: ${{ inputs.jobId }}
+          WORKER_TOKEN: ${{ secrets.SYNCHIM_CAMPAIGN_WORKER_TOKEN }}
+          TOTAL: ${{ steps.calc.outputs.total }}
+        run: |
+          set -u
+          fail=0
+          for ((i=0; i<TOTAL; i++)); do
+            echo "::group::Slot $((i+1))/$TOTAL"
+            attempt=0
+            ok=0
+            while [ $attempt -lt 3 ]; do
+              attempt=$((attempt+1))
+              resp=$(curl -sS -w "\n%{http_code}" -X POST "$SITE_URL/api/admin/campaigns/process-slot" \
+                -H "Content-Type: application/json" \
+                -H "X-Worker-Token: $WORKER_TOKEN" \
+                -d "{\"jobId\":\"$JOB_ID\",\"slotIndex\":$i}" || true)
+              status=$(echo "$resp" | tail -n1)
+              body=$(echo "$resp" | sed '$d')
+              if [ "$status" = "200" ]; then
+                echo "$body"
+                ok=1
+                break
+              fi
+              echo "tentativa $attempt falhou (HTTP $status): $body"
+              sleep $((attempt * 5))
+            done
+            if [ $ok -eq 0 ]; then
+              echo "Slot $i falhou apos 3 tentativas — abort"
+              fail=1
+              break
+            fi
+            echo "::endgroup::"
+          done
+          if [ $fail -eq 1 ]; then exit 1; fi
+          echo "Campanha concluida: $TOTAL slots"
