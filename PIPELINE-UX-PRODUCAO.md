@@ -580,3 +580,315 @@ Cola este texto no início da sessão da outra Claude:
 > 1. `npm run build` local (zero warnings, zero erros)
 > 2. Push directo a main (não PR — poupa quota Vercel)
 > 3. Vercel auto-deploya. Confirma `VERCEL_GIT_COMMIT_SHA` em `/debug`.
+
+---
+
+## 17. Replicar a interface — kit visual completo
+
+Esta secção tem o **código real para colar** noutro projecto. Princípios
+estão em cima; aqui está o esqueleto visual.
+
+### 17.1 Paleta + tipografia (CSS vars)
+
+Adapta as cores para cada marca; mantém a estrutura.
+
+```css
+/* src/app/admin/admin.css */
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  /* Paleta (adapta por marca) */
+  --bg:          #1A1410;  /* fundo principal */
+  --bg-elev:     #201914;  /* surfaces acima do bg */
+  --bg-card:    #251D17;  /* cards */
+  --texto:       #F2E8DC;  /* texto principal */
+  --texto-suave: #A39B8E;  /* texto secundario */
+  --ouro:        #B8843D;  /* acento primario */
+  --ouro-folha:  #D4A857;  /* acento highlight */
+  --bordeaux:    #8B2235;  /* danger / failed */
+  --linha:       #3A2E22;  /* bordas / dividers */
+
+  /* Tipografia (mantem) */
+  --serif: 'EB Garamond', Georgia, serif;
+  --sans:  'Inter', system-ui, sans-serif;
+}
+```
+
+### 17.2 Layout shell — sidebar + main
+
+```tsx
+// src/app/admin/layout.tsx
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const email = getAdminEmailFromCookies();
+  return (
+    <div className="admin-body">
+      {email ? (
+        <div className="admin-shell">
+          <aside className="admin-side">
+            <div className="admin-brand">
+              <span className="brand-mark">✦</span>  {/* SVG da marca aqui */}
+              <span>SyncHim · Estúdio</span>
+            </div>
+            <nav className="admin-nav">
+              <Link href="/admin">Painel</Link>
+              <Link href="/admin/carrosseis">Carrosseis</Link>
+              <Link href="/admin/calendario">Calendário</Link>
+              <Link href="/admin/planear">Planear</Link>
+              <Link href="/admin/biblioteca">Biblioteca</Link>
+              <Link href="/admin/metricool">Metricool</Link>
+              <Link href="/admin/render-jobs">Render jobs</Link>
+            </nav>
+            <div className="admin-foot">
+              <span className="muted">{email}</span>
+              <SignOutAdmin />
+            </div>
+          </aside>
+          <main className="admin-main">{children}</main>
+        </div>
+      ) : (
+        <main className="admin-main">{children}</main>
+      )}
+    </div>
+  );
+}
+```
+
+```css
+/* admin.css continuação */
+.admin-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+.admin-side {
+  background: #15100C;
+  border-right: 1px solid var(--linha);
+  padding: 24px 20px;
+  display: flex; flex-direction: column; gap: 24px;
+}
+.admin-brand {
+  font-family: var(--serif); font-size: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-mark { color: var(--ouro-folha); font-size: 22px; }
+.admin-nav { display: flex; flex-direction: column; gap: 2px; }
+.admin-nav a {
+  color: var(--texto-suave); text-decoration: none;
+  padding: 8px 10px; border-radius: 4px; font-size: 13px;
+}
+.admin-nav a:hover { background: var(--bg-card); color: var(--texto); }
+.admin-foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
+.admin-main { padding: 32px 40px; max-width: 1400px; }
+.admin-main h1 { font-family: var(--serif); font-weight: 500; font-size: 28px; margin: 0 0 4px; }
+.admin-main h2 { font-family: var(--serif); font-weight: 500; font-size: 20px; margin: 24px 0 12px; }
+.muted { color: var(--texto-suave); }
+.mini { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--texto-suave); }
+```
+
+### 17.3 Componentes-base (4 que se usam em todas as páginas)
+
+```css
+/* Card — bloco de conteúdo */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  padding: 20px;
+}
+
+/* Button — 3 variantes: default, primary, danger */
+.btn {
+  font: inherit; font-size: 13px; padding: 8px 14px;
+  background: transparent; border: 1px solid var(--linha);
+  color: var(--texto); border-radius: 4px; cursor: pointer;
+  text-decoration: none; display: inline-block;
+  transition: border-color .15s, background .15s;
+}
+.btn:hover { border-color: var(--ouro); }
+.btn.primary { background: var(--ouro); color: var(--bg); border-color: var(--ouro); }
+.btn.primary:hover { background: var(--ouro-folha); }
+.btn.danger { color: var(--bordeaux); border-color: var(--bordeaux); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Input — textareas, selects, dates */
+.input, textarea, select {
+  font: inherit; width: 100%;
+  background: var(--bg); border: 1px solid var(--linha);
+  color: var(--texto); padding: 8px 10px; border-radius: 4px;
+}
+.input:focus, textarea:focus, select:focus { outline: none; border-color: var(--ouro); }
+label { display: block; margin-bottom: 4px; font-size: 12px; color: var(--texto-suave); }
+
+/* Pill — status badges */
+.pill {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; letter-spacing: 0.06em;
+  text-transform: uppercase; border: 1px solid;
+}
+.pill.draft     { color: var(--texto-suave); border-color: var(--linha); }
+.pill.ready     { color: var(--ouro);        border-color: var(--ouro); }
+.pill.rendering { color: var(--ouro-folha);  border-color: var(--ouro-folha); }
+.pill.rendered  { color: #6EBB7B;            border-color: #6EBB7B; }
+.pill.published { color: #6EBB7B;            border-color: #6EBB7B; background: rgba(110, 187, 123, 0.1); }
+.pill.failed    { color: var(--bordeaux);    border-color: var(--bordeaux); }
+
+/* Table — densa, hover subtil */
+table.t { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.t th, table.t td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--linha); }
+table.t th { color: var(--texto-suave); font-weight: 500; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+table.t tr:hover td { background: rgba(184,132,61,0.04); }
+
+/* Row helpers — flex inline */
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.row.between { justify-content: space-between; }
+```
+
+### 17.4 Patterns de página (com código real)
+
+#### A) Diagnostic card (passo 0 de qualquer página de geração)
+
+```tsx
+<div className="card" style={{ marginBottom: 24 }}>
+  <div className="mini" style={{ marginBottom: 8 }}>Passo 0 · Diagnóstico</div>
+  <p style={{ fontSize: 13 }} className="muted">
+    Antes de gerar dezenas de items, confirma que os providers estão vivos.
+    Cada teste faz uma chamada minima (~2-5s).
+  </p>
+  <div className="row" style={{ gap: 8 }}>
+    <button className="btn" onClick={() => test('claude')}>Testar Claude API</button>
+    <button className="btn" onClick={() => test('replicate')}>Testar Replicate</button>
+    <a className="btn" href="/api/admin/auth/debug" target="_blank">Ver envs Vercel</a>
+  </div>
+  {testResult && (
+    <pre style={{
+      marginTop: 12, padding: 12, background: 'var(--bg)',
+      border: '1px solid var(--linha)', borderRadius: 4,
+      fontSize: 12, whiteSpace: 'pre-wrap',
+      color: testResult.ok ? 'var(--texto)' : 'var(--bordeaux)'
+    }}>{JSON.stringify(testResult, null, 2)}</pre>
+  )}
+</div>
+```
+
+#### B) Estimate card (custo + tempo antes de executar)
+
+```tsx
+<div className="card" style={{ marginBottom: 16, padding: 12, background: 'var(--bg)' }}>
+  <div className="mini" style={{ marginBottom: 4 }}>Estimativa</div>
+  <div style={{ fontSize: 13, lineHeight: 1.7 }}>
+    <strong>{totalSlots}</strong> items ·
+    <strong> ~{estImages}</strong> assets ·
+    <strong> ~${estCost}</strong> de Replicate ·
+    ~{estMinutes} min
+  </div>
+</div>
+```
+
+#### C) Progress bar com fases (texto → imagens)
+
+```tsx
+{running && (
+  <div style={{ marginTop: 20 }}>
+    <div className="mini" style={{ marginBottom: 6 }}>
+      Fase: {phase === 'copy' ? 'A gerar texto (Claude)' : 'A gerar imagens (Replicate)'}
+    </div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ width: '100%', height: 8, background: 'var(--linha)', borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{
+          width: `${progressPct()}%`, height: '100%',
+          background: phase === 'images' ? 'var(--ouro-folha)' : 'var(--ouro)',
+          transition: 'width 0.3s ease'
+        }} />
+      </div>
+      <span className="muted" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
+        {current} / {total}
+      </span>
+    </div>
+  </div>
+)}
+```
+
+#### D) Resume button (depois de erro)
+
+```tsx
+{errorSlot !== null && !running && (
+  <button type="button" className="btn" onClick={() => runFrom(errorSlot)}>
+    Retomar a partir do slot {errorSlot + 1}
+  </button>
+)}
+{needsResumeImages && !running && items.length > 0 && (
+  <button type="button" className="btn" onClick={resumeImagesOnly}>
+    Retomar só imagens ({items.length} items)
+  </button>
+)}
+```
+
+#### E) Cleanup card (limpar testes antigos)
+
+```tsx
+<div className="card" style={{ marginBottom: 24, borderColor: 'var(--ouro)' }}>
+  <div className="mini" style={{ marginBottom: 8 }}>Limpar testes anteriores</div>
+  <p style={{ fontSize: 13 }} className="muted">
+    Antes de planear nova campanha, arquiva os testes (X+ em draft) para
+    limpar o calendario. Assets ficam guardados em /admin/biblioteca.
+  </p>
+  <div className="row" style={{ gap: 8 }}>
+    <button className="btn" onClick={check}>Ver quantos há para arquivar</button>
+    {count > 0 && (
+      <button className="btn primary" onClick={archive}>
+        Arquivar {count} items
+      </button>
+    )}
+  </div>
+</div>
+```
+
+#### F) Biblioteca grid (galeria de assets reusáveis)
+
+```tsx
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+  gap: 12,
+}}>
+  {assets.map((a) => (
+    <div key={a.id} className="card" style={{ padding: 8 }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={a.url} alt="" loading="lazy" style={{
+        width: '100%', aspectRatio: '4 / 5', objectFit: 'cover',
+        borderRadius: 4, background: '#0A0A0A',
+      }} />
+      <div className="mini" style={{ marginTop: 6, fontSize: 10 }}>
+        {a.code} · {a.context}
+      </div>
+      <CopyUrlButton url={a.url} />
+    </div>
+  ))}
+</div>
+```
+
+### 17.5 Ficheiros para copiar em bloco
+
+Da raiz do SyncHim, copia para o teu projecto:
+
+```
+src/app/admin/admin.css                    (paleta + componentes base)
+src/app/admin/layout.tsx                   (shell + sidebar)
+src/app/admin/SignOutAdmin.tsx             (botão logout)
+src/app/admin/planear/PlanearForm.tsx      (referência principal de UX)
+src/app/admin/biblioteca/page.tsx          (galeria de assets)
+src/app/admin/biblioteca/CopyUrlButton.tsx (botão copiar URL)
+src/components/marks/EstrelaPersa.tsx      (substituir pela marca tua em SVG)
+```
+
+Adapta:
+- **Cores** em `:root` — pinta a tua paleta
+- **Marca SVG** em `EstrelaPersa.tsx` — substitui pelo símbolo da tua marca
+- **Nav links** em `layout.tsx` — adiciona/remove páginas conforme o domínio
+- **Texto PT-PT** — adapta para a língua editorial do projecto
+
+Mantém intacto:
+- Densidade de informação (font-size 13-14, padding 8-12)
+- Hierarquia tipográfica (serif para H1/H2, sans para body)
+- Lógica dos componentes (Card, Button, Pill, Table, Row)
+- Patterns de UX (Diagnostic, Estimate, Progress, Resume, Cleanup, Biblioteca)
