@@ -79,6 +79,7 @@ export function PlanearForm() {
   const [errorSlot, setErrorSlot] = useState<number | null>(null);
   const [done, setDone] = useState(false);
   const [needsResumeImages, setNeedsResumeImages] = useState(false);
+  const [reuseStats, setReuseStats] = useState({ reused: 0, generated: 0 });
   const [testing, setTesting] = useState<'claude' | 'replicate' | null>(null);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
 
@@ -169,6 +170,7 @@ export function PlanearForm() {
       setPhase('images');
       setImgTotal(generated.length);
       setImgCurrent(0);
+      setReuseStats({ reused: 0, generated: 0 });
 
       for (let i = 0; i < generated.length; i++) {
         setImgCurrent(i + 1);
@@ -192,6 +194,12 @@ export function PlanearForm() {
             setRunning(false);
             setPhase('idle');
             return;
+          }
+          if (data?.reused > 0 || data?.generated > 0) {
+            setReuseStats((prev) => ({
+              reused: prev.reused + (data.reused ?? 0),
+              generated: prev.generated + (data.generated ?? 0),
+            }));
           }
           if (data?.failed > 0) {
             const hint = data?.errors?.some?.((e: any) =>
@@ -245,6 +253,7 @@ export function PlanearForm() {
     setPhase('images');
     setImgTotal(items.length);
     setImgCurrent(0);
+    setReuseStats({ reused: 0, generated: 0 });
 
     for (let i = 0; i < items.length; i++) {
       setImgCurrent(i + 1);
@@ -260,6 +269,12 @@ export function PlanearForm() {
           IMG_TIMEOUT_MS,
         );
         const data = await res.json().catch(() => ({}));
+        if (data?.reused > 0 || data?.generated > 0) {
+          setReuseStats((prev) => ({
+            reused: prev.reused + (data.reused ?? 0),
+            generated: prev.generated + (data.generated ?? 0),
+          }));
+        }
         if (!res.ok || data?.failed > 0) {
           const hint = /402|credit|billing/i.test(JSON.stringify(data))
             ? ' [Replicate sem credito · https://replicate.com/account/billing]'
@@ -474,6 +489,11 @@ export function PlanearForm() {
           <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
             Não fechar esta janela. Os resultados aparecem em baixo à medida que cada carrossel termina.
           </p>
+          {phase === 'images' && (reuseStats.reused > 0 || reuseStats.generated > 0) && (
+            <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+              Reusadas da biblioteca: <strong>{reuseStats.reused}</strong> · Geradas novas (Replicate): <strong>{reuseStats.generated}</strong>
+            </p>
+          )}
         </div>
       )}
 
@@ -491,6 +511,11 @@ export function PlanearForm() {
         <div style={{ marginTop: 20 }}>
           <div className="mini" style={{ marginBottom: 8 }}>
             {done ? `Criados ${items.length} carrosseis` : `${items.length} criados...`}
+            {(reuseStats.reused > 0 || reuseStats.generated > 0) && (
+              <span style={{ marginLeft: 8 }}>
+                · imagens: {reuseStats.reused} reusadas, {reuseStats.generated} geradas
+              </span>
+            )}
           </div>
           <table className="t">
             <thead>
