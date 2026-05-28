@@ -110,13 +110,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const slideRows = carousel.slides.map((s, idx) => ({
-    item_id: item.id,
-    idx,
-    layout: s.layout,
-    body: s.body,
-    design: { imagePrompt: s.imagePrompt },
-  }));
+  const slideRows = carousel.slides.map((s, idx) => {
+    const prompt = (s.imagePrompt ?? '').trim();
+    return {
+      item_id: item.id,
+      idx,
+      layout: s.layout,
+      body: s.body,
+      // imagePrompt so e guardado quando Claude decidiu que o slide pede
+      // imagem; slides puramente editoriais ficam com design={} e ficam
+      // automaticamente fora do generate-images / prompts MJ.
+      design: prompt ? { imagePrompt: prompt } : {},
+    };
+  });
   await supabase.from('content_slides').insert(slideRows);
 
   return NextResponse.json({

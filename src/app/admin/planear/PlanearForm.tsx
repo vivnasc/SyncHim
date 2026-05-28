@@ -78,6 +78,7 @@ export function PlanearForm() {
   const [error, setError] = useState('');
   const [errorSlot, setErrorSlot] = useState<number | null>(null);
   const [done, setDone] = useState(false);
+  const [needsResumeImages, setNeedsResumeImages] = useState(false);
   const [testing, setTesting] = useState<'claude' | 'replicate' | null>(null);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
 
@@ -187,16 +188,26 @@ export function PlanearForm() {
             setError(
               `Imagens ${item.code} · HTTP ${res.status} · ${data?.error || 'erro sem corpo'}`,
             );
+            setNeedsResumeImages(true);
             setRunning(false);
             setPhase('idle');
             return;
           }
           if (data?.failed > 0) {
+            const hint = data?.errors?.some?.((e: any) =>
+              (e?.error || '').includes('402') || /credit|billing/i.test(e?.error || ''),
+            )
+              ? ' [Replicate sem credito · https://replicate.com/account/billing]'
+              : '';
             setError(
-              `Imagens ${item.code}: ${data.generated} ok, ${data.failed} falhadas. Detalhe: ${
+              `Imagens ${item.code}: ${data.generated} ok, ${data.failed} falhadas.${hint} Detalhe: ${
                 JSON.stringify(data.errors?.slice?.(0, 2) ?? data.errors)
               }`,
             );
+            setNeedsResumeImages(true);
+            setRunning(false);
+            setPhase('idle');
+            return;
           }
         } catch (err: any) {
           const msg = err?.name === 'AbortError'
@@ -217,7 +228,62 @@ export function PlanearForm() {
 
   async function run(e: React.FormEvent) {
     e.preventDefault();
+    setNeedsResumeImages(false);
     await runFrom(0);
+  }
+
+  /**
+   * Loop apenas pelas imagens dos itens ja criados (sem regerar texto).
+   * generate-images e idempotente: ignora slides que ja tenham imageUrl.
+   * Usado depois de erros como 402 quando se recarrega credito Replicate.
+   */
+  async function resumeImagesOnly() {
+    if (!items.length) return;
+    setRunning(true);
+    setError('');
+    setNeedsResumeImages(false);
+    setPhase('images');
+    setImgTotal(items.length);
+    setImgCurrent(0);
+
+    for (let i = 0; i < items.length; i++) {
+      setImgCurrent(i + 1);
+      const item = items[i];
+      try {
+        const res = await fetchWithTimeout(
+          '/api/admin/generate-images',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ itemId: item.id, model }),
+          },
+          IMG_TIMEOUT_MS,
+        );
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data?.failed > 0) {
+          const hint = /402|credit|billing/i.test(JSON.stringify(data))
+            ? ' [Replicate sem credito · https://replicate.com/account/billing]'
+            : '';
+          setError(
+            `Retomar imagens ${item.code}: ${data?.error || `${data?.generated ?? 0} ok, ${data?.failed ?? '?'} falhadas`}${hint}`,
+          );
+          setNeedsResumeImages(true);
+          setRunning(false);
+          setPhase('idle');
+          return;
+        }
+      } catch (err: any) {
+        setError(`Retomar imagens ${item.code} · ${err?.message || 'erro de rede'}`);
+        setNeedsResumeImages(true);
+        setRunning(false);
+        setPhase('idle');
+        return;
+      }
+    }
+
+    setRunning(false);
+    setDone(true);
+    setPhase('done');
   }
 
   function progressPct() {
@@ -365,6 +431,16 @@ export function PlanearForm() {
               onClick={() => runFrom(errorSlot)}
             >
               Retomar a partir do slot {errorSlot + 1}
+            </button>
+          )}
+          {needsResumeImages && !running && items.length > 0 && (
+            <button
+              type="button"
+              className="btn"
+              onClick={resumeImagesOnly}
+              title="Sem regerar texto. So gera as imagens que ainda faltam nos carrosseis listados em baixo."
+            >
+              Retomar só imagens ({items.length} carrosseis)
             </button>
           )}
         </div>
