@@ -27,14 +27,16 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => null)) as {
     itemId?: string;
     model?: string;
-    reuseStrategy?: 'prefer-existing' | 'always-new';
+    reuseStrategy?: 'prefer-existing' | 'always-new' | 'reuse-only';
   } | null;
 
   if (!body?.itemId) {
     return NextResponse.json({ error: 'itemId em falta' }, { status: 400 });
   }
 
-  const reuse = (body.reuseStrategy ?? 'prefer-existing') !== 'always-new';
+  const strategy = body.reuseStrategy ?? 'prefer-existing';
+  const reuse = strategy !== 'always-new';
+  const reuseOnly = strategy === 'reuse-only';
 
   // Carrega o item para saber categoria
   const supabase = createSupabaseAdmin();
@@ -86,9 +88,10 @@ export async function POST(req: NextRequest) {
       if (url) {
         usedInThisRun.add(url);
         reuseResults.push({ idx: s.idx, url });
-      } else {
+      } else if (!reuseOnly) {
         generateTasks.push({ slide: s });
       }
+      // Se reuseOnly e nao ha match, o slide fica sem imagem (texto-puro).
     }
   } else {
     for (const s of pending as any[]) generateTasks.push({ slide: s });
@@ -132,12 +135,18 @@ export async function POST(req: NextRequest) {
     )
     .filter(Boolean);
 
+  const noMatchSkipped = reuseOnly
+    ? pending.length - reuseResults.length
+    : 0;
+
   return NextResponse.json({
     itemId: body.itemId,
     generated,
     reused: reuseResults.length,
     failed: errors.length,
     skipped: slides.length - pending.length,
+    noMatchSkipped,
+    strategy,
     errors,
   });
 }

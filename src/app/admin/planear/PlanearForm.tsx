@@ -68,6 +68,7 @@ export function PlanearForm() {
   const [testMode, setTestMode] = useState(true);
   const [testSlots, setTestSlots] = useState(3);
   const [autoImages, setAutoImages] = useState(true);
+  const [imageStrategy, setImageStrategy] = useState<'prefer-existing' | 'reuse-only' | 'always-new'>('always-new');
   const [model, setModel] = useState(MODEL_OPTIONS[0].value);
   const [running, setRunning] = useState(false);
   const [current, setCurrent] = useState(0);
@@ -87,7 +88,9 @@ export function PlanearForm() {
   const totalSlots = testMode ? Math.min(testSlots, fullSlots) : fullSlots;
   const estImages = Math.round(totalSlots * IMAGES_PER_SLOT_AVG);
   const modelInfo = MODEL_OPTIONS.find((m) => m.value === model) ?? MODEL_OPTIONS[0];
-  const estCost = (estImages * modelInfo.pricePerImg).toFixed(2);
+  const estCost = imageStrategy === 'reuse-only'
+    ? '0.00 (só reuso, sem Replicate)'
+    : (estImages * modelInfo.pricePerImg).toFixed(2);
 
   async function testEndpoint(kind: 'claude' | 'replicate') {
     setTesting(kind);
@@ -181,7 +184,7 @@ export function PlanearForm() {
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ itemId: item.id, model }),
+              body: JSON.stringify({ itemId: item.id, model, reuseStrategy: imageStrategy }),
             },
             IMG_TIMEOUT_MS,
           );
@@ -264,7 +267,7 @@ export function PlanearForm() {
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ itemId: item.id, model }),
+            body: JSON.stringify({ itemId: item.id, model, reuseStrategy: imageStrategy }),
           },
           IMG_TIMEOUT_MS,
         );
@@ -398,19 +401,45 @@ export function PlanearForm() {
         </div>
 
         <div style={{ marginBottom: 16 }}>
-          <label>Modelo de imagem (Replicate)</label>
+          <label>Estratégia de imagens</label>
           <select
             className="input"
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
+            value={imageStrategy}
+            onChange={(e) => setImageStrategy(e.target.value as any)}
             disabled={running}
-            style={{ maxWidth: 480 }}
+            style={{ maxWidth: 540 }}
           >
-            {MODEL_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
+            <option value="always-new">
+              Sempre gerar nova via Replicate · constrói pool durante 5 semanas
+            </option>
+            <option value="prefer-existing">
+              Reusar quando há match, gerar quando faltar · depois das 5 semanas
+            </option>
+            <option value="reuse-only">
+              Só reusar da biblioteca · sem Replicate · slides sem match ficam texto-puro
+            </option>
           </select>
+          <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+            As imagens dos testes ficam no pool e juntam-se às das 5 semanas. A partir da semana 6 muda para "Reusar quando há match".
+          </div>
         </div>
+
+        {imageStrategy !== 'reuse-only' && (
+          <div style={{ marginBottom: 16 }}>
+            <label>Modelo (quando geras nova via Replicate)</label>
+            <select
+              className="input"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              disabled={running}
+              style={{ maxWidth: 480 }}
+            >
+              {MODEL_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
@@ -420,7 +449,7 @@ export function PlanearForm() {
               onChange={(e) => setAutoImages(e.target.checked)}
               disabled={running}
             />
-            <span>Gerar imagens automaticamente (Replicate) no fim do planeamento</span>
+            <span>Processar imagens automaticamente no fim do planeamento</span>
           </label>
         </div>
 
