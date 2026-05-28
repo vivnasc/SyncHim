@@ -202,9 +202,11 @@ export function renderBody(src: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
   const lines = escaped.split(/\n\n+/).map((par) => {
+    // [\s\S]+? em vez de .+? para atravessar quebras de linha
+    // (ex: "**linha 1\nlinha 2**" deve ficar bold inteiro).
     const inline = par
-      .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#E08496;font-weight:700">$1</strong>')
-      .replace(/_(.+?)_/g, '<em style="color:#E08496;font-style:italic">$1</em>')
+      .replace(/\*\*([\s\S]+?)\*\*/g, '<strong style="color:#E08496;font-weight:700">$1</strong>')
+      .replace(/_([\s\S]+?)_/g, '<em style="color:#E08496;font-style:italic">$1</em>')
       .replace(/\n/g, '<br/>');
     return `<p style="margin:0 0 6px">${inline}</p>`;
   });
