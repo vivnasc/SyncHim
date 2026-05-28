@@ -20,6 +20,31 @@
     background: linear-gradient(to bottom, var(--bg-top) 0%, var(--bg) 60%);
   }
 
+  /* Pergaminho subtilissimo — aquece o gradiente sem ruido visivel */
+  body::before {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none; z-index: 1;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0.97  0 0 0 0 0.91  0 0 0 0 0.82  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    opacity: 0.05;
+  }
+
+  /* Numero fantasma — so em slides de conteudo sem imagem (texto-puro).
+     Da identidade editorial sem ser decorativo: e o numero do slide,
+     em italico, dourado esmaecido, gigante no canto. */
+  .ghost-num {
+    position: absolute; top: 130px; right: 90px; z-index: 1;
+    font-family: 'EB Garamond', Georgia, serif; font-style: italic;
+    font-size: 320px; line-height: 1; color: var(--ouro-folha);
+    opacity: 0.10; letter-spacing: -0.04em;
+    pointer-events: none;
+  }
+  .mode-text.layout-capa .ghost-num,
+  .mode-text.layout-cta .ghost-num,
+  .mode-text.layout-assinatura .ghost-num,
+  .mode-split .ghost-num,
+  .mode-full .ghost-num { display: none; }
+
   /* === MARCA top-left com estrela persa oficial === */
   .brand {
     position: absolute; top: 34px; left: 44px; z-index: 10;
@@ -129,6 +154,7 @@
 <body>
 <div id="slide">
   <div class="image-area" id="image-area" style="display:none"><img id="bg-img"/><div class="gradient"></div></div>
+  <div class="ghost-num" id="ghost-num"></div>
   <div class="brand" id="brand">
     <span class="icon">
       <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SyncHim">
@@ -197,6 +223,10 @@
       dot.className = 'dot' + (i === idx ? ' active' : '');
       pag.appendChild(dot);
     }
+
+    // Numero fantasma (so para conteudo sem imagem)
+    var ghost = document.getElementById('ghost-num');
+    ghost.textContent = String(idx + 1).padStart(2, '0');
 
     document.getElementById('body').innerHTML = renderBody(data.body || '');
 
