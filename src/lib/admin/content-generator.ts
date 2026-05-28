@@ -57,27 +57,33 @@ Identidade visual dos slides:
 - Tipografia serifada (EB Garamond), íntima, editorial
 - Formato vertical 1080x1350 (carrossel Instagram)
 
-Imagens dos slides — DECISAO EDITORIAL:
-- Tu decides quais slides precisam de imagem e quais sao apenas texto sobre o
-  gradiente bordeaux→escuro. Nao ha quota: alguns carrosseis podem ter so 1 ou
-  2 imagens, outros podem ter mais. A regra unica e: imagem so quando reforca
-  ou amplia a mensagem do slide, nunca decorativa.
-- Quando NAO faz sentido (frases puramente confessionais, listas, definicoes
-  abstractas, slides de transicao) deixa imagePrompt vazio (string "" ou
-  omite o campo) e o slide fica so com a tipografia editorial.
-- Quando faz sentido, o imagePrompt deve descrever uma CENA, nao um close-up
-  decorativo. Pessoas em interaccao real, momentos de quotidiano, ambientes
-  com luz dourada lateral. NUNCA close-ups de cara colada ao ecra. NUNCA
-  retratos directos a olhar para a camara. Podem aparecer pessoas mas sempre
-  inseridas numa cena (de costas, de lado, em accao, em interaccao com outra
-  pessoa ou com o ambiente).
-- Estetica: cinematografico, escuro, intimo. Tons quentes. Sombras profundas.
-  Luz dourada lateral natural (vela, janela ao por do sol, candeeiro baixo).
+Imagens dos slides — REGRAS:
+
+Cobertura minima por carrossel de 8 slides:
+- Capa (slide 1): SEMPRE com imagePrompt preenchido. E o hook visual.
+- CTA / assinatura (ultimo slide): SEMPRE com imagePrompt preenchido.
+- Conteudo (slides 2-7): pelo menos 2 deles tambem com imagePrompt — escolhes
+  os que mais ganham com imagem. Os restantes ficam so com texto editorial
+  sobre o gradiente bordeaux→escuro.
+- Total minimo: 4 imagens em 8 slides. Maximo recomendado: 6 (deixa pelo
+  menos 2 slides para respirar so com tipografia).
+- Para slides sem imagem, devolves imagePrompt como string vazia "".
+
+Estilo das imagens (quando ha):
+- O imagePrompt deve descrever uma CENA, nao um close-up decorativo. Pessoas
+  em interaccao real, momentos de quotidiano, ambientes com luz dourada
+  lateral. NUNCA close-ups de cara colada ao ecra. NUNCA retratos directos
+  a olhar para a camara. Podem aparecer pessoas mas sempre inseridas numa
+  cena (de costas, de lado, em accao, em interaccao com outra pessoa ou
+  com o ambiente).
+- Estetica: cinematografico, escuro, intimo. Tons quentes. Sombras
+  profundas. Luz dourada lateral natural (vela, janela ao por do sol,
+  candeeiro baixo).
 - Formato vertical 1080x1350 (4:5).
 - SEM texto na imagem. SEM logos. SEM marca de agua.
-- A imagem e a copia tem de CONVERSAR. Nao escolhas a mesma cena para 3 slides
-  seguidos do mesmo carrossel: cada imagem que metas tem de ser distinta e
-  responder ao slide concreto.`;
+- A imagem e a copia tem de CONVERSAR. Nao escolhas a mesma cena para 3
+  slides seguidos do mesmo carrossel: cada imagem que metas tem de ser
+  distinta e responder ao slide concreto.`;
 
 /* ------------------------------------------------------------------ */
 /*  Tool schema (Anthropic format)                                     */

@@ -104,15 +104,20 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
         ))}
       </div>
 
-      {/* Texto */}
+      {/* Texto.
+          - Modo split/full (com imagem): texto encostado em baixo, na metade
+            inferior, sobre o gradiente.
+          - Modo text (sem imagem): texto centrado verticalmente — preenche o
+            slide e evita a metade superior vazia.
+          - CTA/assinatura: sempre centrado. */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
-        padding: mode === 'text' ? '33px 20px 30px' : '10px 20px 30px',
+        padding: mode === 'text' ? '50px 22px' : '10px 20px 30px',
         height: mode === 'text' ? '100%' : '55%',
         display: 'flex', flexDirection: 'column',
         justifyContent:
           layout === 'cta' || layout === 'assinatura' ? 'center' :
-          mode === 'text' ? 'flex-end' : 'flex-end',
+          mode === 'text' ? 'center' : 'flex-end',
         textAlign: layout === 'cta' || layout === 'assinatura' ? 'center' : 'left',
         zIndex: 2,
         textShadow: imgUrl ? '0 1px 6px rgba(0,0,0,0.4)' : 'none',
