@@ -24,6 +24,7 @@ type TestResult = {
   stage?: string;
   model?: string;
   reply?: string;
+  url?: string;
   latencyMs?: number;
   keyPrefix?: string;
   error?: string;
@@ -32,6 +33,7 @@ type TestResult = {
 };
 
 const SLOT_TIMEOUT_MS = 90_000;
+const IMG_TIMEOUT_MS = 120_000;
 
 async function fetchWithTimeout(url: string, init: RequestInit, ms: number) {
   const ctrl = new AbortController();
@@ -46,25 +48,29 @@ async function fetchWithTimeout(url: string, init: RequestInit, ms: number) {
 export function PlanearForm() {
   const [startDate, setStartDate] = useState(nextMonday);
   const [weeksCount, setWeeksCount] = useState(1);
+  const [autoImages, setAutoImages] = useState(true);
   const [running, setRunning] = useState(false);
   const [current, setCurrent] = useState(0);
+  const [imgCurrent, setImgCurrent] = useState(0);
+  const [imgTotal, setImgTotal] = useState(0);
+  const [phase, setPhase] = useState<'idle' | 'copy' | 'images' | 'done'>('idle');
   const [items, setItems] = useState<CreatedItem[]>([]);
   const [error, setError] = useState('');
   const [errorSlot, setErrorSlot] = useState<number | null>(null);
   const [done, setDone] = useState(false);
-  const [testing, setTesting] = useState(false);
+  const [testing, setTesting] = useState<'claude' | 'replicate' | null>(null);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
 
   const totalSlots = weeksCount * 14;
 
-  async function testClaude() {
-    setTesting(true);
+  async function testEndpoint(kind: 'claude' | 'replicate') {
+    setTesting(kind);
     setTestResult(null);
     try {
       const res = await fetchWithTimeout(
-        '/api/admin/test-claude',
+        `/api/admin/test-${kind}`,
         { method: 'GET', cache: 'no-store' },
-        25_000,
+        kind === 'replicate' ? 60_000 : 25_000,
       );
       const data = (await res.json().catch(() => ({}))) as TestResult;
       setTestResult({ ...data, status: res.status });
@@ -72,21 +78,24 @@ export function PlanearForm() {
       setTestResult({
         ok: false,
         stage: 'fetch',
-        error: err?.message || 'Falha de rede ao chamar /api/admin/test-claude',
+        error: err?.message || `Falha de rede ao chamar /api/admin/test-${kind}`,
       });
     }
-    setTesting(false);
+    setTesting(null);
   }
 
   async function runFrom(startSlot: number) {
     setRunning(true);
     setError('');
     setErrorSlot(null);
+    setPhase('copy');
     if (startSlot === 0) {
       setItems([]);
       setDone(false);
     }
     setCurrent(startSlot);
+
+    const generated: CreatedItem[] = startSlot === 0 ? [] : items.slice();
 
     for (let i = startSlot; i < totalSlots; i++) {
       setCurrent(i + 1);
@@ -114,8 +123,10 @@ export function PlanearForm() {
           setError(`Slot ${i + 1}/${totalSlots} · HTTP ${res.status} · ${data?.error || 'erro sem corpo'}`);
           setErrorSlot(i);
           setRunning(false);
+          setPhase('idle');
           return;
         }
+        generated.push(data.item);
         setItems((prev) => [...prev, data.item]);
       } catch (err: any) {
         const msg = err?.name === 'AbortError'
@@ -124,12 +135,60 @@ export function PlanearForm() {
         setError(`Slot ${i + 1}/${totalSlots} · ${msg}`);
         setErrorSlot(i);
         setRunning(false);
+        setPhase('idle');
         return;
+      }
+    }
+
+    if (autoImages && generated.length > 0) {
+      setPhase('images');
+      setImgTotal(generated.length);
+      setImgCurrent(0);
+
+      for (let i = 0; i < generated.length; i++) {
+        setImgCurrent(i + 1);
+        const item = generated[i];
+        try {
+          const res = await fetchWithTimeout(
+            '/api/admin/generate-images',
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ itemId: item.id }),
+            },
+            IMG_TIMEOUT_MS,
+          );
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            setError(
+              `Imagens ${item.code} · HTTP ${res.status} · ${data?.error || 'erro sem corpo'}`,
+            );
+            setRunning(false);
+            setPhase('idle');
+            return;
+          }
+          if (data?.failed > 0) {
+            setError(
+              `Imagens ${item.code}: ${data.generated} ok, ${data.failed} falhadas. Detalhe: ${
+                JSON.stringify(data.errors?.slice?.(0, 2) ?? data.errors)
+              }`,
+            );
+          }
+        } catch (err: any) {
+          const msg = err?.name === 'AbortError'
+            ? `timeout (>${Math.round(IMG_TIMEOUT_MS / 1000)}s) — Replicate demorou demais`
+            : err?.message || 'erro de rede';
+          setError(`Imagens ${item.code} · ${msg}`);
+          setRunning(false);
+          setPhase('idle');
+          return;
+        }
       }
     }
 
     setRunning(false);
     setDone(true);
+    setPhase('done');
   }
 
   async function run(e: React.FormEvent) {
@@ -138,6 +197,9 @@ export function PlanearForm() {
   }
 
   function progressPct() {
+    if (phase === 'images') {
+      return imgTotal === 0 ? 0 : Math.min(100, (imgCurrent / imgTotal) * 100);
+    }
     return totalSlots === 0 ? 0 : Math.min(100, (current / totalSlots) * 100);
   }
 
@@ -146,12 +208,15 @@ export function PlanearForm() {
       <div className="card" style={{ marginBottom: 24 }}>
         <div className="mini" style={{ marginBottom: 8 }}>Passo 0 · Diagnóstico</div>
         <p style={{ margin: '0 0 12px', fontSize: 13 }} className="muted">
-          Antes de gerar dezenas de carrosseis, confirma que a API Claude está acessível
-          a partir do Vercel. Faz uma chamada minima (~2s).
+          Antes de gerar dezenas de carrosseis, confirma que Claude e Replicate
+          estão acessíveis. Cada teste faz uma chamada minima (~2s Claude, ~5s Replicate).
         </p>
         <div className="row" style={{ gap: 8 }}>
-          <button type="button" className="btn" onClick={testClaude} disabled={testing || running}>
-            {testing ? 'A testar...' : 'Testar Claude API'}
+          <button type="button" className="btn" onClick={() => testEndpoint('claude')} disabled={!!testing || running}>
+            {testing === 'claude' ? 'A testar Claude...' : 'Testar Claude API'}
+          </button>
+          <button type="button" className="btn" onClick={() => testEndpoint('replicate')} disabled={!!testing || running}>
+            {testing === 'replicate' ? 'A testar Replicate...' : 'Testar Replicate'}
           </button>
           <a className="btn" href="/api/admin/auth/debug" target="_blank" rel="noreferrer">
             Ver envs do Vercel
@@ -194,13 +259,30 @@ export function PlanearForm() {
             ))}
           </select>
           <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
-            Cada carrossel demora ~5-15s. {totalSlots} carrosseis ≈ {Math.ceil((totalSlots * 10) / 60)} min total.
+            Texto: ~5-15s por carrossel · Imagens (Replicate Flux Schnell): ~30-60s por carrossel de 8 slides.
+            Total estimado para {totalSlots} carrosseis: ~{Math.ceil((totalSlots * (autoImages ? 50 : 10)) / 60)} min.
           </div>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={autoImages}
+              onChange={(e) => setAutoImages(e.target.checked)}
+              disabled={running}
+            />
+            <span>Gerar imagens automaticamente (Replicate) no fim do planeamento</span>
+          </label>
         </div>
 
         <div className="row" style={{ gap: 8 }}>
           <button className="btn primary" type="submit" disabled={running}>
-            {running ? `A gerar ${current} / ${totalSlots}...` : `Planear ${weeksCount === 1 ? 'semana' : `${weeksCount} semanas`}`}
+            {running
+              ? phase === 'images'
+                ? `Imagens ${imgCurrent} / ${imgTotal}...`
+                : `Texto ${current} / ${totalSlots}...`
+              : `Planear ${weeksCount === 1 ? 'semana' : `${weeksCount} semanas`}`}
           </button>
           {errorSlot !== null && !running && (
             <button
@@ -216,6 +298,9 @@ export function PlanearForm() {
 
       {running && (
         <div style={{ marginTop: 20 }}>
+          <div className="mini" style={{ marginBottom: 6 }}>
+            Fase: {phase === 'copy' ? 'A gerar texto (Claude)' : 'A gerar imagens (Replicate)'}
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: '100%', height: 8, background: 'var(--linha)', borderRadius: 4, overflow: 'hidden'
@@ -223,16 +308,16 @@ export function PlanearForm() {
               <div style={{
                 width: `${progressPct()}%`,
                 height: '100%',
-                background: 'var(--ouro)',
+                background: phase === 'images' ? 'var(--ouro-folha)' : 'var(--ouro)',
                 transition: 'width 0.3s ease'
               }} />
             </div>
             <span className="muted" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
-              {current} / {totalSlots}
+              {phase === 'images' ? `${imgCurrent} / ${imgTotal}` : `${current} / ${totalSlots}`}
             </span>
           </div>
           <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
-            Não fechar esta janela. Os resultados vão aparecer em baixo à medida que cada slot termina.
+            Não fechar esta janela. Os resultados aparecem em baixo à medida que cada carrossel termina.
           </p>
         </div>
       )}
@@ -270,8 +355,11 @@ export function PlanearForm() {
           </table>
           {done && (
             <div className="row" style={{ marginTop: 12, gap: 8 }}>
-              <Link href="/admin/prompts" className="btn primary">Ver prompts MJ</Link>
-              <Link href="/admin/calendario" className="btn">Ver calendário</Link>
+              <Link href="/admin/calendario" className="btn primary">Ver calendário</Link>
+              <Link href="/admin/carrosseis" className="btn">Ver carrosseis</Link>
+              {!autoImages && (
+                <Link href="/admin/prompts" className="btn">Ver prompts MJ (modo manual)</Link>
+              )}
             </div>
           )}
         </div>
