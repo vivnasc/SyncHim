@@ -2,11 +2,10 @@
  * SyncHim · Plano semanal de conteúdo.
  *
  * 2 carrosséis/dia × 7 dias = 14 por semana.
- * Ambos ao meio-dia (12:00) — melhor horário para engagement.
- * Publicados em sequência (Metricool agenda hora exacta por post).
+ *   - 09:00 — post da manhã (didáctico A/B/C/D rotativos)
+ *   - 13:00 — post da tarde (reconhecimento OU CTA cada 7.o dia)
  *
- *   - Post 1: didático (A/B/C/D rotativos)
- *   - Post 2: reconhecimento OU CTA (cada 7.o dia)
+ * Metricool agenda na hora exacta indicada por post (sem deriva).
  */
 
 export type CarouselSlotType =
@@ -19,7 +18,7 @@ export type CarouselSlotType =
 
 export interface WeekSlot {
   dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  time: '12:00';
+  time: string; // 'HH:MM'
   type: CarouselSlotType;
   slideCount: number;
 }
@@ -69,13 +68,13 @@ const EVENING_ROTATION: CarouselSlotType[] = [
 export const WEEK_PLAN: WeekSlot[] = Array.from({ length: 7 }, (_, d) => [
   {
     dayOfWeek: d as WeekSlot['dayOfWeek'],
-    time: '12:00' as const,
+    time: '09:00',
     type: DIDACTIC_ROTATION[d],
     slideCount: 8,
   },
   {
     dayOfWeek: d as WeekSlot['dayOfWeek'],
-    time: '12:00' as const,
+    time: '13:00',
     type: EVENING_ROTATION[d],
     slideCount: EVENING_ROTATION[d] === 'cta' ? 6 : 8,
   },
