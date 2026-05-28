@@ -151,7 +151,7 @@ const TYPE_BRIEFS: Record<CarouselSlotType, string> = {
   reconhecimento:
     'Um carrossel de frases curtas e poderosas que fazem a leitora sentir-se VISTA. Imagina que ela esta no sofa as 20h, sozinha, a scrollar. Cada slide e uma frase que a faz parar. Confessional, intima, sem didactica.',
   cta:
-    'Um convite gentil para fazer o diagnostico do SyncHim. Sem pressao, sem urgencia, sem desconto. Mostra o valor de se conhecer. O link e synchim.com/diagnostico.',
+    'Um convite gentil para fazer o diagnostico do SyncHim. Sem pressao, sem urgencia, sem desconto. Mostra o valor de se conhecer. O link e synchim.com/diagnostico. NUNCA referencies cadencia semanal, "segunda-feira que vem", "ate breve", "ate amanha" ou qualquer compromisso temporal — publicamos 2x/dia todos os dias e nao ha "proxima" especial. O CTA fica intemporal: aponta para o diagnostico como acto que ela pode fazer agora.',
 };
 
 /* ------------------------------------------------------------------ */

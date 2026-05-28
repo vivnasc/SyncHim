@@ -20,15 +20,16 @@
     background: linear-gradient(to bottom, var(--bg-top) 0%, var(--bg) 60%);
   }
 
-  /* === MARCA top-left com ícone === */
+  /* === MARCA top-left com estrela persa oficial === */
   .brand {
     position: absolute; top: 34px; left: 44px; z-index: 10;
-    display: flex; align-items: center; gap: 10px;
-    text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    display: flex; align-items: center; gap: 12px;
+    filter: drop-shadow(0 2px 12px rgba(0,0,0,0.5));
   }
   .brand .icon {
-    font-size: 32px; color: var(--ouro-folha); line-height: 1;
+    width: 40px; height: 40px; color: var(--ouro-folha); line-height: 0;
   }
+  .brand .icon svg { width: 100%; height: 100%; display: block; }
   .brand .name {
     font-size: 24px; font-style: italic; font-weight: 500;
     color: var(--texto); opacity: 0.95;
@@ -120,19 +121,41 @@
   .layout-cta .text-area { justify-content: center; }
   .layout-assinatura .text-area { justify-content: center; text-align: center; }
 
-  .estrela { color: var(--ouro-folha); font-size: 28px; margin-top: 20px; }
+  .estrela { color: var(--ouro-folha); width: 60px; height: 60px; margin-top: 24px; line-height: 0; align-self: center; }
+  .estrela svg { width: 100%; height: 100%; display: block; }
   .signature { margin-top: 16px; font-size: 22px; opacity: 0.7; }
 </style>
 </head>
 <body>
 <div id="slide">
   <div class="image-area" id="image-area" style="display:none"><img id="bg-img"/><div class="gradient"></div></div>
-  <div class="brand" id="brand"><span class="icon">✦</span><span class="name">SyncHim</span></div>
+  <div class="brand" id="brand">
+    <span class="icon">
+      <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SyncHim">
+        <g transform="translate(30,30)">
+          <polygon points="0,-26 6,-9 23,-13 13,1 25,11 9,11 0,26 -6,9 -23,13 -13,-1 -25,-11 -9,-11"
+            fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="0" cy="0" r="8" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="0" cy="0" r="3" fill="currentColor"/>
+        </g>
+      </svg>
+    </span>
+    <span class="name">SyncHim</span>
+  </div>
   <div class="credit">© viviannedossantos</div>
   <div class="pagination" id="pagination"></div>
   <div class="text-area">
     <div class="body" id="body"></div>
-    <div class="estrela" id="estrela" style="display:none">✦</div>
+    <div class="estrela" id="estrela" style="display:none">
+      <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SyncHim">
+        <g transform="translate(30,30)">
+          <polygon points="0,-26 6,-9 23,-13 13,1 25,11 9,11 0,26 -6,9 -23,13 -13,-1 -25,-11 -9,-11"
+            fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="0" cy="0" r="8" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="0" cy="0" r="3" fill="currentColor"/>
+        </g>
+      </svg>
+    </div>
     <div class="signature" id="signature" style="display:none"></div>
   </div>
 </div>
