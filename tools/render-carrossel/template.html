@@ -134,16 +134,20 @@
   .body em { color: var(--ouro); font-style: italic; }
 
   .body {
-    font-size: 82px; line-height: 1.08; font-weight: 500;
-    letter-spacing: -0.01em;
+    font-size: 104px; line-height: 1.06; font-weight: 500;
+    letter-spacing: -0.015em;
   }
+  /* Texto-puro (sem imagem) ocupa mais ainda — preenche o slide. */
+  .mode-text .body { font-size: 116px; }
   .mode-full .body, .mode-split .body {
     text-shadow: 0 2px 16px rgba(0,0,0,0.3);
   }
 
-  .layout-capa .body { font-size: 88px; font-weight: 700; }
-  .layout-cta .body { font-size: 72px; }
+  .layout-capa .body { font-size: 112px; font-weight: 700; }
+  .mode-text.layout-capa .body { font-size: 124px; }
+  .layout-cta .body { font-size: 88px; }
   .layout-cta .text-area { justify-content: center; }
+  .layout-assinatura .body { font-size: 80px; }
   .layout-assinatura .text-area { justify-content: center; text-align: center; }
 
   .estrela { color: var(--ouro-folha); width: 60px; height: 60px; margin-top: 24px; line-height: 0; align-self: center; }
@@ -240,8 +244,10 @@
     }
 
     var bodyEl = document.getElementById('body');
-    var maxH = mode === 'text' ? 900 : 550;
-    fitToHeight(bodyEl, maxH, 32);
+    // Texto-puro pode ocupar mais altura; com imagem fica restrito a metade
+    // inferior + margem do gradiente.
+    var maxH = mode === 'text' ? 1050 : 580;
+    fitToHeight(bodyEl, maxH, 48);
 
     document.body.dataset.ready = '1';
   }

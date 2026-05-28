@@ -22,12 +22,14 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
   const texto = '#F2E8DC';
   const acento = '#E08496';
 
-  // Tipografia (template usa px reais a 1080x1350; aqui dividimos por 3)
+  // Tipografia (template usa px reais a 1080x1350; aqui dividimos por 3).
+  // Texto-puro ganha +4-8px para preencher o slide e dar identidade.
+  const isTextOnly = !imgUrl;
   const bodySize =
-    layout === 'capa' ? 29 :
-    layout === 'cta' ? 24 :
-    layout === 'assinatura' ? 22 :
-    27;
+    layout === 'capa' ? (isTextOnly ? 41 : 37) :
+    layout === 'cta' ? 29 :
+    layout === 'assinatura' ? 27 :
+    isTextOnly ? 39 : 35;
   const bodyWeight = layout === 'capa' ? 700 : 500;
 
   // Numero fantasma so em slides de conteudo texto-puro (sem imagem):
@@ -152,9 +154,9 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
         <div
           style={{
             fontSize: bodySize,
-            lineHeight: 1.08,
+            lineHeight: 1.06,
             fontWeight: bodyWeight,
-            letterSpacing: '-0.01em',
+            letterSpacing: '-0.015em',
           }}
           dangerouslySetInnerHTML={{ __html: html }}
         />
