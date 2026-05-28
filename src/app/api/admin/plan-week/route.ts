@@ -58,11 +58,16 @@ export async function POST(req: NextRequest) {
   const slot = plan[slotIndex];
   const knot = knotForSlot(slotIndex);
 
-  const scheduled = new Date(startDate);
-  scheduled.setUTCDate(scheduled.getUTCDate() + slot.dayOffset);
+  // Calcula o scheduled_at em timezone local da Vivianne (Africa/Maputo,
+  // CAT, UTC+2 sem DST). Vivianne disse "9h e 13h" significando hora local
+  // da audiencia. Override via CAMPAIGN_TZ_OFFSET (ex: '+01:00' para Lisboa
+  // verao, '-03:00' para Brasil).
+  const tzOffset = process.env.CAMPAIGN_TZ_OFFSET || '+02:00';
+  const start = new Date(`${body.startDate}T00:00:00Z`);
+  start.setUTCDate(start.getUTCDate() + slot.dayOffset);
+  const dateOnly = start.toISOString().slice(0, 10);
   const [h, m] = slot.time.split(':').map(Number);
-  scheduled.setUTCHours(h, m, 0, 0);
-  const scheduledAt = scheduled.toISOString();
+  const scheduledAt = `${dateOnly}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00${tzOffset}`;
 
   // Tenta 1 retry quando a Claude viola a regra de cobertura de imagens
   // (capa + cta + 2 conteudo). Outros erros propagam imediatamente.
