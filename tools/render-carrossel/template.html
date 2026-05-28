@@ -90,10 +90,13 @@
   }
 
   /* === MODO TEXT === */
+  /* Sem imagem: texto centrado verticalmente para preencher o slide
+     e evitar a metade superior vazia. CTA/assinatura ja ficam centrados
+     pelo .layout-* override mais abaixo. */
   .mode-text .text-area {
     position: absolute; inset: 0;
-    padding: 100px 60px 90px;
-    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 150px 60px 130px;
+    display: flex; flex-direction: column; justify-content: center;
     z-index: 2;
   }
 
