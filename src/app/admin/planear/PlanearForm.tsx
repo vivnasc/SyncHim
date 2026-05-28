@@ -313,6 +313,8 @@ export function PlanearForm() {
 
   return (
     <div style={{ marginTop: 24, maxWidth: 760 }}>
+      <CleanupCard />
+
       <div className="card" style={{ marginBottom: 24 }}>
         <div className="mini" style={{ marginBottom: 8 }}>Passo 0 · Diagnóstico</div>
         <p style={{ margin: '0 0 12px', fontSize: 13 }} className="muted">
@@ -572,6 +574,81 @@ export function PlanearForm() {
             </div>
           )}
         </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Card destacado no topo do /admin/planear para arquivar carrosseis de
+ * testes anteriores (SC-061 e acima, em draft) antes de planear nova
+ * campanha. Faz dry-run primeiro para mostrar contagem; depois arquiva
+ * (reagenda para 2099-12-31) preservando texto e imagens, que ficam
+ * acessiveis em /admin/biblioteca.
+ */
+function CleanupCard() {
+  const [busy, setBusy] = useState(false);
+  const [count, setCount] = useState<number | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function check() {
+    setBusy(true); setMsg(null);
+    try {
+      const res = await fetch('/api/admin/items/bulk-archive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'draft', codeFrom: 'SC-061', dryRun: true }),
+      });
+      const j = await res.json();
+      if (!res.ok) { setMsg(`Erro: ${j.error || res.status}`); return; }
+      setCount(j.wouldArchive ?? 0);
+    } finally { setBusy(false); }
+  }
+
+  async function archive() {
+    if (!confirm(
+      `Arquivar ${count} carrosseis em draft (SC-061+)?\n\n` +
+      `Reagenda para 31/12/2099 — saem do calendario activo.\n` +
+      `Texto e imagens ficam INTACTOS e visiveis em /admin/biblioteca.\n` +
+      `Reversivel (pode-se mexer no scheduled_at).`
+    )) return;
+    setBusy(true); setMsg(null);
+    try {
+      const res = await fetch('/api/admin/items/bulk-archive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'draft', codeFrom: 'SC-061', confirm: true }),
+      });
+      const j = await res.json();
+      if (!res.ok) { setMsg(`Erro: ${j.error || res.status}`); return; }
+      setMsg(`Arquivados ${j.archived} carrosseis. Imagens em /admin/biblioteca.`);
+      setCount(0);
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="card" style={{ marginBottom: 24, borderColor: 'var(--ouro)' }}>
+      <div className="mini" style={{ marginBottom: 8 }}>Limpar testes anteriores</div>
+      <p style={{ margin: '0 0 12px', fontSize: 13 }} className="muted">
+        Antes de planear nova campanha, arquiva os carrosseis de teste de hoje
+        (SC-061 e acima) para limpar o calendário. As imagens ficam guardadas
+        em <a href="/admin/biblioteca" style={{ color: 'var(--ouro)' }}>/admin/biblioteca</a>.
+      </p>
+      <div className="row" style={{ gap: 8 }}>
+        <button type="button" className="btn" onClick={check} disabled={busy}>
+          {busy ? '…' : count === null ? 'Ver quantos há para arquivar' : 'Verificar de novo'}
+        </button>
+        {count !== null && count > 0 && (
+          <button type="button" className="btn primary" onClick={archive} disabled={busy}>
+            Arquivar {count} carrosseis
+          </button>
+        )}
+        {count === 0 && <span className="muted" style={{ fontSize: 13 }}>Nada para arquivar.</span>}
+      </div>
+      {msg && (
+        <p style={{ marginTop: 10, fontSize: 13, color: msg.startsWith('Erro') ? 'var(--bordeaux)' : 'var(--texto)' }}>
+          {msg}
+        </p>
       )}
     </div>
   );
