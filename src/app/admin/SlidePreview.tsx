@@ -1,4 +1,5 @@
 import type { Slide } from '@/lib/admin/brand';
+import { EstrelaPersa } from '@/components/marks/EstrelaPersa';
 
 /**
  * Preview do slide a 1/3 do tamanho final (template renderiza a 1080x1350,
@@ -71,13 +72,16 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
         </>
       )}
 
-      {/* Marca top-LEFT com icone (template real: 34/44px, escala /3 ≈ 11/15) */}
+      {/* Marca top-LEFT com estrela persa oficial (template real: icone 32px) */}
       <div style={{
         position: 'absolute', top: 11, left: 15, zIndex: 10,
-        display: 'flex', alignItems: 'center', gap: 4,
+        display: 'flex', alignItems: 'center', gap: 5,
         textShadow: imgUrl ? '0 1px 4px rgba(0,0,0,0.5)' : 'none',
+        color: acento,
       }}>
-        <span style={{ color: acento, fontSize: 14, lineHeight: 1 }}>✦</span>
+        <div style={{ width: 14, height: 14, lineHeight: 0 }}>
+          <EstrelaPersa strokeWidth={1.4} />
+        </div>
         <span style={{
           fontSize: 10, fontStyle: 'italic', fontWeight: 500,
           color: texto, opacity: 0.95, letterSpacing: '0.02em',
@@ -132,7 +136,13 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
           dangerouslySetInnerHTML={{ __html: html }}
         />
         {(layout === 'assinatura' || layout === 'cta') && (
-          <div style={{ color: acento, fontSize: 12, marginTop: 8 }}>✦</div>
+          <div style={{
+            width: 22, height: 22, marginTop: 8, color: acento,
+            alignSelf: layout === 'cta' || layout === 'assinatura' ? 'center' : 'flex-start',
+            lineHeight: 0,
+          }}>
+            <EstrelaPersa strokeWidth={1.2} />
+          </div>
         )}
         {layout === 'assinatura' && (
           <div style={{
