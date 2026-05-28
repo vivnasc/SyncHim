@@ -3,12 +3,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 /**
- * Apaga em massa carrosseis em draft criados a partir do codigo SC-061
- * (limite superior do seed inicial, que vai ate SC-060). Tudo acima e
- * gerado pelo planeador automatico — testes ou campanhas que se queira
- * descartar.
+ * Arquiva carrosseis em draft criados a partir de SC-061 (acima do seed
+ * inicial SC-001..060). Reagenda para 2099-12-31 e marca metadata.archived,
+ * removendo-os do calendario activo MAS preservando texto, slides e imagens
+ * geradas. As imagens ficam acessiveis em /admin/biblioteca para reuso.
  *
- * Faz primeiro um dry-run para mostrar a contagem e pedir confirmacao.
+ * Faz dry-run + confirm. Nao apaga ficheiros nem linhas.
  */
 export function CleanupTestsButton() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export function CleanupTestsButton() {
   async function run() {
     setBusy(true);
     try {
-      const dry = await fetch('/api/admin/items/bulk-delete', {
+      const dry = await fetch('/api/admin/items/bulk-archive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -31,19 +31,22 @@ export function CleanupTestsButton() {
         alert(dryJ.error || `dry-run falhou (${dry.status})`);
         return;
       }
-      const n = dryJ.wouldDelete ?? 0;
+      const n = dryJ.wouldArchive ?? 0;
       if (n === 0) {
-        alert('Nao ha carrosseis em draft a partir de SC-061. Nada para apagar.');
+        alert('Nao ha carrosseis em draft a partir de SC-061 para arquivar.');
         return;
       }
       if (!confirm(
-        `Apagar ${n} carrosseis em draft (SC-061 e acima)?\n\n` +
-        `Os SC-001 a SC-060 (seed original) ficam intactos.\n` +
-        `Os slides associados sao apagados em cascata.\n\n` +
-        `Esta accao e irreversivel.`
+        `Arquivar ${n} carrosseis em draft (SC-061 e acima)?\n\n` +
+        `O que isto faz:\n` +
+        `  • Reagenda para 31/12/2099 (saem do calendario activo)\n` +
+        `  • Marca como archived\n` +
+        `  • Texto, slides e imagens geradas ficam INTACTOS\n` +
+        `  • Podes ver/reusar as imagens em /admin/biblioteca\n\n` +
+        `Reversivel: ajustas o scheduled_at manualmente se mudares de ideia.`
       )) return;
 
-      const del = await fetch('/api/admin/items/bulk-delete', {
+      const act = await fetch('/api/admin/items/bulk-archive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -52,12 +55,12 @@ export function CleanupTestsButton() {
           confirm: true,
         }),
       });
-      const delJ = await del.json();
-      if (!del.ok) {
-        alert(delJ.error || `delete falhou (${del.status})`);
+      const actJ = await act.json();
+      if (!act.ok) {
+        alert(actJ.error || `arquivar falhou (${act.status})`);
         return;
       }
-      alert(`Apagados ${delJ.deleted} carrosseis.`);
+      alert(`Arquivados ${actJ.archived} carrosseis. As imagens ficam disponiveis em /admin/biblioteca.`);
       router.refresh();
     } finally {
       setBusy(false);
@@ -65,8 +68,8 @@ export function CleanupTestsButton() {
   }
 
   return (
-    <button className="btn danger" disabled={busy} onClick={run}>
-      {busy ? '…' : 'limpar testes (SC-061 e acima, em draft)'}
+    <button className="btn" disabled={busy} onClick={run}>
+      {busy ? '…' : 'arquivar testes (SC-061+, preserva imagens)'}
     </button>
   );
 }

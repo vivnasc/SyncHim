@@ -25,8 +25,10 @@ export default async function CarrosseisList({
 
   let q = supabase
     .from('content_items')
-    .select('id, code, title, categoria, target, status, scheduled_at, platforms, updated_at')
+    .select('id, code, title, categoria, target, status, scheduled_at, platforms, updated_at, metadata')
     .eq('type', 'carousel')
+    // esconde arquivados (datados 2099-12-31); items sem scheduled_at passam
+    .or('scheduled_at.is.null,scheduled_at.lt.2099-01-01')
     .order('code', { ascending: true })
     .limit(500);
   if (filter && ['casada', 'solteira', 'ambos'].includes(filter)) {
