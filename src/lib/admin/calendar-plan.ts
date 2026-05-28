@@ -82,6 +82,37 @@ export const WEEK_PLAN: WeekSlot[] = Array.from({ length: 7 }, (_, d) => [
 ]).flat();
 
 /**
+ * Gera um plano para N semanas (slot por slot, sequencial).
+ * Cada item devolvido inclui o weekIndex (0..N-1) e dayOffset absoluto
+ * a partir do dia 0 da campanha.
+ *
+ * Usado para a campanha de 30 dias (~4-5 semanas) sem perder a estrutura
+ * rotativa A/B/C/D + reconhecimento/CTA.
+ */
+export interface CampaignSlot extends WeekSlot {
+  weekIndex: number;
+  dayOffset: number; // dia absoluto desde startDate (0..N*7-1)
+  slotIndexAbs: number; // 0..(N*14-1)
+}
+
+export function buildCampaignPlan(weeksCount: number): CampaignSlot[] {
+  const safeWeeks = Math.max(1, Math.min(weeksCount, 8));
+  const result: CampaignSlot[] = [];
+  for (let w = 0; w < safeWeeks; w++) {
+    for (let i = 0; i < WEEK_PLAN.length; i++) {
+      const base = WEEK_PLAN[i];
+      result.push({
+        ...base,
+        weekIndex: w,
+        dayOffset: w * 7 + base.dayOfWeek,
+        slotIndexAbs: w * WEEK_PLAN.length + i,
+      });
+    }
+  }
+  return result;
+}
+
+/**
  * Dado o index do slot (0..13), devolve o nó em foco.
  * Roda pelos 7 nós de modo que cada nó seja tocado pelo menos 2x por semana.
  */

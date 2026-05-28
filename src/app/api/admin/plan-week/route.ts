@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminEmailFromRequest } from '@/lib/admin/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
-import { WEEK_PLAN, knotForSlot } from '@/lib/admin/calendar-plan';
+import { buildCampaignPlan, knotForSlot } from '@/lib/admin/calendar-plan';
 import { generateCarousel } from '@/lib/admin/content-generator';
 
 export const runtime = 'nodejs';
@@ -9,11 +9,13 @@ export const maxDuration = 60;
 
 /**
  * POST /api/admin/plan-week
- * Body: { startDate: 'YYYY-MM-DD', slotIndex: number }
+ * Body: { startDate: 'YYYY-MM-DD', slotIndex: number, weeksCount?: number }
  *
- * Gera UM carrossel para o slot indicado. O frontend chama 14 vezes
- * sequencialmente (0..13), mostrando progresso entre cada chamada.
- * Assim cada request dura ~5-8s, dentro do timeout de qualquer plano Vercel.
+ * Gera UM carrossel para o slot indicado (0..N*14-1, onde N=weeksCount).
+ * O frontend chama N*14 vezes sequencialmente, mostrando progresso.
+ * Assim cada request dura ~5-15s, dentro do timeout Vercel.
+ *
+ * weeksCount: 1 (default) | 2 | 4 (28 dias) | 5 (35 dias = campanha 30 dias)
  */
 export async function POST(req: NextRequest) {
   if (!getAdminEmailFromRequest(req)) {
@@ -27,16 +29,25 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const body = await req.json().catch(() => null) as {
-    startDate?: string; slotIndex?: number
+  const body = (await req.json().catch(() => null)) as {
+    startDate?: string;
+    slotIndex?: number;
+    weeksCount?: number;
   } | null;
 
   if (!body?.startDate || !/^\d{4}-\d{2}-\d{2}$/.test(body.startDate)) {
     return NextResponse.json({ error: 'startDate em falta (YYYY-MM-DD)' }, { status: 400 });
   }
+
+  const weeksCount = Math.max(1, Math.min(body.weeksCount ?? 1, 8));
+  const plan = buildCampaignPlan(weeksCount);
+
   const slotIndex = body.slotIndex ?? 0;
-  if (slotIndex < 0 || slotIndex >= WEEK_PLAN.length) {
-    return NextResponse.json({ error: `slotIndex ${slotIndex} fora de range (0-${WEEK_PLAN.length - 1})` }, { status: 400 });
+  if (slotIndex < 0 || slotIndex >= plan.length) {
+    return NextResponse.json(
+      { error: `slotIndex ${slotIndex} fora de range (0-${plan.length - 1})` },
+      { status: 400 },
+    );
   }
 
   const startDate = new Date(body.startDate + 'T00:00:00Z');
@@ -44,11 +55,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'data invalida' }, { status: 400 });
   }
 
-  const slot = WEEK_PLAN[slotIndex];
+  const slot = plan[slotIndex];
   const knot = knotForSlot(slotIndex);
 
   const scheduled = new Date(startDate);
-  scheduled.setUTCDate(scheduled.getUTCDate() + slot.dayOfWeek);
+  scheduled.setUTCDate(scheduled.getUTCDate() + slot.dayOffset);
   const [h, m] = slot.time.split(':').map(Number);
   scheduled.setUTCHours(h, m, 0, 0);
   const scheduledAt = scheduled.toISOString();
@@ -58,7 +69,13 @@ export async function POST(req: NextRequest) {
     carousel = await generateCarousel(slot.type, knot, slot.dayOfWeek);
   } catch (err: any) {
     return NextResponse.json(
-      { error: `Claude falhou no slot ${slotIndex + 1}: ${err?.message}` },
+      {
+        error: `Claude falhou no slot ${slotIndex + 1}: ${err?.message}`,
+        slot: slotIndex,
+        type: slot.type,
+        knot,
+        cause: err?.error?.type ?? err?.name ?? null,
+      },
       { status: 500 },
     );
   }
@@ -81,6 +98,7 @@ export async function POST(req: NextRequest) {
       scheduled_at: scheduledAt,
       caption: carousel.caption,
       hashtags: carousel.hashtags,
+      metadata: { campaignWeek: slot.weekIndex, campaignWeeks: weeksCount },
     })
     .select()
     .single();
@@ -103,19 +121,29 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     slotIndex,
-    totalSlots: WEEK_PLAN.length,
-    item: { id: item.id, code, title: carousel.title, scheduledAt }
+    totalSlots: plan.length,
+    weeksCount,
+    item: { id: item.id, code, title: carousel.title, scheduledAt },
   });
 }
 
 function slugify(s: string): string {
-  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 60);
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .slice(0, 60);
 }
 
 async function nextCarouselCode(supabase: any): Promise<string> {
-  const { data } = await supabase.from('content_items').select('code')
-    .like('code', 'SC-%').order('code', { ascending: false }).limit(1);
+  const { data } = await supabase
+    .from('content_items')
+    .select('code')
+    .like('code', 'SC-%')
+    .order('code', { ascending: false })
+    .limit(1);
   const last = data?.[0]?.code as string | undefined;
   const num = last ? parseInt(last.split('-')[1], 10) + 1 : 1;
   return `SC-${String(num).padStart(3, '0')}`;

@@ -9,11 +9,12 @@ export default function PlanearPage() {
 
   return (
     <>
-      <h1>Planear semana</h1>
+      <h1>Planear campanha</h1>
       <p className="muted">
-        Gera automaticamente 14 carrosseis (7 manhas + 7 noites) para uma
-        semana completa. Cada carrossel e gerado via Claude API com prompts MJ
-        pre-preenchidos.
+        Gera 14 carrosseis por semana (7 manhas + 7 noites, todos 12:00 — Metricool
+        agenda a hora final por post). Suporta 1 semana ou a campanha completa de
+        30 dias (5 semanas, 70 carrosseis). Cada carrossel é gerado via Claude com
+        prompts MJ pré-preenchidos por slide.
       </p>
       <PlanearForm />
     </>
