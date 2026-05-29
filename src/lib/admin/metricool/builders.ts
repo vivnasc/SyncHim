@@ -39,9 +39,23 @@ export type CsvVideoPost = {
   youtubePlaylist?: string;
 };
 
+/**
+ * Adiciona a mention (@handle) configurada via env CAPTION_AUTHOR_TAG.
+ * Detectada na caption (case-insensitive) — nao duplica se ja la estiver.
+ * Vazio ou ausente = no-op.
+ */
+function appendAuthorTag(caption: string): string {
+  const tag = process.env.CAPTION_AUTHOR_TAG?.trim();
+  if (!tag) return caption;
+  const tagNormalized = tag.toLowerCase();
+  if (caption.toLowerCase().includes(tagNormalized)) return caption;
+  return `${caption}\n\n${tag}`;
+}
+
 function appendHashtags(caption: string, hashtags?: string): string {
-  if (!hashtags?.trim()) return caption;
-  return `${caption}\n\n${hashtags.trim()}`;
+  const withTag = appendAuthorTag(caption);
+  if (!hashtags?.trim()) return withTag;
+  return `${withTag}\n\n${hashtags.trim()}`;
 }
 
 /** 2 linhas por carrossel: IG CAROUSEL + TikTok (sempre). */
