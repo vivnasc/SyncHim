@@ -77,21 +77,28 @@
   .pagination .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(242,232,220,0.25); }
   .pagination .dot.active { background: var(--texto); }
 
-  /* === MODO SPLIT === */
+  /* === MODO SPLIT (estilo FreeMe) ===
+     Imagem domina ~62% no topo. Gradiente longo separado (fora do
+     image-area) faz a ponte entre imagem e texto. Texto fica nos ~42%
+     inferiores sem corte horizontal abrupto. */
   .mode-split .image-area {
-    position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    position: absolute; top: 0; left: 0; right: 0; height: 62%;
     overflow: hidden; z-index: 0;
   }
   .mode-split .image-area img {
     width: 100%; height: 100%; object-fit: cover;
   }
-  .mode-split .image-area .gradient {
-    position: absolute; bottom: 0; left: 0; right: 0; height: 50%;
-    background: linear-gradient(to bottom, transparent, var(--bg-top));
+  .mode-split .image-gradient {
+    position: absolute; top: 45%; left: 0; right: 0; height: 28%;
+    z-index: 1; pointer-events: none;
+    background: linear-gradient(to bottom,
+      transparent 0%,
+      rgba(26,20,16,0.55) 50%,
+      var(--bg) 100%);
   }
   .mode-split .text-area {
-    position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
-    padding: 30px 60px 90px;
+    position: absolute; bottom: 0; left: 0; right: 0; height: 42%;
+    padding: 0 60px 100px;
     display: flex; flex-direction: column; justify-content: flex-end;
     z-index: 2;
   }
@@ -157,7 +164,8 @@
 </head>
 <body>
 <div id="slide">
-  <div class="image-area" id="image-area" style="display:none"><img id="bg-img"/><div class="gradient"></div></div>
+  <div class="image-area" id="image-area" style="display:none"><img id="bg-img"/></div>
+  <div class="image-gradient" id="image-gradient" style="display:none"></div>
   <div class="ghost-num" id="ghost-num"></div>
   <div class="brand" id="brand">
     <span class="icon">
@@ -216,6 +224,10 @@
       var imgArea = document.getElementById('image-area');
       imgArea.style.display = 'block';
       document.getElementById('bg-img').src = imgUrl;
+      // gradient bridge so para split (em full ja ha overlay proprio)
+      if (mode === 'split') {
+        document.getElementById('image-gradient').style.display = 'block';
+      }
     }
 
     // Paginação

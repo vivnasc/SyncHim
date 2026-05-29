@@ -66,19 +66,25 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
           {String(idx + 1).padStart(2, '0')}
         </div>
       )}
-      {/* Imagem de fundo · modo split = topo, modo full = inteira */}
+      {/* Imagem de fundo · modo split (estilo FreeMe):
+          - imagem ocupa 62% no topo
+          - gradiente separado (45%-73%) faz bridge para o bg da pagina
+          - texto fica nos 42% inferiores sem corte abrupto */}
       {mode === 'split' && (
         <>
           <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0, height: '50%',
+            position: 'absolute', top: 0, left: 0, right: 0, height: '62%',
             zIndex: 0, overflow: 'hidden',
             backgroundImage: `url(${imgUrl})`,
             backgroundSize: 'cover', backgroundPosition: 'center',
           }} />
           <div style={{
-            position: 'absolute', top: '25%', left: 0, right: 0, height: '25%',
-            zIndex: 1,
-            background: `linear-gradient(to bottom, transparent, ${bgTop})`,
+            position: 'absolute', top: '45%', left: 0, right: 0, height: '28%',
+            zIndex: 1, pointerEvents: 'none',
+            background: `linear-gradient(to bottom,
+              transparent 0%,
+              rgba(26,20,16,0.55) 50%,
+              ${bg} 100%)`,
           }} />
         </>
       )}
@@ -141,8 +147,8 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
           - CTA/assinatura: sempre centrado. */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
-        padding: mode === 'text' ? '50px 22px' : '10px 20px 30px',
-        height: mode === 'text' ? '100%' : '55%',
+        padding: mode === 'text' ? '50px 22px' : '0 20px 32px',
+        height: mode === 'text' ? '100%' : '42%',
         display: 'flex', flexDirection: 'column',
         justifyContent:
           layout === 'cta' || layout === 'assinatura' ? 'center' :
