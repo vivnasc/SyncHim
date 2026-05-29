@@ -31,11 +31,35 @@ export default async function CarrosselPage({ params }: { params: { id: string }
     .limit(1)
     .maybeSingle();
 
+  // Anterior / seguinte por codigo (exclui arquivados)
+  const [{ data: prevQ }, { data: nextQ }] = await Promise.all([
+    supabase
+      .from('content_items')
+      .select('id, code, metadata')
+      .eq('type', 'carousel')
+      .lt('code', item.code)
+      .order('code', { ascending: false })
+      .limit(10),
+    supabase
+      .from('content_items')
+      .select('id, code, metadata')
+      .eq('type', 'carousel')
+      .gt('code', item.code)
+      .order('code', { ascending: true })
+      .limit(10),
+  ]);
+  const filterActive = (rows: any[] | null) =>
+    (rows ?? []).filter((r) => !((r.metadata as any)?.archived === true));
+  const prev = filterActive(prevQ)[0] ?? null;
+  const next = filterActive(nextQ)[0] ?? null;
+
   return (
     <CarrosselEditor
       initialItem={item as any}
       initialSlides={(slides ?? []) as any}
       initialJob={lastJob as any}
+      prev={prev}
+      next={next}
     />
   );
 }

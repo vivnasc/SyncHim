@@ -29,14 +29,20 @@ type Job = {
   output: any;
 };
 
+type Sibling = { id: string; code: string } | null;
+
 export function CarrosselEditor({
   initialItem,
   initialSlides,
-  initialJob
+  initialJob,
+  prev,
+  next
 }: {
   initialItem: Item;
   initialSlides: any[];
   initialJob: Job | null;
+  prev?: Sibling;
+  next?: Sibling;
 }) {
   const [item, setItem] = useState<Item>(initialItem);
   const [slides, setSlides] = useState<Slide[]>(() => initialSlides.map(rowToSlide));
@@ -206,7 +212,21 @@ export function CarrosselEditor({
               duplicar como casada →
             </button>
           )}
-          <Link href="/admin/carrosseis" className="btn">voltar</Link>
+          {prev ? (
+            <Link href={`/admin/carrosseis/${prev.id}`} className="btn" title={`Anterior: ${prev.code}`}>
+              ← {prev.code}
+            </Link>
+          ) : (
+            <button className="btn" disabled>← anterior</button>
+          )}
+          <Link href="/admin/carrosseis" className="btn">lista</Link>
+          {next ? (
+            <Link href={`/admin/carrosseis/${next.id}`} className="btn" title={`Seguinte: ${next.code}`}>
+              {next.code} →
+            </Link>
+          ) : (
+            <button className="btn" disabled>seguinte →</button>
+          )}
         </div>
       </div>
 
