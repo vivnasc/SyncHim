@@ -323,6 +323,7 @@ Cada vez que `process-slot` é chamado, actualiza `current_slot`,
 | 1 dia com 3+ publicações | Duplicates de re-planeamento | Painel → "Detectar duplicates" |
 | Imagem repetida 5× no pool | Não havia dedupe | Já fixed em `image-pool.ts` |
 | Markdown `**bold**` aparece com asteriscos visíveis | Regex `.+?` não atravessa `\n` | Já fixed: `[\s\S]+?` |
+| Render aparece sem estilo, texto no topo, metade inferior preta | Layout da route que o Puppeteer carrega não importa `globals.css` | Adicionar `import '../[locale]/globals.css'` (ou path equivalente) no `layout.tsx` da route de render |
 | Build Vercel falha por warning | Push intermédio sem `npm run build` local | Reverter, sempre build local primeiro |
 | Deploy stuck em SHA antigo | Webhook GitHub→Vercel partiu | Redeploy manual no Vercel UI |
 
