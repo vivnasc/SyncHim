@@ -135,6 +135,25 @@ export function CarrosselEditor({
     window.location.href = `/admin/carrosseis/${j.id}`;
   }
 
+  async function completeImages() {
+    const pending = slides.filter((s) => s.design.imagePrompt && !s.design.imageUrl).length;
+    if (pending === 0) { alert('Todos os slides com prompt ja tem imagem.'); return; }
+    if (!confirm(
+      `Gerar imagens em falta para ${pending} slide(s)?\n\n` +
+      `Usa Replicate com a estrategia 'prefer-existing' — tenta primeiro pool, gera nova se nao houver match.\n` +
+      `~5-15s por imagem. Custo Flux Pro: ~$${(pending * 0.04).toFixed(2)} no pior caso.`
+    )) return;
+    const res = await fetch('/api/admin/generate-images', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId: item.id, reuseStrategy: 'prefer-existing' }),
+    });
+    const j = await res.json();
+    if (!res.ok) { alert(j.error || 'falhou'); return; }
+    alert(`Geradas ${j.generated}, reusadas ${j.reused}, falhadas ${j.failed}. A recarregar…`);
+    window.location.reload();
+  }
+
   async function submitRender() {
     if (!confirm('Submeter render? Vai disparar um workflow GitHub Actions.')) return;
     // Garante save antes.
@@ -357,6 +376,23 @@ export function CarrosselEditor({
               />
             </div>
           </div>
+
+          {(() => {
+            const pendingImages = slides.filter((s) => s.design.imagePrompt && !s.design.imageUrl).length;
+            return pendingImages > 0 ? (
+              <>
+                <div className="mini" style={{ marginTop: 16 }}>imagens em falta</div>
+                <div className="card" style={{ padding: 12, borderColor: 'var(--ouro)' }}>
+                  <p style={{ fontSize: 12, margin: '0 0 8px' }} className="muted">
+                    {pendingImages} slide{pendingImages > 1 ? 's' : ''} com prompt mas sem imagem.
+                  </p>
+                  <button className="btn primary" onClick={completeImages}>
+                    Gerar imagens em falta ({pendingImages})
+                  </button>
+                </div>
+              </>
+            ) : null;
+          })()}
 
           <div className="mini" style={{ marginTop: 16 }}>render</div>
           <div className="card" style={{ padding: 12 }}>
