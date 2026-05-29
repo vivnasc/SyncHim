@@ -7,9 +7,10 @@ import { CopyUrlButton } from './CopyUrlButton';
 export const dynamic = 'force-dynamic';
 
 /**
- * Galeria de TODAS as imagens geradas (Replicate ou upload manual).
- * Le content_slides em vez de Supabase Storage directo porque mantem o
- * link slide<->imageUrl e mostra qual carrossel/slide a usa.
+ * Galeria de imagens unicas geradas (Replicate ou upload manual).
+ * Le content_slides + dedupe por imageUrl — se uma imagem foi reusada
+ * por N slides, aparece 1 vez com counter "usada por N". Isso garante
+ * que o pool de reuso e a galeria visual reflectem o mesmo conjunto.
  */
 export default async function BibliotecaPage() {
   if (!getAdminEmailFromCookies()) redirect('/admin/login');
@@ -19,12 +20,12 @@ export default async function BibliotecaPage() {
     .from('content_slides')
     .select('id, idx, design, item_id, content_items!inner(code, title, status, scheduled_at, metadata)')
     .order('idx', { ascending: true })
-    .limit(2000);
+    .limit(5000);
 
   type Row = {
     id: string;
     idx: number;
-    design: { imageUrl?: string; imagePrompt?: string };
+    design: { imageUrl?: string; imagePrompt?: string; reused?: boolean };
     item_id: string;
     content_items: {
       code: string;
@@ -35,21 +36,68 @@ export default async function BibliotecaPage() {
     };
   };
   const rows = ((slides ?? []) as unknown as Row[]).filter((s) => s.design?.imageUrl);
-  const archived = rows.filter((s) => (s.content_items.metadata as any)?.archived);
-  const active = rows.filter((s) => !(s.content_items.metadata as any)?.archived);
+
+  // Dedupe por URL — agrupa slides que partilham a mesma imageUrl
+  type Bucket = {
+    url: string;
+    usedCount: number;          // total de slides a usar
+    archivedCount: number;      // dos quais quantos sao em arquivados
+    firstCode: string;          // codigo do primeiro carrossel (origem)
+    firstItemId: string;
+    firstIdx: number;
+    originalGenerated: boolean; // foi gerada para este slide (nao reused)
+    sampleCodes: string[];      // ate 3 codes para mostrar
+  };
+  const byUrl = new Map<string, Bucket>();
+  rows.forEach((s) => {
+    const url = s.design.imageUrl!;
+    const isArchived = (s.content_items.metadata as any)?.archived === true;
+    if (!byUrl.has(url)) {
+      byUrl.set(url, {
+        url,
+        usedCount: 0,
+        archivedCount: 0,
+        firstCode: s.content_items.code,
+        firstItemId: s.item_id,
+        firstIdx: s.idx,
+        originalGenerated: !s.design.reused,
+        sampleCodes: [],
+      });
+    }
+    const b = byUrl.get(url)!;
+    b.usedCount++;
+    if (isArchived) b.archivedCount++;
+    if (b.sampleCodes.length < 3 && !b.sampleCodes.includes(s.content_items.code)) {
+      b.sampleCodes.push(s.content_items.code);
+    }
+  });
+
+  const unique = Array.from(byUrl.values()).sort((a, b) => {
+    // ordena por mais reusadas primeiro
+    if (b.usedCount !== a.usedCount) return b.usedCount - a.usedCount;
+    return a.firstCode.localeCompare(b.firstCode);
+  });
+
+  const totalSlides = rows.length;
+  const popular = unique.filter((b) => b.usedCount > 1);
+  const orphan = unique.filter((b) => b.usedCount === 1);
 
   return (
     <>
       <h1>Biblioteca de imagens</h1>
       <p className="muted">
-        Todas as imagens já geradas — activas e arquivadas. Clica para copiar
-        o URL e colar num slide novo. Total: {rows.length} imagens
-        ({active.length} activas · {archived.length} arquivadas).
+        Imagens únicas no pool · {unique.length} no total
+        ({totalSlides} slides apontam para elas).
+        Reusadas mais que uma vez: {popular.length}. Usadas só uma: {orphan.length}.
       </p>
 
-      {active.length > 0 && <Section title="Activas" items={active} />}
-      {archived.length > 0 && <Section title="Arquivadas (de testes ou planos antigos)" items={archived} />}
-      {rows.length === 0 && (
+      {popular.length > 0 && (
+        <Section title="Mais reusadas" items={popular} highlight />
+      )}
+      {orphan.length > 0 && (
+        <Section title="Únicas (1 slide)" items={orphan} />
+      )}
+      {unique.length === 0 && (
         <div className="card" style={{ marginTop: 18 }}>
           <p className="muted">Ainda nao ha imagens geradas. Gera carrosseis em /admin/planear com autoImages ligado.</p>
         </div>
@@ -58,7 +106,7 @@ export default async function BibliotecaPage() {
   );
 }
 
-function Section({ title, items }: { title: string; items: any[] }) {
+function Section({ title, items, highlight }: { title: string; items: any[]; highlight?: boolean }) {
   return (
     <section style={{ marginTop: 24 }}>
       <h2>{title} <span className="muted" style={{ fontSize: 13 }}>· {items.length}</span></h2>
@@ -68,11 +116,14 @@ function Section({ title, items }: { title: string; items: any[] }) {
         gap: 12,
         marginTop: 12,
       }}>
-        {items.map((s) => (
-          <div key={s.id} className="card" style={{ padding: 8 }}>
+        {items.map((b) => (
+          <div key={b.url} className="card" style={{
+            padding: 8,
+            borderColor: highlight ? 'var(--ouro)' : undefined,
+          }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={s.design.imageUrl}
+              src={b.url}
               alt=""
               loading="lazy"
               style={{
@@ -81,12 +132,16 @@ function Section({ title, items }: { title: string; items: any[] }) {
               }}
             />
             <div className="mini" style={{ marginTop: 6, fontSize: 10 }}>
-              <Link href={`/admin/carrosseis/${s.item_id}`} style={{ color: 'inherit' }}>
-                {s.content_items.code} · slide {String(s.idx + 1).padStart(2, '0')}
+              <Link href={`/admin/carrosseis/${b.firstItemId}`} style={{ color: 'inherit' }}>
+                {b.firstCode} · slide {String(b.firstIdx + 1).padStart(2, '0')}
               </Link>
             </div>
+            <div className="muted" style={{ fontSize: 10, marginTop: 2 }}>
+              Usada por {b.usedCount} slide{b.usedCount !== 1 ? 's' : ''}
+              {b.archivedCount > 0 && ` · ${b.archivedCount} arq.`}
+            </div>
             <div style={{ marginTop: 4 }}>
-              <CopyUrlButton url={s.design.imageUrl} />
+              <CopyUrlButton url={b.url} />
             </div>
           </div>
         ))}

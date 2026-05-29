@@ -55,21 +55,25 @@ export async function findReusableImage(
     q = q.in('content_items.categoria', pool);
   }
 
-  const { data, error } = await q.limit(200);
+  const { data, error } = await q.limit(500);
   if (error || !data?.length) return null;
 
+  // Dedupe por URL — se uma imagem foi reusada por N slides, aparece N
+  // vezes nos rows mas tem que pesar como 1 na escolha aleatoria. Sem isto,
+  // imagens ja populares tem chance N vezes maior de serem pickadas, criando
+  // efeito bola-de-neve onde uma imagem domina todo o pool.
   type Row = { design: { imageUrl?: string } | null };
-  const urls = (data as unknown as Row[])
-    .map((s) => s.design?.imageUrl)
-    .filter((u): u is string => !!u && !exclude.has(u));
+  const allUrls = Array.from(new Set(
+    (data as unknown as Row[])
+      .map((s) => s.design?.imageUrl)
+      .filter((u): u is string => !!u),
+  ));
+  const urls = allUrls.filter((u) => !exclude.has(u));
 
   if (!urls.length) {
     // Pool exausto pelo exclude — relaxa e permite reuso dentro do lote
-    const fallback = (data as unknown as Row[])
-      .map((s) => s.design?.imageUrl)
-      .filter((u): u is string => !!u);
-    if (!fallback.length) return null;
-    return fallback[Math.floor(Math.random() * fallback.length)];
+    if (!allUrls.length) return null;
+    return allUrls[Math.floor(Math.random() * allUrls.length)];
   }
 
   return urls[Math.floor(Math.random() * urls.length)];
