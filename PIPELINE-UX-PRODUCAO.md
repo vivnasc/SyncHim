@@ -4,6 +4,13 @@
 > para gerar carrosseis em bulk. Padrão portátil — copia para os teus outros
 > projectos. Foca o **fluxo do utilizador** e os padrões de UX, não a
 > arquitectura técnica (essa está em `EXPERIENCIA-PRODUCAO-CONTEUDO.md`).
+>
+> **✓ Comprovado em produção 2026-05-28:** 140 posts agendados no Metricool,
+> 30 dias de conteúdo IG + TikTok, custo total ~$8 (Replicate + Claude),
+> 12h de iteração da bug inicial à campanha completa.
+>
+> Para o circuito end-to-end com aprendizagens consolidadas: ver
+> `PIPELINE-CIRCUITO-COMPLETO.md`.
 
 ---
 

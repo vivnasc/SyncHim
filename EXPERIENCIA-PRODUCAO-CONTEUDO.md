@@ -1,6 +1,18 @@
 # EXPERIÊNCIA DE PRODUÇÃO DE CONTEÚDO — SyncHim
 
-> Documento para reutilizar noutros repos. Cobre arquitectura, padrões de código, integrações, e lições aprendidas. Copiar literalmente o que servir; adaptar o resto.
+> Documento para reutilizar noutros repos. Cobre arquitectura, padrões de
+> código, integrações, e lições aprendidas. Copiar literalmente o que servir;
+> adaptar o resto.
+>
+> **Doc atualizada 2026-05-28** — pipeline em produção, 140 posts
+> agendados. Para o fluxo end-to-end com UX detalhada e padrões visuais,
+> ler em paralelo:
+> - `PIPELINE-UX-PRODUCAO.md` — princípios + kit visual + componentes
+> - `PIPELINE-CIRCUITO-COMPLETO.md` — circuito completo + 25 aprendizagens
+>
+> Este doc original cobre arquitectura técnica (Supabase, GH Actions,
+> Puppeteer, FFmpeg, ElevenLabs, Suno, Claude SDK, Metricool CSV) que
+> continua válida e foi a base de tudo o resto.
 
 ---
 

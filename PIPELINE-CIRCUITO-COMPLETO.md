@@ -5,8 +5,41 @@
 > 6 secções. Se quiseres mudar algo estrutural, justifica em comentário no
 > PR — não reescrevas em silêncio.
 >
-> Última actualização: 2026-05-28. Estado: 130 carrosseis na campanha,
-> 1 rendered, restantes em rendering, ZIP final por validar.
+> Última actualização: 2026-05-28 fim-do-dia. Estado: **CAMPANHA COMPLETA
+> EM PRODUÇÃO — 140 posts agendados em Metricool**, 30 dias de conteúdo
+> a ser publicado IG + TikTok.
+
+---
+
+## 0. Caso comprovado — 2026-05-28
+
+**O que se conseguiu em ~12 horas:**
+
+| Métrica | Valor |
+|---|---|
+| Carrosseis na campanha | 130 (~70 originais + 60 seed importado) |
+| Posts agendados no Metricool | 140 (carrossel × IG/TikTok) |
+| Dias de conteúdo cobertos | 30 |
+| Imagens geradas via Replicate | ~140 (custo ~$5) |
+| Imagens reusadas da biblioteca | ~40 ($0) |
+| Slides totais | ~1000 |
+| Render jobs GH Actions | ~70 (≈5min total em paralelo) |
+| Build Vercel consumido (hobby tier) | $0.65 / $20 |
+| Tempo total de iteração | 12h (de "Load failed" a 140 posts) |
+
+**Stack final em produção:**
+- Next.js 14 App Router · Vercel · Supabase (auth + Storage + Postgres)
+- Anthropic Claude `claude-sonnet-4-6` (texto via tool-use)
+- Replicate Flux 1.1 Pro (imagens cinematográficas)
+- GitHub Actions ubuntu-22.04 (Puppeteer render)
+- Metricool (agendamento publicação IG + TikTok)
+
+**Marcos visuais validados pela Vivianne (a marca):**
+- Imagem domina 62% do slide, gradiente bridge suave (estilo FreeMe)
+- Tipografia EB Garamond 600-800 weight, 124px conteúdo
+- Estrela persa oficial em SVG (não unicode)
+- Paleta bordeaux→escuro com acento rosa #E08496
+- Sem caras close-up nas imagens — pessoas em interacção
 
 ---
 
@@ -408,3 +441,151 @@ Se queres mudar algo:
 Se discordas de uma decisão editorial: pede à Vivianne validação antes
 de mudar. As regras 1-8 da secção 3 vieram de feedback dela hoje
 (2026-05-28) e custaram tempo de iteração.
+
+---
+
+## 9. Aprendizagens consolidadas (para evitar pagar 2× pelo mesmo erro)
+
+### Sobre processo
+
+1. **Build local ANTES de cada push.** Vercel Hobby tem ~100 deploys/dia
+   mas conta cost de compute. Cada falha de build = quota gasta sem
+   resultado. Hoje queimámos 3-4 deploys por push intermédio com
+   warnings (escape de aspas, `<img>` ESLint, etc).
+2. **Push directo a main em vez de PR + merge** poupa 50% das builds
+   (preview + production → só production). Excepto quando muda algo
+   estrutural — aí PR para revisão.
+3. **Empty commits para forçar redeploy** raramente são necessários
+   quando o webhook está OK. Não fazer sem pedir.
+4. **Doc-only changes** ainda triggam build. Agrupar em batches.
+
+### Sobre integração de providers
+
+5. **Anthropic SDK > REST cliente custom.** O SDK lida com retries,
+   timeouts, streaming. Migração no commit `47ae423` simplificou
+   `claude.ts` em ~60 linhas.
+6. **Replicate URLs expiram em ~1h.** Sempre fazer download + upload
+   para Supabase Storage logo após gerar. Em `replicate.ts`.
+7. **GitHub Actions PAT** precisa de scope `workflow` (classic) ou
+   `Actions: Read/Write` (fine-grained). Token sem isto = 403.
+8. **`ubuntu-latest` é instável**. Em 2026 mudou para 24.04 (Noble)
+   que renomeou pacotes para `-t64` e partiu o apt install. Pinar
+   sempre a versão LTS testada (`ubuntu-22.04`).
+9. **`setup-node@v4` cache** falha hard se `cache-dependency-path`
+   apontar para ficheiro no `.gitignore`. Remover `cache: npm` se
+   não há lockfile versionado.
+
+### Sobre arquitectura de dados
+
+10. **Códigos sequenciais (`SC-XXX`) nunca reset.** Mesmo depois de
+    arquivar. Mantém auditoria histórica e evita colisões.
+11. **`metadata` jsonb** é o sítio para flags estado (archived,
+    campaignWeek, knot, etc) em vez de colunas SQL — mais flexível
+    para iterar.
+12. **Arquivar > Apagar.** `scheduled_at = 2099-12-31` esconde de
+    todos os filtros activos mas preserva slides/imagens (o trabalho
+    caro). Reversível.
+13. **Dedupe por URL no pool de reuso** é crítico. Sem isto, imagens
+    populares dominam por terem mais "votos" no random pick.
+
+### Sobre UX
+
+14. **Diagnóstico antes de produção.** Botão "Testar Claude/Replicate"
+    custa ~$0.001 e poupa horas a debugar bulk de 70 items.
+15. **Estimativa antes de executar.** Card sempre visível: items,
+    assets, $, tempo. Evita surpresa de custo.
+16. **Retomar > Recomeçar.** `runFrom(slot)` + idempotência em
+    `generate-images`. Loop client-side guarda `errorSlot`.
+17. **Background processing** quando o loop é longo (>10 min). Workflow
+    GitHub Actions com `for` em bash + curl ao endpoint. Browser pode
+    fechar.
+18. **TZ explícito em todo lado** (`+02:00` Maputo). UTC vs local é
+    confusão garantida — eu falhei nisto e a Vivianne reportou
+    "1 dia com 3 publicações".
+
+### Sobre o template visual
+
+19. **Italic com peso máximo 500** no Google Fonts default. Para
+    italic pesado, importar weights 600-800 explicitamente.
+20. **Regex JS com `.+?`** não atravessa newlines. Para markdown
+    multilinha usar `[\s\S]+?`.
+21. **Image área 62% > 50%** para split mode. O texto numa banda
+    estreita destaca, a imagem cinematográfica respira.
+22. **Gradiente em camada separada do `image-area`** porque
+    `overflow:hidden` corta o fade. Fora, com `top: 45%` que cobre
+    transição imagem→texto suave.
+23. **Body gradient termina aos 90%, não 60%.** Senão a metade
+    inferior do slide é preto seco e quebra a estética warm.
+
+### Sobre Vercel quota
+
+24. **Pro $20/mês** dá $0.65 consumidos em 12h de iteração intensa,
+    mas média 3-meses dela é $96 — extras vão à on-demand.
+25. **Configurar `Ignored Build Step`** com bash para skip builds em
+    PRs `.md`-only é boa otimização (não implementado).
+
+---
+
+## 10. Estado do repo no fim do dia 2026-05-28
+
+**Branches relevantes:**
+- `main` — produção, commit `e49446e`+ (este doc)
+- `claude/30mdias-campaign-content-wQnr3` — fechada/merged
+
+**Commits do dia:** ~30 entre PRs (1-51) e pushes directos.
+
+**Ficheiros novos hoje:**
+```
+src/lib/admin/replicate.ts                    (geração imagens)
+src/lib/admin/image-pool.ts                   (reuso com dedupe)
+src/lib/admin/render-dispatch.ts              (helper bulk render)
+src/lib/admin/worker-auth.ts                  (X-Worker-Token)
+
+src/app/api/admin/test-claude/                (diagnóstico)
+src/app/api/admin/test-replicate/             (diagnóstico)
+src/app/api/admin/generate-images/            (Replicate + reuse)
+src/app/api/admin/items/bulk-archive/         (arquivar)
+src/app/api/admin/items/bulk-delete/          (apagar)
+src/app/api/admin/items/find-duplicates/      (detectar dupes)
+src/app/api/admin/items/shift-time/           (corrigir TZ)
+src/app/api/admin/carrosseis/bulk-render/     (render N items)
+src/app/api/admin/render-status/sync-all/     (sync GH → DB)
+src/app/api/admin/campaigns/start/            (background trigger)
+src/app/api/admin/campaigns/process-slot/     (worker callback)
+src/app/api/admin/campaigns/[id]/             (status read)
+
+src/app/admin/biblioteca/                     (galeria reuse)
+src/app/admin/campaign-jobs/                  (background monitor)
+src/app/admin/carrosseis/BulkRenderButton.tsx
+src/app/admin/carrosseis/CleanupTestsButton.tsx
+src/app/admin/CoverageActions.tsx
+src/app/admin/planear/PlanearForm.tsx         (full pipeline UI)
+
+.github/workflows/plan-campaign.yml           (campaign worker)
+
+supabase/campaign-jobs.sql                    (state machine)
+
+PIPELINE-UX-PRODUCAO.md                       (princípios + kit visual)
+PIPELINE-CIRCUITO-COMPLETO.md                 (este doc, end-to-end)
+```
+
+**Ficheiros profundamente alterados:**
+```
+src/app/admin/page.tsx                         (painel reescrito)
+src/app/admin/calendario/page.tsx              (TZ + navegação)
+src/app/admin/carrosseis/page.tsx              (filtro arquivados)
+src/app/admin/carrosseis/[id]/CarrosselEditor.tsx (setas, complete imagens, re-render)
+src/app/admin/SlidePreview.tsx                 (espelha template novo)
+src/app/api/admin/plan-week/route.ts           (weeksCount, TZ, validation)
+src/app/api/admin/auth/debug/route.ts          (todas as envs)
+src/lib/admin/content-generator.ts             (regras editoriais)
+src/lib/admin/calendar-plan.ts                 (09h/13h, multi-week)
+tools/render-carrossel/template.html           (62/42, gradient, EstrelaPersa)
+.github/workflows/render-carrossel.yml         (ubuntu-22.04)
+```
+
+**Ficheiros apagados:**
+```
+tools/render-carrossel/styles.css   (dead code, selectors não casavam)
+```
+
