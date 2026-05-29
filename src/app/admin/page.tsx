@@ -90,23 +90,31 @@ export default async function AdminHome() {
 
   // === Proxima accao sugerida ===
   let nextAction: { label: string; href: string; detail: string } | null = null;
-  if (funnel.draft > 0 && funnel.rendered === 0 && funnel.failed === 0) {
+  // Prioridade 1: ha muito draft acumulado (>5) — render bulk e mais urgente
+  // que exportar 1 rendered isolado.
+  if (funnel.draft > 5) {
+    nextAction = {
+      label: `Render bulk (${funnel.draft} draft)`,
+      href: '/admin/carrosseis',
+      detail: 'Tens muitos carrosseis em draft com texto e imagens — faltam compor os PNGs finais antes do Metricool.',
+    };
+  } else if (funnel.draft > 0 && funnel.rendered === 0 && funnel.failed === 0) {
     nextAction = {
       label: `Render bulk (${funnel.draft} draft)`,
       href: '/admin/carrosseis',
       detail: 'Tens carrosseis em draft com texto e imagens — faltam compor os PNGs finais.',
     };
-  } else if (funnel.rendered > 0 && funnel.published === 0) {
+  } else if (funnel.rendered > 0 && funnel.published === 0 && funnel.draft === 0) {
     nextAction = {
       label: `Export Metricool (${funnel.rendered} rendered)`,
       href: '/admin/metricool',
       detail: 'PNGs prontos. Falta exportar CSV + ZIP para o Metricool.',
     };
-  } else if (slidesWithPromptPending > 0) {
+  } else if (slidesWithPromptPending > 50) {
     nextAction = {
       label: `${slidesWithPromptPending} slides com prompt sem imagem`,
-      href: '/admin/prompts',
-      detail: 'Falta gerar imagens para alguns slides — usa "Retomar imagens" no planear.',
+      href: '/admin/planear',
+      detail: 'Muitos slides ficaram com prompt mas sem imagem. Usa "Retomar imagens" no planear.',
     };
   } else if (weeks.length < 5) {
     const last = weeks[weeks.length - 1];
