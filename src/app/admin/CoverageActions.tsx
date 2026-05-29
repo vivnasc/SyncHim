@@ -39,8 +39,38 @@ export function WeekRenderButton({ weekStart, draft }: { weekStart: string; draf
 }
 
 /**
- * Botao no card 'Cobertura' para detectar e arquivar duplicates.
+ * Botao no painel para varrer todos os render_jobs em queued/running e
+ * espelhar o estado real do result.json. Resolve 'GH Actions terminou
+ * mas SyncHim continua a dizer rendering'.
  */
+export function SyncRenderStatusButton() {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function run() {
+    setBusy(true); setMsg(null);
+    try {
+      const res = await fetch('/api/admin/render-status/sync-all', {
+        method: 'POST',
+      });
+      const j = await res.json();
+      if (!res.ok) { setMsg(`Erro: ${j.error}`); return; }
+      const txt = `Verificados ${j.checked} jobs · ${j.updated} → rendered · ${j.failed} → failed`;
+      setMsg(txt);
+      if (j.updated > 0 || j.failed > 0) router.refresh();
+    } finally { setBusy(false); }
+  }
+
+  return (
+    <div style={{ marginTop: 12 }}>
+      <button className="btn" onClick={run} disabled={busy}>
+        {busy ? '…' : 'Sincronizar status com GitHub Actions'}
+      </button>
+      {msg && <span className="muted" style={{ marginLeft: 8, fontSize: 12 }}>{msg}</span>}
+    </div>
+  );
+}
 export function DuplicatesButton() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);

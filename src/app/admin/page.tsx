@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getAdminEmailFromCookies } from '@/lib/admin/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
-import { WeekRenderButton, DuplicatesButton } from './CoverageActions';
+import { WeekRenderButton, DuplicatesButton, SyncRenderStatusButton } from './CoverageActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -200,6 +200,7 @@ export default async function AdminHome() {
           </table>
         )}
         <DuplicatesButton />
+        <SyncRenderStatusButton />
       </div>
 
       {/* Imagens */}
