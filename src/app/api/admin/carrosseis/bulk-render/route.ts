@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     codeFrom?: string;
     codeTo?: string;
     status?: string;
+    weekStart?: string;  // YYYY-MM-DD: render so dos que cairem na semana
     dryRun?: boolean;
     confirm?: boolean;
   } | null;
@@ -37,14 +38,31 @@ export async function POST(req: NextRequest) {
 
   let q = supabase
     .from('content_items')
-    .select('id, code, title, status')
+    .select('id, code, title, status, scheduled_at, metadata')
     .eq('type', 'carousel')
     .eq('status', status);
   if (body?.codeFrom) q = q.gte('code', body.codeFrom);
   if (body?.codeTo) q = q.lte('code', body.codeTo);
 
-  const { data: items, error } = await q;
+  // Filtro por semana (YYYY-MM-DD da segunda ou domingo)
+  if (body?.weekStart) {
+    const tzOffsetHours = parseTzOffset(process.env.CAMPAIGN_TZ_OFFSET || '+02:00');
+    const startLocal = new Date(`${body.weekStart}T00:00:00Z`);
+    const endLocal = new Date(startLocal);
+    endLocal.setUTCDate(endLocal.getUTCDate() + 7);
+    const startUtc = new Date(startLocal.getTime() - tzOffsetHours * 60 * 60 * 1000);
+    const endUtc = new Date(endLocal.getTime() - tzOffsetHours * 60 * 60 * 1000);
+    q = q.gte('scheduled_at', startUtc.toISOString())
+         .lt('scheduled_at', endUtc.toISOString());
+  }
+
+  const { data: rawItems, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Exclui arquivados
+  const items = (rawItems ?? []).filter((i: any) =>
+    !((i.metadata as any)?.archived === true)
+  );
 
   const targets = items ?? [];
   if (body?.dryRun || !body?.confirm) {
@@ -76,4 +94,11 @@ export async function POST(req: NextRequest) {
     jobs: jobs.map((j) => ({ code: j.code, jobId: j.jobId })),
     errors,
   });
+}
+
+function parseTzOffset(s: string): number {
+  const m = s.match(/^([+-])(\d{2}):(\d{2})$/);
+  if (!m) return 0;
+  const sign = m[1] === '-' ? -1 : 1;
+  return sign * (parseInt(m[2], 10) + parseInt(m[3], 10) / 60);
 }

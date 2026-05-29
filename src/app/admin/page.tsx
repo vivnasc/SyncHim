@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getAdminEmailFromCookies } from '@/lib/admin/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
+import { WeekRenderButton, DuplicatesButton } from './CoverageActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -173,26 +174,32 @@ export default async function AdminHome() {
               <tr>
                 <th>semana de</th><th>carrosseis</th><th>draft</th>
                 <th>rendered</th><th>published</th><th>cobertura</th>
+                <th>render bulk</th>
               </tr>
             </thead>
             <tbody>
-              {weeks.map((w) => (
-                <tr key={w.weekStart}>
-                  <td><code style={{ fontSize: 12 }}>{w.weekStart}</code></td>
-                  <td>{w.itemCount} / 14</td>
-                  <td className="muted">{w.draft}</td>
-                  <td>{w.rendered}</td>
-                  <td>{w.published}</td>
-                  <td>
-                    <span className={`pill ${w.complete ? 'ready' : 'draft'}`}>
-                      {w.complete ? 'completa' : `parcial (${w.itemCount}/14)`}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {weeks.map((w) => {
+                const excess = w.itemCount > 14;
+                const cobLabel = excess
+                  ? `excedida (${w.itemCount}/14)`
+                  : w.complete ? 'completa' : `parcial (${w.itemCount}/14)`;
+                const cobClass = excess ? 'failed' : (w.complete ? 'ready' : 'draft');
+                return (
+                  <tr key={w.weekStart}>
+                    <td><code style={{ fontSize: 12 }}>{w.weekStart}</code></td>
+                    <td>{w.itemCount} / 14</td>
+                    <td className="muted">{w.draft}</td>
+                    <td>{w.rendered}</td>
+                    <td>{w.published}</td>
+                    <td><span className={`pill ${cobClass}`}>{cobLabel}</span></td>
+                    <td><WeekRenderButton weekStart={w.weekStart} draft={w.draft} /></td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
+        <DuplicatesButton />
       </div>
 
       {/* Imagens */}
