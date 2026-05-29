@@ -44,7 +44,7 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
     <div
       className="slide-canvas"
       style={{
-        background: `linear-gradient(to bottom, ${bgTop} 0%, ${bg} 60%)`,
+        background: `linear-gradient(to bottom, ${bgTop} 0%, ${bg} 90%)`,
         color: texto,
         fontFamily: 'EB Garamond, Georgia, serif',
         overflow: 'hidden',
@@ -87,8 +87,8 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
             zIndex: 1, pointerEvents: 'none',
             background: `linear-gradient(to bottom,
               transparent 0%,
-              rgba(26,20,16,0.55) 50%,
-              ${bg} 100%)`,
+              rgba(26,20,16,0.45) 50%,
+              rgba(26,20,16,0.85) 100%)`,
           }} />
         </>
       )}
