@@ -23,14 +23,18 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
   const acento = '#E08496';
 
   // Tipografia (template usa px reais a 1080x1350; aqui dividimos por 3).
-  // Texto-puro ganha +4-8px para preencher o slide e dar identidade.
+  // Texto-puro ganha +alguns px para preencher o slide e dar identidade.
   const isTextOnly = !imgUrl;
   const bodySize =
-    layout === 'capa' ? (isTextOnly ? 41 : 37) :
-    layout === 'cta' ? 29 :
-    layout === 'assinatura' ? 27 :
-    isTextOnly ? 39 : 35;
-  const bodyWeight = layout === 'capa' ? 700 : 500;
+    layout === 'capa' ? (isTextOnly ? 48 : 45) :
+    layout === 'cta' ? 33 :
+    layout === 'assinatura' ? 29 :
+    isTextOnly ? 44 : 41;
+  const bodyWeight =
+    layout === 'capa' ? 800 :
+    layout === 'cta' ? 700 :
+    layout === 'assinatura' ? 600 :
+    600;
 
   // Numero fantasma so em slides de conteudo texto-puro (sem imagem):
   // da identidade editorial sem ser decorativo (e o numero do slide).
@@ -160,9 +164,9 @@ export function SlidePreview({ slide, totalSlides = 8 }: { slide: Slide; totalSl
         <div
           style={{
             fontSize: bodySize,
-            lineHeight: 1.06,
+            lineHeight: 1.02,
             fontWeight: bodyWeight,
-            letterSpacing: '-0.015em',
+            letterSpacing: '-0.02em',
           }}
           dangerouslySetInnerHTML={{ __html: html }}
         />
@@ -210,11 +214,13 @@ export function renderBody(src: string): string {
   const lines = escaped.split(/\n\n+/).map((par) => {
     // [\s\S]+? em vez de .+? para atravessar quebras de linha
     // (ex: "**linha 1\nlinha 2**" deve ficar bold inteiro).
+    // Pesos alinhados com template.html: bold 800, italic 700 (era 500
+    // antes — italic ficava demasiado suave comparado com FreeMe).
     const inline = par
-      .replace(/\*\*([\s\S]+?)\*\*/g, '<strong style="color:#E08496;font-weight:700">$1</strong>')
-      .replace(/_([\s\S]+?)_/g, '<em style="color:#E08496;font-style:italic">$1</em>')
+      .replace(/\*\*([\s\S]+?)\*\*/g, '<strong style="color:#E08496;font-weight:800">$1</strong>')
+      .replace(/_([\s\S]+?)_/g, '<em style="color:#E08496;font-style:italic;font-weight:700">$1</em>')
       .replace(/\n/g, '<br/>');
-    return `<p style="margin:0 0 6px">${inline}</p>`;
+    return `<p style="margin:0 0 9px">${inline}</p>`;
   });
   return lines.join('');
 }
