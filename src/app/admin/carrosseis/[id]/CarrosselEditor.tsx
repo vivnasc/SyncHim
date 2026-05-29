@@ -253,6 +253,41 @@ export function CarrosselEditor({
                     </button>
                   )}
                 </div>
+                {!current.design.imageUrl && (
+                  <div className="row" style={{ gap: 6, marginTop: 6 }}>
+                    <button
+                      className="btn"
+                      style={{ fontSize: 11 }}
+                      onClick={async () => {
+                        const prompt = current.design.imagePrompt?.trim();
+                        if (!prompt) {
+                          alert('Escreve um prompt visual primeiro (campo em cima) ou usa a biblioteca abaixo.');
+                          return;
+                        }
+                        if (!confirm(`Gerar imagem agora via Replicate (~$0.04, ~15s)?\n\nPrompt:\n${prompt.slice(0, 200)}`)) return;
+                        await fetch(`/api/admin/carrosseis/${item.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ item, slides }),
+                        });
+                        const res = await fetch('/api/admin/generate-images', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ itemId: item.id, reuseStrategy: 'always-new' }),
+                        });
+                        const j = await res.json();
+                        if (!res.ok) { alert(j.error || 'falhou'); return; }
+                        alert(`OK: ${j.generated} novas, ${j.reused} reusadas. A recarregar…`);
+                        window.location.reload();
+                      }}
+                    >
+                      Gerar imagem (Replicate)
+                    </button>
+                    <span className="muted" style={{ fontSize: 11 }}>
+                      {current.design.imagePrompt ? 'Usa o prompt acima.' : 'Escreve prompt acima primeiro.'}
+                    </span>
+                  </div>
+                )}
               </div>
               <div>
                 <label>Imagem de fundo (arrasta de MJ ou clica)</label>
