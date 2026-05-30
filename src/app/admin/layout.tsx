@@ -28,6 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <nav className="admin-nav">
               <Link href="/admin">Painel</Link>
               <Link href="/admin/carrosseis">Carrosséis</Link>
+              <Link href="/admin/renderizados">Renderizados</Link>
               <Link href="/admin/videos">Vídeos</Link>
               <Link href="/admin/calendario">Calendário</Link>
               <Link href="/admin/planear">Planear</Link>
