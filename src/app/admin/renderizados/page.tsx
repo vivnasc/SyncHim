@@ -132,7 +132,10 @@ function CarrosselCard({ item }: { item: any }) {
         <img
           src={cover}
           alt={item.title}
-          loading="lazy"
+          // Cover carrega eager + alta prioridade — visivel logo, sem lazy delay
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
           style={{
             width: '100%', aspectRatio: '1080 / 1350', objectFit: 'cover',
             display: 'block', background: '#0A0A0A',
