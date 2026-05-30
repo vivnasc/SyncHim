@@ -127,17 +127,17 @@ function CarrosselCard({ item }: { item: any }) {
 
   return (
     <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-      <Link href={`/admin/carrosseis/${item.id}`} style={{ display: 'block', lineHeight: 0 }}>
-        {/* background-image em vez de <img> — evita bug Safari onde img
-            com aspectRatio dentro de Link computa 0 height. */}
-        <div style={{
-          width: '100%',
-          aspectRatio: '1080 / 1350',
-          backgroundImage: `url("${cover}")`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundColor: '#0A0A0A',
-        }} />
+      <Link href={`/admin/carrosseis/${item.id}`} style={{ display: 'block' }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={cover}
+          alt={item.title}
+          loading="lazy"
+          style={{
+            width: '100%', aspectRatio: '1080 / 1350', objectFit: 'cover',
+            display: 'block', background: '#0A0A0A',
+          }}
+        />
       </Link>
       <div style={{ padding: 12 }}>
         <div className="row between" style={{ marginBottom: 6 }}>
@@ -151,7 +151,7 @@ function CarrosselCard({ item }: { item: any }) {
           {localTime} · {item.categoria}
         </div>
 
-        {/* Tira com thumbnails dos 8 slides — também via background-image */}
+        {/* Tira com thumbnails dos 8 slides */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: `repeat(${Math.min(pngs.length, 8)}, 1fr)`,
@@ -161,15 +161,11 @@ function CarrosselCard({ item }: { item: any }) {
           {pngs.slice(0, 8).map((u, i) => (
             <a key={u} href={u} target="_blank" rel="noreferrer"
               style={{ display: 'block', lineHeight: 0 }}>
-              <div style={{
-                width: '100%',
-                aspectRatio: '1080 / 1350',
-                backgroundImage: `url("${u}")`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundColor: '#0A0A0A',
-                borderRadius: 2,
-              }} title={`slide ${i + 1}`} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={u} alt={`slide ${i + 1}`} loading="lazy" style={{
+                width: '100%', aspectRatio: '1080 / 1350', objectFit: 'cover',
+                background: '#0A0A0A', borderRadius: 2,
+              }} />
             </a>
           ))}
         </div>
