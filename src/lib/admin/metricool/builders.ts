@@ -58,13 +58,27 @@ function appendHashtags(caption: string, hashtags?: string): string {
   return `${withTag}\n\n${hashtags.trim()}`;
 }
 
+/**
+ * Converte URL Supabase Storage de /object/public/ para /render/image/public/
+ * com format=jpeg, para o TikTok que rejeita PNG ('image/png type not allowed,
+ * use image/jpeg or image/webp instead').
+ *
+ * URLs nao-Supabase passam intactas.
+ */
+function toJpeg(url: string): string {
+  if (!url.includes('/storage/v1/object/public/')) return url;
+  const transformed = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+  const sep = transformed.includes('?') ? '&' : '?';
+  return `${transformed}${sep}format=jpeg&quality=85`;
+}
+
 /** 2 linhas por carrossel: IG CAROUSEL + TikTok (sempre). */
 export function buildCarouselRows(post: CsvCarouselPost): string[][] {
   const date = normalizeDate(post.date);
   const time = normalizeTime(post.time || '12:00');
   const rows: string[][] = [];
 
-  // Linha IG
+  // Linha IG (aceita PNG)
   const ig = makeRow();
   ig.set('Date', date);
   ig.set('Time', time);
@@ -76,7 +90,7 @@ export function buildCarouselRows(post: CsvCarouselPost): string[][] {
   if (post.firstComment) ig.set('First Comment Text', post.firstComment);
   rows.push(ig.row);
 
-  // Linha TikTok
+  // Linha TikTok — converte URLs PNG para JPEG via transform Supabase
   const tk = makeRow();
   tk.set('Date', date);
   tk.set('Time', time);
@@ -90,7 +104,7 @@ export function buildCarouselRows(post: CsvCarouselPost): string[][] {
   tk.set('TikTok disable stitch', 'TRUE');
   tk.set('TikTok Branded Content', 'FALSE');
   tk.set('TikTok Title', post.title);
-  post.slides.slice(0, 10).forEach((url, i) => tk.set(`Picture Url ${i + 1}`, url));
+  post.slides.slice(0, 10).forEach((url, i) => tk.set(`Picture Url ${i + 1}`, toJpeg(url)));
   rows.push(tk.row);
 
   return rows;
@@ -143,12 +157,40 @@ export function buildVideoRows(post: CsvVideoPost): string[][] {
   return rows;
 }
 
+/**
+ * Constroi CSV com filtro opcional de plataforma.
+ * platformFilter = Set<'ig'|'tiktok'|'youtube'>
+ *
+ * Quando definido, descarta linhas que nao pertencam a essas plataformas.
+ * Util para gerar CSV apenas de uma plataforma (ex: re-importar so TikTok
+ * depois de fixar problema de formato PNG).
+ */
 export function buildCsv(opts: {
   carousels?: CsvCarouselPost[];
   videos?: CsvVideoPost[];
+  platformFilter?: Set<'ig' | 'tiktok' | 'youtube'>;
 }): string {
   const rows: string[][] = [];
-  for (const p of opts.carousels ?? []) rows.push(...buildCarouselRows(p));
-  for (const p of opts.videos ?? []) rows.push(...buildVideoRows(p));
+  for (const p of opts.carousels ?? []) {
+    const carouselRows = buildCarouselRows(p);
+    // buildCarouselRows devolve [IG, TikTok] por esta ordem
+    if (!opts.platformFilter || opts.platformFilter.has('ig')) rows.push(carouselRows[0]);
+    if (!opts.platformFilter || opts.platformFilter.has('tiktok')) rows.push(carouselRows[1]);
+  }
+  for (const p of opts.videos ?? []) {
+    const videoRows = buildVideoRows(p);
+    // buildVideoRows cria 1 linha por plataforma activa; cada linha tem
+    // a flag TRUE numa coluna correspondente, podemos filtrar pelo idx
+    // mais simples: rebuild com platforms filtradas
+    if (opts.platformFilter) {
+      const filteredPost: CsvVideoPost = {
+        ...p,
+        platforms: p.platforms.filter((pl) => opts.platformFilter!.has(pl)),
+      };
+      if (filteredPost.platforms.length > 0) rows.push(...buildVideoRows(filteredPost));
+    } else {
+      rows.push(...videoRows);
+    }
+  }
   return serializeCsv(rows);
 }

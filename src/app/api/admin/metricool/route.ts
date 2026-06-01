@@ -21,8 +21,16 @@ export const runtime = 'nodejs';
  */
 export async function POST(req: NextRequest) {
   if (!getAdminEmailFromRequest(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  const body = await req.json().catch(() => null) as { itemIds?: string[] } | null;
+  const body = await req.json().catch(() => null) as {
+    itemIds?: string[];
+    platforms?: ('ig' | 'tiktok' | 'youtube')[];  // filtra linhas no CSV
+    dateFrom?: string;                             // YYYY-MM-DD, exclui anteriores
+  } | null;
   if (!body?.itemIds?.length) return NextResponse.json({ error: 'itemIds em falta' }, { status: 400 });
+
+  const platformFilter = body.platforms && body.platforms.length > 0
+    ? new Set(body.platforms)
+    : null;
 
   const supabase = createSupabaseAdmin();
   const { data: items } = await supabase
@@ -35,6 +43,12 @@ export async function POST(req: NextRequest) {
   const skipped: { id: string; reason: string }[] = [];
 
   for (const it of items ?? []) {
+    if (body.dateFrom && it.scheduled_at) {
+      if (new Date(it.scheduled_at) < new Date(`${body.dateFrom}T00:00:00Z`)) {
+        skipped.push({ id: it.id, reason: `antes de ${body.dateFrom}` });
+        continue;
+      }
+    }
     const { date, time } = splitSchedule(it.scheduled_at);
     if (it.type === 'carousel') {
       const pngs = (it.output_urls?.pngs ?? []) as string[];
@@ -66,8 +80,16 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const csv = buildCsv({ carousels, videos });
-  const filename = `synchim-metricool-${new Date().toISOString().slice(0, 10)}.csv`;
+  const csv = buildCsv({
+    carousels, videos,
+    platformFilter: platformFilter as Set<'ig' | 'tiktok' | 'youtube'> | undefined,
+  });
+  const today = new Date().toISOString().slice(0, 10);
+  const platformSuffix = body.platforms && body.platforms.length === 1
+    ? `-${body.platforms[0]}`
+    : '';
+  const dateSuffix = body.dateFrom ? `-desde-${body.dateFrom}` : '';
+  const filename = `synchim-metricool${platformSuffix}${dateSuffix}-${today}.csv`;
 
   return new NextResponse(csv, {
     status: 200,

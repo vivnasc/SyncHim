@@ -16,8 +16,12 @@ type Item = {
   hashtags: string | null;
 };
 
+type Platform = 'ig' | 'tiktok' | 'youtube';
+
 export function MetricoolExporter({ items }: { items: Item[] }) {
   const [targetFilter, setTargetFilter] = useState<'all' | 'casada' | 'solteira' | 'ambos'>('all');
+  const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
+  const [dateFrom, setDateFrom] = useState<string>('');
   const visible = useMemo(
     () => targetFilter === 'all' ? items : items.filter((i) => i.target === targetFilter),
     [items, targetFilter]
@@ -50,7 +54,11 @@ export function MetricoolExporter({ items }: { items: Item[] }) {
       const res = await fetch('/api/admin/metricool', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemIds: Array.from(selected) })
+        body: JSON.stringify({
+          itemIds: Array.from(selected),
+          platforms: platformFilter === 'all' ? undefined : [platformFilter],
+          dateFrom: dateFrom || undefined,
+        })
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
@@ -93,6 +101,21 @@ export function MetricoolExporter({ items }: { items: Item[] }) {
               <option value="solteira">só solteiras</option>
               <option value="ambos">só &ldquo;ambas&rdquo;</option>
             </select>
+            <select className="input" value={platformFilter} onChange={(e) => setPlatformFilter(e.target.value as any)} style={{ width: 140 }} title="Filtra linhas no CSV">
+              <option value="all">todas plataformas</option>
+              <option value="ig">só Instagram</option>
+              <option value="tiktok">só TikTok (PNG→JPEG)</option>
+              <option value="youtube">só YouTube</option>
+            </select>
+            <input
+              type="date"
+              className="input"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              style={{ width: 150 }}
+              title="Excluir items antes desta data"
+              placeholder="data inicial"
+            />
             <button className="btn" onClick={all}>todos</button>
             <button className="btn" onClick={none}>nenhum</button>
             <button className="btn primary" onClick={download} disabled={busy || selected.size === 0}>
