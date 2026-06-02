@@ -144,8 +144,14 @@ const CAROUSEL_TOOL = {
 /* ------------------------------------------------------------------ */
 
 export interface GeneratedReelScene {
-  text: string;       // 1 frase curta (max ~70 chars) por cena
-  emphasis?: string;  // palavra-chave a dar bold em rosa (opcional)
+  text: string;
+  emphasis?: string;
+  /** Prompt visual para fundo da cena. Capa (cena 1) sempre, CTA (ultima)
+   *  sempre, pelo menos 2 das do meio. As que ficarem vazias renderizam
+   *  com gradiente bordeaux como fallback. Regras de conteudo: mesmo do
+   *  carrossel — cenas com pessoas em interaccao, luz dourada lateral,
+   *  nunca close-up de cara. */
+  imagePrompt?: string;
 }
 
 export interface GeneratedReel {
@@ -157,7 +163,7 @@ export interface GeneratedReel {
 
 const REEL_TOOL = {
   name: 'save_reel',
-  description: 'Grava reel kinetic com cenas, narracao text-to-speech e caption.',
+  description: 'Grava reel kinetic com cenas, prompts visuais, narracao text-to-speech e caption.',
   input_schema: {
     type: 'object' as const,
     properties: {
@@ -167,12 +173,13 @@ const REEL_TOOL = {
         items: {
           type: 'object' as const,
           properties: {
-            text: { type: 'string' as const, description: '1 frase curta (max 70 chars) para 1 cena. Cada cena dura 1.8s no video. Texto vai para legenda sincronizada + narracao ElevenLabs.' },
-            emphasis: { type: 'string' as const, description: 'Palavra-chave dessa cena a destacar em rosa (opcional)' },
+            text: { type: 'string' as const, description: '1 frase curta (max 70 chars) por cena. Dura 1.8s. Texto vai para legenda kinetic + narracao ElevenLabs.' },
+            emphasis: { type: 'string' as const, description: 'Palavra-chave a destacar em rosa (opcional)' },
+            imagePrompt: { type: 'string' as const, description: 'Prompt para imagem de fundo da cena (Replicate Flux Pro). Cinematografico, escuro, intimo, vertical 9:16, luz dourada lateral. Cena com pessoas em interaccao, NUNCA close-up de cara. Capa (cena 1) OBRIGATORIO. CTA (ultima) OBRIGATORIO. Pelo menos 2 das outras tambem com imagem. Restantes deixa vazio "" para gradiente bordeaux puro.' },
           },
-          required: ['text'],
+          required: ['text', 'imagePrompt'],
         },
-        description: 'Exactamente 8 cenas. Total ~14-16s. Ritmo de batida emocional, nao de explicacao.',
+        description: 'Exactamente 8 cenas. Capa + CTA + minimo 2 outras com imagePrompt nao vazio.',
       },
       caption: { type: 'string' as const },
       hashtags: { type: 'string' as const },
@@ -181,11 +188,22 @@ const REEL_TOOL = {
   },
 };
 
-const REEL_BRIEF = `Cria um reel kinetic de 8 cenas (~15 segundos).
+const REEL_BRIEF = `Cria um reel kinetic de 8 cenas (~15 segundos), estilo editorial cinematografico (referencia: viviannepag/FreeMe reels).
 Cada cena = 1 frase curta sobre o no relacional. Ritmo de batida emocional.
-Cena 1 = hook (faz parar o scroll). Cenas 2-6 = mecanica/verdade. Cena 7 = viragem. Cena 8 = CTA gentil ('link na bio').
-Cada cena vai virar narracao text-to-speech (ElevenLabs) + legenda sincronizada por cima de fundo escuro com a marca SyncHim.
-Texto: max 70 caracteres por cena, PT-PT, sem travessoes longos. Cada cena tem 1 emphasis (palavra-chave em rosa) opcional.`;
+  - Cena 1 = hook visual + textual (faz parar o scroll)
+  - Cenas 2-6 = mecanica/verdade
+  - Cena 7 = viragem
+  - Cena 8 = CTA gentil ('link na bio')
+
+IMAGENS (regra de cobertura, igual aos carrosseis):
+  - Cena 1 (capa): imagePrompt OBRIGATORIO. Fundo visual da abertura.
+  - Cena 8 (CTA): imagePrompt OBRIGATORIO. Fundo visual de fecho.
+  - Pelo menos 2 das cenas 2-7: imagePrompt nao vazio.
+  - Outras: imagePrompt = "" (cena fica so com gradiente bordeaux+texto).
+Estetica das imagens: cinematografico, escuro, intimo. Vertical 9:16. Pessoas em interaccao (mulher ao telefone, mulher na cozinha, casal de costas, etc), luz dourada lateral natural, NUNCA close-up de cara colada ao ecra. Sem texto na imagem.
+
+Cada cena vai virar narracao ElevenLabs + legenda kinetic por cima da imagem (ou gradiente) com darkening overlay para legibilidade.
+Texto: max 70 caracteres por cena, PT-PT, sem travessoes longos.`;
 
 const TYPE_BRIEFS: Record<CarouselSlotType, string> = {
   'didatico-A':

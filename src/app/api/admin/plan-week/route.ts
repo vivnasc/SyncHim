@@ -107,13 +107,19 @@ export async function POST(req: NextRequest) {
     if (itemErr || !item) {
       return NextResponse.json({ error: `Supabase insert reel falhou: ${itemErr?.message}` }, { status: 500 });
     }
-    const sceneRows = reel.scenes.map((s, idx) => ({
-      item_id: item.id,
-      idx,
-      layout: 'kinetic-line',
-      body: s.text,
-      design: s.emphasis ? { emphasis: s.emphasis } : {},
-    }));
+    const sceneRows = reel.scenes.map((s, idx) => {
+      const prompt = (s.imagePrompt ?? '').trim();
+      return {
+        item_id: item.id,
+        idx,
+        layout: 'kinetic-line',
+        body: s.text,
+        design: {
+          ...(s.emphasis ? { emphasis: s.emphasis } : {}),
+          ...(prompt ? { imagePrompt: prompt } : {}),
+        },
+      };
+    });
     await supabase.from('content_slides').insert(sceneRows);
 
     return NextResponse.json({

@@ -157,11 +157,28 @@ export function VideoEditor({
         </div>
       </div>
 
-      {/* Pipeline rapido: vozes em lote + render. Musica fica no MusicBlock
-          porque tem preset + prompt que beneficiam de afinar. */}
+      {/* Pipeline rapido: imagens + vozes em lote + render. */}
       <div className="card" style={{ marginTop: 16, padding: 12, borderColor: 'var(--ouro)' }}>
         <div className="mini" style={{ marginBottom: 6 }}>Pipeline rapido</div>
         <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+          {(() => {
+            const pendingImages = scenes.filter((s: any) => s.design?.imagePrompt && !s.design?.imageUrl).length;
+            return pendingImages > 0 ? (
+              <button className="btn" onClick={async () => {
+                if (!confirm(`Gerar ${pendingImages} imagens em falta via Replicate? (~$${(pendingImages * 0.04).toFixed(2)})`)) return;
+                const res = await fetch('/api/admin/generate-images', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ itemId: item.id, reuseStrategy: 'prefer-existing' }),
+                });
+                const j = await res.json();
+                if (!res.ok) { alert(j.error); return; }
+                alert(`Geradas ${j.generated}, reusadas ${j.reused}. Recarrega.`);
+                window.location.reload();
+              }}>
+                Gerar {pendingImages} imagens em falta
+              </button>
+            ) : null;
+          })()}
           <button className="btn primary" onClick={gerarTodasVozes} disabled={voicing !== null}>
             {voicing !== null ? `A gerar voz cena ${voicing + 1}…` : `Gerar todas as vozes (${scenes.filter((s) => !s.voice_url && s.body.trim()).length} pendentes)`}
           </button>

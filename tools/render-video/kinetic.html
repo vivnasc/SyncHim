@@ -14,10 +14,24 @@
   html, body { margin: 0; padding: 0; }
   body {
     width: 1080px; height: 1920px; overflow: hidden;
-    background: var(--bg);
+    background: linear-gradient(to bottom, #5A1A2A 0%, var(--bg) 70%);
     color: var(--texto);
     font-family: 'EB Garamond', Georgia, serif;
     position: relative;
+  }
+  /* Imagem de fundo opcional (scene.imageUrl). Ocupa o frame inteiro
+     com darkening overlay para o texto kinetic continuar legivel. */
+  #bg-image {
+    position: absolute; inset: 0; z-index: 0;
+    background-size: cover; background-position: center;
+    filter: brightness(0.55) contrast(1.05);
+  }
+  #bg-image::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to bottom,
+      rgba(26,20,16,0.25) 0%,
+      rgba(26,20,16,0.55) 50%,
+      rgba(26,20,16,0.85) 100%);
   }
   body::before {
     content: '';
@@ -50,6 +64,7 @@
 </style>
 </head>
 <body>
+<div id="bg-image" style="display:none"></div>
 <div id="scene"><div class="body"></div></div>
 <script>
   function escapeHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -79,6 +94,16 @@
 
   const d = window.SCENE_DATA || {};
   applyBrand(d.brand);
+
+  // Imagem de fundo opcional — runner injecta scene.imageUrl quando ha
+  // imagePrompt no design e Replicate ja gerou.
+  const imageUrl = d.imageUrl || (d.design && d.design.imageUrl);
+  if (imageUrl) {
+    const bg = document.getElementById('bg-image');
+    bg.style.display = 'block';
+    bg.style.backgroundImage = `url(${JSON.stringify(imageUrl).slice(1, -1)})`;
+  }
+
   const root = document.getElementById('scene');
   const layout = d.layout || 'kinetic-line';
   root.classList.add(layout === 'cta' ? 'cta' : (layout === 'capa' ? 'capa' : 'kinetic'));
