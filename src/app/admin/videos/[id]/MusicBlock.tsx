@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 
 type Preset = { key: string; label: string; prompt: string };
+type Theme = { musicUrl: string; musicPrompt: string } | null;
 
 export function MusicBlock({
   itemId, musicUrl, musicPrompt, onGenerated
@@ -16,6 +17,8 @@ export function MusicBlock({
   const [prompt, setPrompt] = useState<string>(musicPrompt ?? '');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [theme, setTheme] = useState<Theme>(null);
+  const [savingTheme, setSavingTheme] = useState(false);
 
   useEffect(() => {
     fetch(`/api/admin/videos/${itemId}/music`)
@@ -28,7 +31,33 @@ export function MusicBlock({
         }
       })
       .catch(() => {});
+    // Le tema da campanha (se ja definido)
+    fetch('/api/admin/settings/theme-music')
+      .then((r) => r.json())
+      .then((j) => { if (j.value?.musicUrl) setTheme(j.value); })
+      .catch(() => {});
   }, [itemId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function applyTheme() {
+    if (!theme) return;
+    onGenerated(theme.musicUrl, theme.musicPrompt);
+  }
+
+  async function saveAsTheme() {
+    if (!musicUrl || !musicPrompt) return;
+    if (!confirm('Definir esta música como tema da campanha?\n\nTodos os reels novos poderão reutiliza-la com 1 clique, sem pagar Suno.')) return;
+    setSavingTheme(true);
+    try {
+      const res = await fetch('/api/admin/settings/theme-music', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: { musicUrl, musicPrompt } }),
+      });
+      const j = await res.json();
+      if (!res.ok) { alert(j.error || 'falhou'); return; }
+      setTheme({ musicUrl, musicPrompt });
+      alert('Música tema definida. Próximos reels podem reutilizar.');
+    } finally { setSavingTheme(false); }
+  }
 
   function pickPreset(key: string) {
     setSelectedPreset(key);
@@ -52,12 +81,33 @@ export function MusicBlock({
 
   return (
     <div className="card" style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {/* Tema da campanha — atalho para reutilizar sem chamar Suno */}
+      {theme && (!musicUrl || musicUrl !== theme.musicUrl) && (
+        <div style={{ padding: 8, border: '1px dashed var(--ouro)', borderRadius: 4, fontSize: 12 }}>
+          <div className="row between" style={{ marginBottom: 6 }}>
+            <span className="muted">🎵 Música tema configurada</span>
+            <button className="btn primary" style={{ fontSize: 11 }} onClick={applyTheme}>
+              Reutilizar (sem gerar nova)
+            </button>
+          </div>
+          <audio controls src={theme.musicUrl} style={{ width: '100%', height: 30 }} />
+          <div className="muted" style={{ fontSize: 10, marginTop: 4, fontStyle: 'italic' }}>{theme.musicPrompt.slice(0, 100)}</div>
+        </div>
+      )}
       {musicUrl && (
         <>
           <audio controls src={musicUrl} style={{ width: '100%', height: 36 }} />
           <p className="muted" style={{ fontSize: 11, fontStyle: 'italic', margin: 0 }}>
             {musicPrompt?.slice(0, 120) ?? ''}
           </p>
+          {(!theme || theme.musicUrl !== musicUrl) && (
+            <button className="btn" style={{ fontSize: 11, alignSelf: 'flex-start' }} onClick={saveAsTheme} disabled={savingTheme}>
+              {savingTheme ? 'a guardar…' : '⭐ Definir como tema da campanha'}
+            </button>
+          )}
+          {theme && theme.musicUrl === musicUrl && (
+            <span className="muted" style={{ fontSize: 11 }}>✓ Este é o tema actual da campanha</span>
+          )}
         </>
       )}
 
