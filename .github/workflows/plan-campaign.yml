@@ -19,6 +19,11 @@ on:
         description: 'numero de semanas (1-8)'
         required: true
         type: string
+      totalSlots:
+        description: 'total de slots a processar (depende de kindFilter; default weeks*14)'
+        required: false
+        default: ''
+        type: string
       autoImages:
         description: 'true/false'
         required: false
@@ -44,7 +49,8 @@ jobs:
         id: calc
         run: |
           weeks=${{ inputs.weeksCount }}
-          total=$((weeks * 14))
+          total="${{ inputs.totalSlots }}"
+          if [ -z "$total" ]; then total=$((weeks * 14)); fi
           echo "total=$total" >> "$GITHUB_OUTPUT"
           echo "Total slots: $total"
 

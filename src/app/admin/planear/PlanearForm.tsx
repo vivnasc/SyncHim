@@ -66,6 +66,7 @@ async function fetchWithTimeout(url: string, init: RequestInit, ms: number) {
 export function PlanearForm() {
   const [startDate, setStartDate] = useState(nextMonday);
   const [weeksCount, setWeeksCount] = useState(1);
+  const [contentKind, setContentKind] = useState<'all' | 'carousel' | 'reel'>('all');
   const [testMode, setTestMode] = useState(true);
   const [testSlots, setTestSlots] = useState(3);
   const [autoImages, setAutoImages] = useState(true);
@@ -85,7 +86,15 @@ export function PlanearForm() {
   const [testing, setTesting] = useState<'claude' | 'replicate' | null>(null);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
 
-  const fullSlots = weeksCount * 14;
+  const slotsPerWeek =
+    contentKind === 'carousel' ? 14 :
+    contentKind === 'reel' ? 7 :
+    21;
+  const fullSlots = weeksCount * slotsPerWeek;
+  const kindFilter: Array<'carousel' | 'reel'> | undefined =
+    contentKind === 'all' ? undefined :
+    contentKind === 'carousel' ? ['carousel'] :
+    ['reel'];
   const totalSlots = testMode ? Math.min(testSlots, fullSlots) : fullSlots;
   const estImages = Math.round(totalSlots * IMAGES_PER_SLOT_AVG);
   const modelInfo = MODEL_OPTIONS.find((m) => m.value === model) ?? MODEL_OPTIONS[0];
@@ -135,7 +144,7 @@ export function PlanearForm() {
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ startDate, slotIndex: i, weeksCount }),
+            body: JSON.stringify({ startDate, slotIndex: i, weeksCount, kindFilter }),
           },
           SLOT_TIMEOUT_MS,
         );
@@ -376,6 +385,21 @@ export function PlanearForm() {
           </select>
         </div>
 
+        <div style={{ marginBottom: 16 }}>
+          <label>Tipo de conteúdo</label>
+          <select
+            className="input"
+            value={contentKind}
+            onChange={(e) => setContentKind(e.target.value as any)}
+            disabled={running}
+            style={{ maxWidth: 420 }}
+          >
+            <option value="all">Tudo · carrosseis 09h/13h + reels 18h ({weeksCount * 21}/semana)</option>
+            <option value="carousel">Só carrosseis · 09h + 13h ({weeksCount * 14})</option>
+            <option value="reel">Só reels · 18h kinetic + voz ElevenLabs ({weeksCount * 7})</option>
+          </select>
+        </div>
+
         <div style={{ marginBottom: 16, padding: 12, border: '1px dashed var(--linha)', borderRadius: 4 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 8 }}>
             <input
@@ -483,6 +507,7 @@ export function PlanearForm() {
               autoImages={autoImages}
               model={model}
               imageStrategy={imageStrategy}
+              kindFilter={kindFilter}
             />
           )}
           {errorSlot !== null && !running && (
@@ -600,14 +625,20 @@ function BackgroundPlanButton(props: {
   autoImages: boolean;
   model: string;
   imageStrategy: 'prefer-existing' | 'always-new' | 'reuse-only';
+  kindFilter?: Array<'carousel' | 'reel'>;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
+  const slotsPerWeek = props.kindFilter
+    ? props.kindFilter.reduce((s, k) => s + (k === 'carousel' ? 14 : 7), 0)
+    : 21;
+  const totalSlots = props.weeksCount * slotsPerWeek;
+
   async function start() {
     if (!confirm(
-      `Disparar campanha em background (${props.weeksCount * 14} carrosseis)?\n\n` +
+      `Disparar campanha em background (${totalSlots} items)?\n\n` +
       `Workflow GitHub Actions corre no runner — podes fechar o browser.\n` +
       `Acompanhas em /admin/campaign-jobs/{id} (auto-refresh).\n` +
       `O runner tem 6h de limite — chega.`
@@ -623,6 +654,7 @@ function BackgroundPlanButton(props: {
           autoImages: props.autoImages,
           model: props.model,
           reuseStrategy: props.imageStrategy,
+          kindFilter: props.kindFilter,
         }),
       });
       const j = await res.json();

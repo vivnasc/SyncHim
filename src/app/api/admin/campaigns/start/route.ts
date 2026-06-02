@@ -33,13 +33,18 @@ export async function POST(req: NextRequest) {
     autoImages?: boolean;
     model?: string;
     reuseStrategy?: 'prefer-existing' | 'always-new' | 'reuse-only';
+    kindFilter?: Array<'carousel' | 'reel'>;
   } | null;
 
   if (!body?.startDate || !/^\d{4}-\d{2}-\d{2}$/.test(body.startDate)) {
     return NextResponse.json({ error: 'startDate em falta (YYYY-MM-DD)' }, { status: 400 });
   }
   const weeksCount = Math.max(1, Math.min(body.weeksCount ?? 1, 8));
-  const totalSlots = weeksCount * 14;
+  // Calcula slots por semana segundo o kindFilter (default 21 = todos)
+  const slotsPerWeek = body.kindFilter
+    ? body.kindFilter.reduce((s, k) => s + (k === 'carousel' ? 14 : 7), 0)
+    : 21;
+  const totalSlots = weeksCount * slotsPerWeek;
 
   const jobId = `campaign-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const settings = {
@@ -48,6 +53,7 @@ export async function POST(req: NextRequest) {
     autoImages: body.autoImages ?? true,
     model: body.model ?? 'black-forest-labs/flux-1.1-pro',
     reuseStrategy: body.reuseStrategy ?? 'always-new',
+    kindFilter: body.kindFilter,
   };
 
   const supabase = createSupabaseAdmin();
@@ -79,6 +85,7 @@ export async function POST(req: NextRequest) {
         siteUrl,
         startDate: settings.startDate,
         weeksCount: String(weeksCount),
+        totalSlots: String(totalSlots),
         autoImages: String(settings.autoImages),
         model: settings.model,
         reuseStrategy: settings.reuseStrategy,

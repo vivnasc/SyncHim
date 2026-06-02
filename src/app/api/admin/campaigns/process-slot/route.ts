@@ -49,8 +49,9 @@ export async function POST(req: NextRequest) {
     autoImages: boolean;
     model: string;
     reuseStrategy: 'prefer-existing' | 'always-new' | 'reuse-only';
+    kindFilter?: Array<'carousel' | 'reel'>;
   };
-  const plan = buildCampaignPlan(settings.weeksCount);
+  const plan = buildCampaignPlan(settings.weeksCount, settings.kindFilter);
   if (body.slotIndex < 0 || body.slotIndex >= plan.length) {
     return NextResponse.json({ error: `slotIndex ${body.slotIndex} fora de range` }, { status: 400 });
   }

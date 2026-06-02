@@ -100,12 +100,16 @@ export interface CampaignSlot extends WeekSlot {
   slotIndexAbs: number;
 }
 
-export function buildCampaignPlan(weeksCount: number): CampaignSlot[] {
+export function buildCampaignPlan(
+  weeksCount: number,
+  kindFilter?: Array<'carousel' | 'reel'>,
+): CampaignSlot[] {
   const safeWeeks = Math.max(1, Math.min(weeksCount, 8));
   const result: CampaignSlot[] = [];
   for (let w = 0; w < safeWeeks; w++) {
     for (let i = 0; i < WEEK_PLAN.length; i++) {
       const base = WEEK_PLAN[i];
+      if (kindFilter && !kindFilter.includes(base.kind)) continue;
       result.push({
         ...base,
         weekIndex: w,

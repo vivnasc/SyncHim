@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
     startDate?: string;
     slotIndex?: number;
     weeksCount?: number;
+    kindFilter?: Array<'carousel' | 'reel'>;
   } | null;
 
   if (!body?.startDate || !/^\d{4}-\d{2}-\d{2}$/.test(body.startDate)) {
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
   }
 
   const weeksCount = Math.max(1, Math.min(body.weeksCount ?? 1, 8));
-  const plan = buildCampaignPlan(weeksCount);
+  const plan = buildCampaignPlan(weeksCount, body.kindFilter);
 
   const slotIndex = body.slotIndex ?? 0;
   if (slotIndex < 0 || slotIndex >= plan.length) {
