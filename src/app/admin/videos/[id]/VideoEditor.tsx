@@ -75,6 +75,28 @@ export function VideoEditor({
     } finally { setVoicing(null); }
   }
 
+  /** Gera vozes para todas as cenas em falta, sequencial. */
+  async function gerarTodasVozes() {
+    const pending = scenes.filter((s) => !s.voice_url && s.body.trim()).length;
+    if (!pending) { alert('Todas as cenas ja teem voz.'); return; }
+    if (!confirm(`Gerar voz para ${pending} cena(s) via ElevenLabs?\n~3s cada · ~${(pending * 0.05).toFixed(2)}$ total.`)) return;
+    for (let i = 0; i < scenes.length; i++) {
+      if (scenes[i].voice_url || !scenes[i].body.trim()) continue;
+      setVoicing(i);
+      try {
+        await fetch(`/api/admin/videos/${item.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ item, scenes }) });
+        const res = await fetch(`/api/admin/videos/${item.id}/voice`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sceneIdx: i, text: scenes[i].body }),
+        });
+        const j = await res.json();
+        if (!res.ok) { alert(`Cena ${i + 1}: ${j.error}`); break; }
+        setScenes((arr) => arr.map((s, k) => k === i ? { ...s, voice_url: j.url, duration_sec: j.durationSec } : s));
+      } catch (e: any) { alert(`Cena ${i + 1}: ${e.message}`); break; }
+    }
+    setVoicing(null);
+  }
+
   async function duplicateAs(target: 'casada' | 'solteira' | 'ambos') {
     if (!confirm(target === 'solteira'
       ? 'Duplicar como solteira? Texto será amaciado como ponto de partida — revê.'
@@ -132,6 +154,20 @@ export function VideoEditor({
             <button className="btn" onClick={() => duplicateAs('casada')}>duplicar como casada →</button>
           )}
           <Link href="/admin/videos" className="btn">voltar</Link>
+        </div>
+      </div>
+
+      {/* Pipeline rapido: vozes em lote + render. Musica fica no MusicBlock
+          porque tem preset + prompt que beneficiam de afinar. */}
+      <div className="card" style={{ marginTop: 16, padding: 12, borderColor: 'var(--ouro)' }}>
+        <div className="mini" style={{ marginBottom: 6 }}>Pipeline rapido</div>
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+          <button className="btn primary" onClick={gerarTodasVozes} disabled={voicing !== null}>
+            {voicing !== null ? `A gerar voz cena ${voicing + 1}…` : `Gerar todas as vozes (${scenes.filter((s) => !s.voice_url && s.body.trim()).length} pendentes)`}
+          </button>
+          <span className="muted" style={{ fontSize: 12 }}>
+            Depois afina a musica em baixo e clica &ldquo;Renderizar video&rdquo;.
+          </span>
         </div>
       </div>
 
