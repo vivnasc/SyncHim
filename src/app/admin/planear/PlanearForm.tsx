@@ -346,7 +346,7 @@ export function PlanearForm() {
 
       <form onSubmit={run}>
         <div style={{ marginBottom: 16 }}>
-          <label>Segunda-feira inicial (1.o post: 09:00 dessa segunda)</label>
+          <label>Segunda-feira inicial (1.o post: 10:00 dessa segunda)</label>
           <input
             className="input"
             type="date"
@@ -356,7 +356,7 @@ export function PlanearForm() {
             style={{ maxWidth: 220 }}
           />
           <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
-            2 posts/dia: 09:00 (didactico) e 13:00 (reconhecimento, CTA aos domingos).
+            2 posts/dia: 10:00 (didactico) e 13:00 (reconhecimento, CTA aos domingos).
             Hoje e {new Date().toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })}.
             Escolhe a segunda-feira de arranque. Se nao houver tempo, escolhe a segunda seguinte.
           </div>
