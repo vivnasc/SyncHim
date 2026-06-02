@@ -23,6 +23,9 @@ export type CsvCarouselPost = {
   slides: string[];        // URLs dos PNGs ordenados (max 10 no IG)
   caption: string;
   hashtags?: string;
+  /** URLs JPEG ja convertidas (output_urls.jpegs) — usadas para TikTok
+   *  se disponiveis, evita 404 no transform endpoint quando Supabase free. */
+  jpegs?: string[];
   firstComment?: string;
 };
 
@@ -104,7 +107,12 @@ export function buildCarouselRows(post: CsvCarouselPost): string[][] {
   tk.set('TikTok disable stitch', 'TRUE');
   tk.set('TikTok Branded Content', 'FALSE');
   tk.set('TikTok Title', post.title);
-  post.slides.slice(0, 10).forEach((url, i) => tk.set(`Picture Url ${i + 1}`, toJpeg(url)));
+  // Prefere JPEG ja convertido (output_urls.jpegs) — funciona em Supabase free.
+  // Fallback: tenta o transform endpoint (so funciona em Pro, devolve 404 em free).
+  post.slides.slice(0, 10).forEach((url, i) => {
+    const tiktokUrl = post.jpegs?.[i] ?? toJpeg(url);
+    tk.set(`Picture Url ${i + 1}`, tiktokUrl);
+  });
   rows.push(tk.row);
 
   return rows;

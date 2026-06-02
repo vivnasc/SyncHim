@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
         date, time,
         title: it.title,
         slides: pngs,
+        jpegs: (it.output_urls?.jpegs ?? undefined) as string[] | undefined,
         caption: it.caption || it.title,
         hashtags: it.hashtags || undefined
       });

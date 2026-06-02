@@ -22,6 +22,58 @@ export function MetricoolExporter({ items }: { items: Item[] }) {
   const [targetFilter, setTargetFilter] = useState<'all' | 'casada' | 'solteira' | 'ambos'>('all');
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
   const [dateFrom, setDateFrom] = useState<string>('');
+  const [converting, setConverting] = useState(false);
+  const [convProgress, setConvProgress] = useState({ done: 0, total: 0 });
+  const [convMsg, setConvMsg] = useState<string | null>(null);
+
+  const needsJpegConversion = useMemo(() =>
+    items.filter((i) =>
+      i.type === 'carousel'
+      && !i.output_urls?.jpegs?.length
+      && i.output_urls?.pngs?.length
+    ), [items]
+  );
+
+  async function convertAllToJpeg() {
+    if (!needsJpegConversion.length) {
+      alert('Todos os carrosseis ja teem versao JPEG.');
+      return;
+    }
+    if (!confirm(
+      `Converter PNGs para JPEG em ${needsJpegConversion.length} carrosseis?\n\n` +
+      `Necessario para TikTok aceitar (rejeita image/png).\n` +
+      `Sharp server-side, ~2-3s por carrossel = ~${Math.ceil(needsJpegConversion.length * 2.5 / 60)} min total.\n` +
+      `Browser fica aberto, mas se fechar retomas amanha.`
+    )) return;
+
+    setConverting(true);
+    setConvProgress({ done: 0, total: needsJpegConversion.length });
+    setConvMsg(null);
+
+    for (let i = 0; i < needsJpegConversion.length; i++) {
+      setConvProgress({ done: i, total: needsJpegConversion.length });
+      const item = needsJpegConversion[i];
+      try {
+        const res = await fetch('/api/admin/items/convert-to-jpeg', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId: item.id }),
+        });
+        const j = await res.json();
+        if (!res.ok) {
+          setConvMsg(`${item.code}: ${j.error}`);
+          break;
+        }
+      } catch (e: any) {
+        setConvMsg(`${item.code}: ${e.message}`);
+        break;
+      }
+    }
+
+    setConvProgress({ done: needsJpegConversion.length, total: needsJpegConversion.length });
+    setConverting(false);
+    setConvMsg(`Conversao concluida. Recarrega a pagina para ver actualizacao.`);
+  }
   const visible = useMemo(
     () => targetFilter === 'all' ? items : items.filter((i) => i.target === targetFilter),
     [items, targetFilter]
@@ -123,6 +175,22 @@ export function MetricoolExporter({ items }: { items: Item[] }) {
             </button>
           </div>
         </div>
+        {needsJpegConversion.length > 0 && (
+          <div style={{ marginTop: 12, padding: 10, border: '1px dashed var(--ouro)', borderRadius: 4, fontSize: 12 }}>
+            <div className="row between" style={{ marginBottom: 6 }}>
+              <span className="muted">
+                ⚠️ {needsJpegConversion.length} carrossel(eis) sem JPEG.
+                TikTok rejeita PNG — converte primeiro para exportar TikTok.
+              </span>
+              <button className="btn" onClick={convertAllToJpeg} disabled={converting}>
+                {converting
+                  ? `A converter ${convProgress.done}/${convProgress.total}…`
+                  : `Converter ${needsJpegConversion.length} para JPEG`}
+              </button>
+            </div>
+            {convMsg && <div style={{ color: convMsg.startsWith('Conversao') ? 'var(--texto)' : 'var(--bordeaux)' }}>{convMsg}</div>}
+          </div>
+        )}
       </div>
 
       <table className="t">
