@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isWorkerAuthenticated } from '@/lib/admin/worker-auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { buildCampaignPlan, knotForSlot } from '@/lib/admin/calendar-plan';
-import { generateCarousel } from '@/lib/admin/content-generator';
+import { generateCarousel, generateReel } from '@/lib/admin/content-generator';
 import { generateImage } from '@/lib/admin/replicate';
 import { findReusableImage, type SlideLayout, type SlotCategoria } from '@/lib/admin/image-pool';
 
@@ -66,21 +66,6 @@ export async function POST(req: NextRequest) {
       .eq('job_id', body.jobId);
   }
 
-  // Gera texto (com retry para image coverage)
-  let carousel;
-  try {
-    carousel = await generateCarousel(slot.type, knot, slot.dayOfWeek);
-  } catch (err: any) {
-    if (err?.code === 'IMAGE_COVERAGE') {
-      try { carousel = await generateCarousel(slot.type, knot, slot.dayOfWeek); }
-      catch (err2: any) {
-        return await fail(supabase, body.jobId, `Claude IMAGE_COVERAGE 2x: ${err2.message}`);
-      }
-    } else {
-      return await fail(supabase, body.jobId, `Claude: ${err.message}`);
-    }
-  }
-
   // Constroi scheduled_at em CAT
   const tzOffset = process.env.CAMPAIGN_TZ_OFFSET || '+02:00';
   const start = new Date(`${settings.startDate}T00:00:00Z`);
@@ -89,8 +74,71 @@ export async function POST(req: NextRequest) {
   const [h, m] = slot.time.split(':').map(Number);
   const scheduledAt = `${dateOnly}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00${tzOffset}`;
 
+  // Bifurca: reel kinetic ou carrossel
+  if (slot.kind === 'reel') {
+    let reel;
+    try {
+      reel = await generateReel(knot, slot.dayOfWeek);
+    } catch (err: any) {
+      return await fail(supabase, body.jobId, `Reel Claude: ${err.message}`);
+    }
+    const code = await nextCode(supabase, 'SV-');
+    const slug = slugify(reel.title);
+    const { data: item, error: itemErr } = await supabase
+      .from('content_items')
+      .insert({
+        type: 'video', subtype: 'kinetic-text',
+        title: reel.title, slug, categoria: slot.type, code,
+        target: 'ambos', status: 'draft',
+        platforms: ['ig', 'tiktok'],
+        scheduled_at: scheduledAt,
+        caption: reel.caption, hashtags: reel.hashtags,
+        metadata: { campaignWeek: slot.weekIndex, campaignWeeks: settings.weeksCount, campaignJobId: body.jobId, knot },
+      })
+      .select().single();
+    if (itemErr || !item) return await fail(supabase, body.jobId, `Insert reel: ${itemErr?.message}`);
+
+    const sceneRows = reel.scenes.map((s, idx) => ({
+      item_id: item.id, idx, layout: 'kinetic-line', body: s.text,
+      design: s.emphasis ? { emphasis: s.emphasis } : {},
+    }));
+    await supabase.from('content_slides').insert(sceneRows);
+
+    // Update progress + skip generate-images (nao aplica a reels)
+    const prevItems = Array.isArray(job.items_created) ? job.items_created : [];
+    const newItems = [...prevItems, { code, id: item.id, slotIndex: body.slotIndex, kind: 'reel' }];
+    const progress = Math.round(((body.slotIndex + 1) / job.total_slots) * 100);
+    await supabase.from('campaign_jobs').update({
+      progress, current_slot: body.slotIndex + 1, items_created: newItems,
+      message: `slot ${body.slotIndex + 1}/${job.total_slots} · ${code} (reel)`,
+    }).eq('job_id', body.jobId);
+
+    if (body.slotIndex + 1 >= job.total_slots) {
+      await supabase.from('campaign_jobs').update({
+        status: 'done', finished_at: new Date().toISOString(),
+        message: `concluido: ${newItems.length} items criados`,
+      }).eq('job_id', body.jobId);
+    }
+    return NextResponse.json({ ok: true, code, itemId: item.id, slotIndex: body.slotIndex, kind: 'reel' });
+  }
+
+  // Carrossel: gera texto com retry para image coverage
+  let carousel;
+  try {
+    carousel = await generateCarousel(slot.type as any, knot, slot.dayOfWeek);
+  } catch (err: any) {
+    if (err?.code === 'IMAGE_COVERAGE') {
+      try { carousel = await generateCarousel(slot.type as any, knot, slot.dayOfWeek); }
+      catch (err2: any) {
+        return await fail(supabase, body.jobId, `Claude IMAGE_COVERAGE 2x: ${err2.message}`);
+      }
+    } else {
+      return await fail(supabase, body.jobId, `Claude: ${err.message}`);
+    }
+  }
+
   // Cria item + slides
-  const code = await nextCarouselCode(supabase);
+  const code = await nextCode(supabase, 'SC-');
   const slug = slugify(carousel.title);
   const { data: item, error: itemErr } = await supabase
     .from('content_items')
@@ -234,10 +282,10 @@ function slugify(s: string): string {
     .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 60);
 }
 
-async function nextCarouselCode(supabase: any): Promise<string> {
+async function nextCode(supabase: any, prefix: 'SC-' | 'SV-'): Promise<string> {
   const { data } = await supabase.from('content_items').select('code')
-    .like('code', 'SC-%').order('code', { ascending: false }).limit(1);
+    .like('code', `${prefix}%`).order('code', { ascending: false }).limit(1);
   const last = data?.[0]?.code as string | undefined;
   const num = last ? parseInt(last.split('-')[1], 10) + 1 : 1;
-  return `SC-${String(num).padStart(3, '0')}`;
+  return `${prefix}${String(num).padStart(3, '0')}`;
 }

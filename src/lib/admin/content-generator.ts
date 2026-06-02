@@ -7,7 +7,7 @@
  */
 
 import { generateStructured } from './claude';
-import type { CarouselSlotType, Knot } from './calendar-plan';
+import type { CarouselSlotType, ReelSlotType, Knot } from './calendar-plan';
 
 /* ------------------------------------------------------------------ */
 /*  Tipos                                                              */
@@ -138,6 +138,54 @@ const CAROUSEL_TOOL = {
 /* ------------------------------------------------------------------ */
 /*  Briefs por tipo                                                    */
 /* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/*  Reel kinetic schema + brief                                        */
+/* ------------------------------------------------------------------ */
+
+export interface GeneratedReelScene {
+  text: string;       // 1 frase curta (max ~70 chars) por cena
+  emphasis?: string;  // palavra-chave a dar bold em rosa (opcional)
+}
+
+export interface GeneratedReel {
+  title: string;
+  scenes: GeneratedReelScene[];
+  caption: string;
+  hashtags: string;
+}
+
+const REEL_TOOL = {
+  name: 'save_reel',
+  description: 'Grava reel kinetic com cenas, narracao text-to-speech e caption.',
+  input_schema: {
+    type: 'object' as const,
+    properties: {
+      title: { type: 'string' as const, description: 'Hook curto' },
+      scenes: {
+        type: 'array' as const,
+        items: {
+          type: 'object' as const,
+          properties: {
+            text: { type: 'string' as const, description: '1 frase curta (max 70 chars) para 1 cena. Cada cena dura 1.8s no video. Texto vai para legenda sincronizada + narracao ElevenLabs.' },
+            emphasis: { type: 'string' as const, description: 'Palavra-chave dessa cena a destacar em rosa (opcional)' },
+          },
+          required: ['text'],
+        },
+        description: 'Exactamente 8 cenas. Total ~14-16s. Ritmo de batida emocional, nao de explicacao.',
+      },
+      caption: { type: 'string' as const },
+      hashtags: { type: 'string' as const },
+    },
+    required: ['title', 'scenes', 'caption', 'hashtags'],
+  },
+};
+
+const REEL_BRIEF = `Cria um reel kinetic de 8 cenas (~15 segundos).
+Cada cena = 1 frase curta sobre o no relacional. Ritmo de batida emocional.
+Cena 1 = hook (faz parar o scroll). Cenas 2-6 = mecanica/verdade. Cena 7 = viragem. Cena 8 = CTA gentil ('link na bio').
+Cada cena vai virar narracao text-to-speech (ElevenLabs) + legenda sincronizada por cima de fundo escuro com a marca SyncHim.
+Texto: max 70 caracteres por cena, PT-PT, sem travessoes longos. Cada cena tem 1 emphasis (palavra-chave em rosa) opcional.`;
 
 const TYPE_BRIEFS: Record<CarouselSlotType, string> = {
   'didatico-A':
@@ -294,4 +342,33 @@ function validateImageCoverage(c: GeneratedCarousel, type: CarouselSlotType): vo
     (err as Error & { code?: string }).code = 'IMAGE_COVERAGE';
     throw err;
   }
+}
+
+/**
+ * Gera reel kinetic com 8 cenas via Claude.
+ * Cada cena vira narracao ElevenLabs + legenda sincronizada no video.
+ */
+export async function generateReel(
+  knotFocus?: Knot,
+  weekDay?: number,
+): Promise<GeneratedReel> {
+  const parts: string[] = [REEL_BRIEF];
+  if (knotFocus) parts.push(`\nNo em foco: ${KNOT_LABELS[knotFocus]}.`);
+  if (weekDay !== undefined) parts.push(`\nPublicado a ${WEEKDAY_LABELS[weekDay] ?? 'dia'}.`);
+  parts.push('\nLembra-te: PT-PT, sem travessoes longos, sem jargao new-age, sem emojis.');
+
+  const result = await generateStructured<GeneratedReel>({
+    system: SYSTEM_PROMPT,
+    prompt: parts.join('\n'),
+    schema: REEL_TOOL,
+    maxTokens: 2048,
+  });
+
+  // Validacao basica
+  if (!result.scenes?.length || result.scenes.length < 6 || result.scenes.length > 12) {
+    const err = new Error(`Reel deve ter 6-12 cenas (recebeu ${result.scenes?.length ?? 0})`);
+    (err as Error & { code?: string }).code = 'REEL_INVALID';
+    throw err;
+  }
+  return result;
 }

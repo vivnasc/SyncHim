@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminEmailFromRequest } from '@/lib/admin/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { buildCampaignPlan, knotForSlot } from '@/lib/admin/calendar-plan';
-import { generateCarousel } from '@/lib/admin/content-generator';
+import { generateCarousel, generateReel } from '@/lib/admin/content-generator';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -69,45 +69,88 @@ export async function POST(req: NextRequest) {
   const [h, m] = slot.time.split(':').map(Number);
   const scheduledAt = `${dateOnly}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00${tzOffset}`;
 
-  // Tenta 1 retry quando a Claude viola a regra de cobertura de imagens
-  // (capa + cta + 2 conteudo). Outros erros propagam imediatamente.
+  const supabase = createSupabaseAdmin();
+
+  // Bifurca por kind: carrossel (8 slides) ou reel kinetic (8 cenas de video).
+  if (slot.kind === 'reel') {
+    let reel;
+    try {
+      reel = await generateReel(knot, slot.dayOfWeek);
+    } catch (err: any) {
+      return NextResponse.json(
+        { error: `Claude falhou reel slot ${slotIndex + 1}: ${err?.message}` },
+        { status: 500 },
+      );
+    }
+    const code = await nextContentCode(supabase, 'SV-');
+    const slug = slugify(reel.title);
+    const { data: item, error: itemErr } = await supabase
+      .from('content_items')
+      .insert({
+        type: 'video',
+        subtype: 'kinetic-text',
+        title: reel.title,
+        slug,
+        categoria: slot.type,
+        code,
+        target: 'ambos',
+        status: 'draft',
+        platforms: ['ig', 'tiktok'],
+        scheduled_at: scheduledAt,
+        caption: reel.caption,
+        hashtags: reel.hashtags,
+        metadata: { campaignWeek: slot.weekIndex, campaignWeeks: weeksCount, knot },
+      })
+      .select()
+      .single();
+    if (itemErr || !item) {
+      return NextResponse.json({ error: `Supabase insert reel falhou: ${itemErr?.message}` }, { status: 500 });
+    }
+    const sceneRows = reel.scenes.map((s, idx) => ({
+      item_id: item.id,
+      idx,
+      layout: 'kinetic-line',
+      body: s.text,
+      design: s.emphasis ? { emphasis: s.emphasis } : {},
+    }));
+    await supabase.from('content_slides').insert(sceneRows);
+
+    return NextResponse.json({
+      slotIndex,
+      totalSlots: plan.length,
+      weeksCount,
+      kind: 'reel',
+      item: { id: item.id, code, title: reel.title, scheduledAt },
+    });
+  }
+
+  // Carrossel: tenta 1 retry quando Claude viola a regra de cobertura de imagens.
   let carousel;
   try {
-    carousel = await generateCarousel(slot.type, knot, slot.dayOfWeek);
+    carousel = await generateCarousel(slot.type as any, knot, slot.dayOfWeek);
   } catch (err: any) {
     if (err?.code === 'IMAGE_COVERAGE') {
       try {
-        carousel = await generateCarousel(slot.type, knot, slot.dayOfWeek);
+        carousel = await generateCarousel(slot.type as any, knot, slot.dayOfWeek);
       } catch (err2: any) {
         return NextResponse.json(
           {
             error: `Claude falhou cobertura de imagens 2x no slot ${slotIndex + 1}: ${err2?.message}`,
-            slot: slotIndex,
-            type: slot.type,
-            knot,
-            cause: 'image_coverage',
+            slot: slotIndex, type: slot.type, knot, cause: 'image_coverage',
           },
           { status: 500 },
         );
       }
     } else {
       return NextResponse.json(
-        {
-          error: `Claude falhou no slot ${slotIndex + 1}: ${err?.message}`,
-          slot: slotIndex,
-          type: slot.type,
-          knot,
-          cause: err?.error?.type ?? err?.name ?? null,
-        },
+        { error: `Claude falhou no slot ${slotIndex + 1}: ${err?.message}` },
         { status: 500 },
       );
     }
   }
 
-  const supabase = createSupabaseAdmin();
-  const code = await nextCarouselCode(supabase);
+  const code = await nextContentCode(supabase, 'SC-');
   const slug = slugify(carousel.title);
-
   const { data: item, error: itemErr } = await supabase
     .from('content_items')
     .insert({
@@ -128,22 +171,13 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (itemErr || !item) {
-    return NextResponse.json(
-      { error: `Supabase insert falhou: ${itemErr?.message}` },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: `Supabase insert falhou: ${itemErr?.message}` }, { status: 500 });
   }
 
   const slideRows = carousel.slides.map((s, idx) => {
     const prompt = (s.imagePrompt ?? '').trim();
     return {
-      item_id: item.id,
-      idx,
-      layout: s.layout,
-      body: s.body,
-      // imagePrompt so e guardado quando Claude decidiu que o slide pede
-      // imagem; slides puramente editoriais ficam com design={} e ficam
-      // automaticamente fora do generate-images / prompts MJ.
+      item_id: item.id, idx, layout: s.layout, body: s.body,
       design: prompt ? { imagePrompt: prompt } : {},
     };
   });
@@ -153,6 +187,7 @@ export async function POST(req: NextRequest) {
     slotIndex,
     totalSlots: plan.length,
     weeksCount,
+    kind: 'carousel',
     item: { id: item.id, code, title: carousel.title, scheduledAt },
   });
 }
@@ -167,14 +202,14 @@ function slugify(s: string): string {
     .slice(0, 60);
 }
 
-async function nextCarouselCode(supabase: any): Promise<string> {
+async function nextContentCode(supabase: any, prefix: 'SC-' | 'SV-'): Promise<string> {
   const { data } = await supabase
     .from('content_items')
     .select('code')
-    .like('code', 'SC-%')
+    .like('code', `${prefix}%`)
     .order('code', { ascending: false })
     .limit(1);
   const last = data?.[0]?.code as string | undefined;
   const num = last ? parseInt(last.split('-')[1], 10) + 1 : 1;
-  return `SC-${String(num).padStart(3, '0')}`;
+  return `${prefix}${String(num).padStart(3, '0')}`;
 }
