@@ -2,7 +2,7 @@
  * SyncHim · Plano semanal de conteúdo.
  *
  * 2 carrosséis/dia × 7 dias = 14 por semana.
- *   - 10:00 — post da manhã (didáctico A/B/C/D rotativos)
+ *   - 09:00 — post da manhã (didáctico A/B/C/D rotativos)
  *   - 13:00 — post da tarde (reconhecimento OU CTA cada 7.o dia)
  *
  * Metricool agenda na hora exacta indicada por post (sem deriva).
@@ -68,7 +68,7 @@ const EVENING_ROTATION: CarouselSlotType[] = [
 export const WEEK_PLAN: WeekSlot[] = Array.from({ length: 7 }, (_, d) => [
   {
     dayOfWeek: d as WeekSlot['dayOfWeek'],
-    time: '10:00',
+    time: '09:00',
     type: DIDACTIC_ROTATION[d],
     slideCount: 8,
   },
