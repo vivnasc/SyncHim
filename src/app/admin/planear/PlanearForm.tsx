@@ -99,6 +99,14 @@ export function PlanearForm() {
     contentKind === 'carousel' ? 14 :
     contentKind === 'reel' ? 7 :
     21;
+  const unitName =
+    contentKind === 'reel' ? 'reels' :
+    contentKind === 'carousel' ? 'carrosseis' :
+    'items';
+  const unitSingular =
+    contentKind === 'reel' ? 'reel' :
+    contentKind === 'carousel' ? 'carrossel' :
+    'item';
   const fullSlots = weeksCount * slotsPerWeek;
   const kindFilter: Array<'carousel' | 'reel'> | undefined =
     contentKind === 'all' ? undefined :
@@ -337,7 +345,7 @@ export function PlanearForm() {
       <div className="card" style={{ marginBottom: 24 }}>
         <div className="mini" style={{ marginBottom: 8 }}>Passo 0 · Diagnóstico</div>
         <p style={{ margin: '0 0 12px', fontSize: 13 }} className="muted">
-          Antes de gerar dezenas de carrosseis, confirma que Claude e Replicate
+          Antes de gerar dezenas de items, confirma que Claude e Replicate
           estão acessíveis. Cada teste faz uma chamada minima (~2s Claude, ~5s Replicate).
         </p>
         <div className="row" style={{ gap: 8 }}>
@@ -388,7 +396,7 @@ export function PlanearForm() {
             disabled={running}
             style={{ maxWidth: 420 }}
           >
-            {weekOptions(slotsPerWeek, contentKind === 'reel' ? 'reels' : contentKind === 'carousel' ? 'carrosseis' : 'items').map((o) => (
+            {weekOptions(slotsPerWeek, unitName).map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
@@ -417,7 +425,7 @@ export function PlanearForm() {
               onChange={(e) => setTestMode(e.target.checked)}
               disabled={running}
             />
-            <span><strong>Modo teste</strong> · gera apenas os primeiros N carrosseis para validar qualidade antes de produzir tudo.</span>
+            <span><strong>Modo teste</strong> · gera apenas os primeiros N items para validar qualidade antes de produzir tudo.</span>
           </label>
           {testMode && (
             <div className="row" style={{ gap: 8, marginTop: 6 }}>
@@ -431,12 +439,12 @@ export function PlanearForm() {
                 disabled={running}
                 style={{ maxWidth: 100 }}
               />
-              <span className="muted" style={{ fontSize: 12 }}>carrosseis de teste (recomendado: 3)</span>
+              <span className="muted" style={{ fontSize: 12 }}>{unitName} de teste (recomendado: 3)</span>
             </div>
           )}
         </div>
 
-        <div style={{ marginBottom: 16 }}>
+        {contentKind !== 'reel' && <div style={{ marginBottom: 16 }}>
           <label>Estratégia de imagens</label>
           <select
             className="input"
@@ -458,9 +466,9 @@ export function PlanearForm() {
           <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
             As imagens dos testes ficam no pool e juntam-se às das 5 semanas. A partir da semana 6 muda para &ldquo;Reusar quando há match&rdquo;.
           </div>
-        </div>
+        </div>}
 
-        {imageStrategy !== 'reuse-only' && (
+        {contentKind !== 'reel' && imageStrategy !== 'reuse-only' && (
           <div style={{ marginBottom: 16 }}>
             <label>Modelo (quando geras nova via Replicate)</label>
             <select
@@ -477,7 +485,7 @@ export function PlanearForm() {
           </div>
         )}
 
-        <div style={{ marginBottom: 16 }}>
+        {contentKind !== 'reel' && <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
             <input
               type="checkbox"
@@ -487,15 +495,31 @@ export function PlanearForm() {
             />
             <span>Processar imagens automaticamente no fim do planeamento</span>
           </label>
-        </div>
+        </div>}
 
         <div className="card" style={{ marginBottom: 16, padding: 12, background: 'var(--bg)' }}>
           <div className="mini" style={{ marginBottom: 4 }}>Estimativa</div>
           <div style={{ fontSize: 13, lineHeight: 1.7 }}>
-            <strong>{totalSlots}</strong> carrosseis ·{' '}
-            <strong>~{estImages}</strong> imagens ·{' '}
-            <strong>~${estCost}</strong> de Replicate ·{' '}
-            ~{Math.ceil((totalSlots * (autoImages ? (modelInfo.value.includes('schnell') ? 30 : 60) : 10)) / 60)} min
+            {contentKind === 'reel' ? (
+              <>
+                <strong>{totalSlots}</strong> reels (8 cenas cada) ·{' '}
+                <strong>~${(totalSlots * 0.16).toFixed(2)}</strong> ElevenLabs+Suno ·{' '}
+                ~{Math.ceil(totalSlots * 0.8)} min Claude
+              </>
+            ) : contentKind === 'carousel' ? (
+              <>
+                <strong>{totalSlots}</strong> carrosseis ·{' '}
+                <strong>~{estImages}</strong> imagens ·{' '}
+                <strong>~${estCost}</strong> Replicate ·{' '}
+                ~{Math.ceil((totalSlots * (autoImages ? (modelInfo.value.includes('schnell') ? 30 : 60) : 10)) / 60)} min
+              </>
+            ) : (
+              <>
+                <strong>{totalSlots}</strong> items (~{Math.round(totalSlots * 2 / 3)} carrosseis + {Math.round(totalSlots / 3)} reels) ·{' '}
+                <strong>~${(estImages * modelInfo.pricePerImg + Math.round(totalSlots / 3) * 0.16).toFixed(2)}</strong> Replicate+ElevenLabs ·{' '}
+                ~{Math.ceil((totalSlots * (autoImages ? 50 : 15)) / 60)} min
+              </>
+            )}
           </div>
         </div>
 
@@ -506,7 +530,7 @@ export function PlanearForm() {
                 ? `Imagens ${imgCurrent} / ${imgTotal}...`
                 : `Texto ${current} / ${totalSlots}...`
               : testMode
-                ? `Teste · ${totalSlots} carrosseis`
+                ? `Teste · ${totalSlots} ${unitName}`
                 : `Planear ${weeksCount === 1 ? 'semana' : `${weeksCount} semanas`} (no browser)`}
           </button>
           {!testMode && !running && (
@@ -533,9 +557,9 @@ export function PlanearForm() {
               type="button"
               className="btn"
               onClick={resumeImagesOnly}
-              title="Sem regerar texto. So gera as imagens que ainda faltam nos carrosseis listados em baixo."
+              title="Sem regerar texto. So gera as imagens que ainda faltam nos items listados em baixo."
             >
-              Retomar só imagens ({items.length} carrosseis)
+              Retomar só imagens ({items.length} items)
             </button>
           )}
         </div>
@@ -562,7 +586,7 @@ export function PlanearForm() {
             </span>
           </div>
           <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
-            Não fechar esta janela. Os resultados aparecem em baixo à medida que cada carrossel termina.
+            Não fechar esta janela. Os resultados aparecem em baixo à medida que cada {unitSingular} termina.
           </p>
           {phase === 'images' && (reuseStats.reused > 0 || reuseStats.generated > 0) && (
             <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
@@ -585,7 +609,7 @@ export function PlanearForm() {
       {items.length > 0 && (
         <div style={{ marginTop: 20 }}>
           <div className="mini" style={{ marginBottom: 8 }}>
-            {done ? `Criados ${items.length} carrosseis` : `${items.length} criados...`}
+            {done ? `Criados ${items.length} ${items.length === 1 ? unitSingular : unitName}` : `${items.length} criados...`}
             {(reuseStats.reused > 0 || reuseStats.generated > 0) && (
               <span style={{ marginLeft: 8 }}>
                 · imagens: {reuseStats.reused} reusadas, {reuseStats.generated} geradas
@@ -597,21 +621,33 @@ export function PlanearForm() {
               <tr><th>Código</th><th>Título</th><th>Agendado</th></tr>
             </thead>
             <tbody>
-              {items.map((it) => (
+              {items.map((it) => {
+                const editorPath = it.code?.startsWith('SV-') ? 'videos' : 'carrosseis';
+                return (
                 <tr key={it.id}>
                   <td><code style={{ fontSize: 11 }}>{it.code}</code></td>
-                  <td><Link href={`/admin/carrosseis/${it.id}`}>{it.title}</Link></td>
+                  <td><Link href={`/admin/${editorPath}/${it.id}`}>{it.title}</Link></td>
                   <td className="muted">
                     {new Date(it.scheduledAt).toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' })}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
           {done && (
             <div className="row" style={{ marginTop: 12, gap: 8 }}>
               <Link href="/admin/calendario" className="btn primary">Ver calendário</Link>
-              <Link href="/admin/carrosseis" className="btn">Ver carrosseis</Link>
+              {contentKind === 'reel' ? (
+                <Link href="/admin/videos" className="btn">Ver reels</Link>
+              ) : contentKind === 'carousel' ? (
+                <Link href="/admin/carrosseis" className="btn">Ver carrosseis</Link>
+              ) : (
+                <>
+                  <Link href="/admin/carrosseis" className="btn">Ver carrosseis</Link>
+                  <Link href="/admin/videos" className="btn">Ver reels</Link>
+                </>
+              )}
               {!autoImages && (
                 <Link href="/admin/prompts" className="btn">Ver prompts MJ (modo manual)</Link>
               )}
