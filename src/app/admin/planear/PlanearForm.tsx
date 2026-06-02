@@ -12,6 +12,15 @@ function nextMonday(): string {
   return d.toISOString().slice(0, 10);
 }
 
+const WEEK_VALUES = [1, 2, 4, 5];
+function weekOptions(slotsPerWeek: number, unitName: string) {
+  return WEEK_VALUES.map((v) => ({
+    value: v,
+    label: v === 5
+      ? `5 semanas — campanha 30 dias (${v * slotsPerWeek} ${unitName})`
+      : `${v} semana${v > 1 ? 's' : ''} (${v * slotsPerWeek} ${unitName})`,
+  }));
+}
 const WEEK_OPTIONS = [
   { value: 1, label: '1 semana (14 carrosseis)' },
   { value: 2, label: '2 semanas (28 carrosseis)' },
@@ -379,7 +388,7 @@ export function PlanearForm() {
             disabled={running}
             style={{ maxWidth: 420 }}
           >
-            {WEEK_OPTIONS.map((o) => (
+            {weekOptions(slotsPerWeek, contentKind === 'reel' ? 'reels' : contentKind === 'carousel' ? 'carrosseis' : 'items').map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
