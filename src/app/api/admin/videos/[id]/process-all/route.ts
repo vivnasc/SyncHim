@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminEmailFromRequest } from '@/lib/admin/auth';
+import { isWorkerAuthenticated } from '@/lib/admin/worker-auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { uploadJson, publicUrl } from '@/lib/admin/storage';
 import { dispatchWorkflow } from '@/lib/admin/dispatch';
@@ -22,7 +23,7 @@ export const maxDuration = 60;
  * Idempotente: pula passos ja feitos.
  */
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!getAdminEmailFromRequest(req)) {
+  if (!getAdminEmailFromRequest(req) && !isWorkerAuthenticated(req)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
   const body = (await req.json().catch(() => null)) as { skipRender?: boolean } | null;

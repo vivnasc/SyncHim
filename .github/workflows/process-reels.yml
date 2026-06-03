@@ -1,0 +1,86 @@
+name: Process reels end-to-end SyncHim
+
+on:
+  workflow_dispatch:
+    inputs:
+      jobId:
+        description: 'id do campaign_jobs row (para tracking)'
+        required: true
+        type: string
+      siteUrl:
+        description: 'URL base do SyncHim'
+        required: true
+        type: string
+      itemIds:
+        description: 'IDs separados por virgula dos reels a processar'
+        required: true
+        type: string
+
+jobs:
+  process:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    steps:
+      - name: Loop reels
+        env:
+          SITE_URL: ${{ inputs.siteUrl }}
+          JOB_ID: ${{ inputs.jobId }}
+          ITEM_IDS: ${{ inputs.itemIds }}
+          WORKER_TOKEN: ${{ secrets.SYNCHIM_CAMPAIGN_WORKER_TOKEN }}
+        run: |
+          set -u
+          IFS=',' read -ra IDS <<< "$ITEM_IDS"
+          total=${#IDS[@]}
+          echo "Processing $total reels"
+
+          done=0
+          failed=0
+
+          for ID in "${IDS[@]}"; do
+            echo "::group::Reel $ID"
+
+            # Update campaign_jobs progress
+            curl -sS -X POST "$SITE_URL/api/admin/campaigns/process-slot/touch" \
+              -H "X-Worker-Token: $WORKER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"jobId\":\"$JOB_ID\",\"current\":$done,\"total\":$total,\"message\":\"reel $ID — backfill\"}" || true
+
+            # 1. Backfill imagePrompts (idempotente)
+            resp=$(curl -sS -w "\n%{http_code}" -X POST "$SITE_URL/api/admin/videos/$ID/backfill-image-prompts" \
+              -H "X-Worker-Token: $WORKER_TOKEN" || true)
+            status=$(echo "$resp" | tail -n1)
+            echo "backfill: HTTP $status"
+
+            # 2. Generate images (Replicate, idempotente)
+            resp=$(curl -sS -w "\n%{http_code}" -X POST "$SITE_URL/api/admin/generate-images" \
+              -H "X-Worker-Token: $WORKER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"itemId\":\"$ID\",\"reuseStrategy\":\"prefer-existing\"}" || true)
+            status=$(echo "$resp" | tail -n1)
+            echo "generate-images: HTTP $status"
+
+            # 3. Process-all: voices + theme music + render dispatch
+            resp=$(curl -sS -w "\n%{http_code}" -X POST "$SITE_URL/api/admin/videos/$ID/process-all" \
+              -H "X-Worker-Token: $WORKER_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d '{}' || true)
+            status=$(echo "$resp" | tail -n1)
+            body=$(echo "$resp" | sed '$d')
+            if [ "$status" = "200" ]; then
+              echo "process-all: ok"
+              done=$((done+1))
+            else
+              echo "process-all FAILED ($status): $body"
+              failed=$((failed+1))
+            fi
+
+            echo "::endgroup::"
+          done
+
+          echo "Done: $done ok, $failed failed of $total"
+
+          # Marca job como done
+          curl -sS -X POST "$SITE_URL/api/admin/campaigns/process-slot/touch" \
+            -H "X-Worker-Token: $WORKER_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"jobId\":\"$JOB_ID\",\"current\":$total,\"total\":$total,\"finished\":true,\"failed\":$failed,\"message\":\"$done ok, $failed failed\"}" || true

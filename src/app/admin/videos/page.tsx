@@ -6,6 +6,7 @@ import { VIDEO_SUBTIPOS } from '@/lib/admin/brand';
 import { BackfillImagePromptsButton } from './BackfillButton';
 import { BulkGenerateImagesButton } from './BulkGenerateImagesButton';
 import { BulkProcessAllButton } from './BulkProcessAllButton';
+import { FullPipelineButton } from './FullPipelineButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,7 +91,8 @@ export default async function VideosList({
           <h1>Vídeos</h1>
           <p className="muted">1080×1920, 30fps. Talking head, kinetic text, hands writing. Tagueados por público.</p>
         </div>
-        <div className="row" style={{ gap: 8 }}>
+        <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+          <FullPipelineButton />
           {needBackfill.length > 0 && <BackfillImagePromptsButton items={needBackfill} />}
           {needImages.length > 0 && <BulkGenerateImagesButton items={needImages} estCost={estImageCost} />}
           {needProcess.length > 0 && <BulkProcessAllButton items={needProcess} />}

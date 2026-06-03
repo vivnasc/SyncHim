@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminEmailFromRequest } from '@/lib/admin/auth';
+import { isWorkerAuthenticated } from '@/lib/admin/worker-auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { generateStructured } from '@/lib/admin/claude';
 
@@ -17,7 +18,9 @@ export const maxDuration = 60;
  * Idempotente: cenas que ja teem imagePrompt sao saltadas (mantem).
  */
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!getAdminEmailFromRequest(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!getAdminEmailFromRequest(req) && !isWorkerAuthenticated(req)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
   const supabase = createSupabaseAdmin();
   const { data: item } = await supabase
     .from('content_items').select('*').eq('id', params.id).eq('type', 'video').maybeSingle();

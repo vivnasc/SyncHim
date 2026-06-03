@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminEmailFromRequest } from '@/lib/admin/auth';
+import { isWorkerAuthenticated } from '@/lib/admin/worker-auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { generateImage } from '@/lib/admin/replicate';
 import { findReusableImage, type SlideLayout, type SlotCategoria } from '@/lib/admin/image-pool';
@@ -20,7 +21,7 @@ export const maxDuration = 60;
  * Devolve contagens: { generated, reused, failed, skipped, errors }.
  */
 export async function POST(req: NextRequest) {
-  if (!getAdminEmailFromRequest(req)) {
+  if (!getAdminEmailFromRequest(req) && !isWorkerAuthenticated(req)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
