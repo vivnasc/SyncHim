@@ -71,7 +71,7 @@ export default function SetupDatabasePage() {
                 : <>Abre o SQL Editor no Supabase (não consegui resolver o link, vai a supabase.com/dashboard)</>}
             </li>
             <li>Cola na janela e carrega <strong>Run</strong> (canto superior direito)</li>
-            <li>Volta aqui e refresh — vai aparecer "✓ Todas as tabelas existem"</li>
+            <li>Volta aqui e refresh — vai aparecer &ldquo;Todas as tabelas existem&rdquo;</li>
           </ol>
 
           <div className="row" style={{ gap: 8, marginTop: 14, alignItems: 'center' }}>
