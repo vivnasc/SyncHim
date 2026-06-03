@@ -48,14 +48,29 @@ export default async function VideosList({
       .from('content_slides')
       .select('item_id, design, voice_url, body')
       .in('item_id', draftIds);
-    type Acc = { hasPrompt: boolean; pendingImg: number; pendingVoice: number; totalScenes: number };
+    type Acc = {
+      hasPrompt: boolean;
+      pendingImg: number;
+      pendingVoice: number;
+      totalScenes: number;
+      maxIdx: number;
+      capaHasPrompt: boolean;
+      ctaIdx: number;
+      ctaHasPrompt: boolean;
+      middleWithPrompt: number;
+    };
     const byItem = new Map<string, Acc>();
     (scenesData ?? []).forEach((s: any) => {
-      const it = byItem.get(s.item_id) ?? { hasPrompt: false, pendingImg: 0, pendingVoice: 0, totalScenes: 0 };
+      const it = byItem.get(s.item_id) ?? {
+        hasPrompt: false, pendingImg: 0, pendingVoice: 0, totalScenes: 0,
+        maxIdx: -1, capaHasPrompt: false, ctaIdx: -1, ctaHasPrompt: false, middleWithPrompt: 0,
+      };
       it.totalScenes++;
+      if (s.idx > it.maxIdx) it.maxIdx = s.idx;
       if (s.design?.imagePrompt) {
         it.hasPrompt = true;
         if (!s.design?.imageUrl) it.pendingImg++;
+        if (s.idx === 0) it.capaHasPrompt = true;
       }
       if (!s.voice_url && s.body?.trim()) it.pendingVoice++;
       byItem.set(s.item_id, it);
@@ -68,9 +83,20 @@ export default async function VideosList({
       if (s.voice_url) stats.hasVoice++;
       sceneStatsByItem.set(s.item_id, stats);
     });
-    needBackfill = (items ?? []).filter((i: any) =>
-      i.status === 'draft' && !byItem.get(i.id)?.hasPrompt
-    ).map((i: any) => ({ id: i.id, code: i.code }));
+    // 2a pass: CTA e o ultimo idx; middle conta excluindo capa+CTA
+    (scenesData ?? []).forEach((s: any) => {
+      const it = byItem.get(s.item_id);
+      if (!it) return;
+      if (s.idx === it.maxIdx && s.design?.imagePrompt) it.ctaHasPrompt = true;
+      if (s.idx !== 0 && s.idx !== it.maxIdx && s.design?.imagePrompt) it.middleWithPrompt++;
+    });
+    needBackfill = (items ?? []).filter((i: any) => {
+      if (i.status !== 'draft') return false;
+      const it = byItem.get(i.id);
+      if (!it) return false;
+      // Sem prompts OR capa/CTA em falta OR menos de 2 conteudos do meio
+      return !it.hasPrompt || !it.capaHasPrompt || !it.ctaHasPrompt || it.middleWithPrompt < 2;
+    }).map((i: any) => ({ id: i.id, code: i.code }));
     (items ?? []).forEach((i: any) => {
       const it = byItem.get(i.id);
       if (!it || i.status !== 'draft') return;

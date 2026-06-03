@@ -84,21 +84,61 @@ Devolve ${scenes.length} prompts (1 por cena), garantindo regra de cobertura.`;
     return NextResponse.json({ error: `Claude: ${err.message}` }, { status: 500 });
   }
 
+  // Indexa o que o Claude devolveu para consulta rapida
+  const byIdx = new Map<number, string>();
+  for (const p of result.prompts ?? []) {
+    if (p.imagePrompt?.trim()) byIdx.set(p.idx, p.imagePrompt.trim());
+  }
+
+  // Fallback deterministico para garantir regra capa + CTA + min 2 conteudos.
+  // Se o Claude falhar com a capa/CTA, geramos prompt a partir do texto da cena.
+  const fallbackPrompt = (body: string, role: 'capa' | 'cta' | 'conteudo') => {
+    const ctx = body.replace(/\n/g, ' ').slice(0, 110);
+    const base = 'Cinematic vertical 9:16, intimate dark interior at golden hour, warm side lighting, deep shadows, soft film grain. No text, no logos.';
+    if (role === 'capa') {
+      return `${base} Opening shot, woman alone in domestic space (kitchen, window, doorway), pensive posture from behind or side, NO close-up face, no direct gaze. Mood: "${ctx}"`;
+    }
+    if (role === 'cta') {
+      return `${base} Closing shot, hands writing in journal or holding warm tea cup on table, soft window light, no face visible. Mood: "${ctx}"`;
+    }
+    return `${base} Quiet scene, woman in interaction with everyday object (phone on table, mirror at distance, bed unmade at dawn), NO close-up face. Mood: "${ctx}"`;
+  };
+
+  const lastIdx = scenes.length - 1;
+  // Garante capa
+  if (!byIdx.has(0)) {
+    const capaScene = scenes.find((s: any) => s.idx === 0);
+    if (capaScene) byIdx.set(0, fallbackPrompt(capaScene.body ?? '', 'capa'));
+  }
+  // Garante CTA
+  if (!byIdx.has(lastIdx)) {
+    const ctaScene = scenes.find((s: any) => s.idx === lastIdx);
+    if (ctaScene) byIdx.set(lastIdx, fallbackPrompt(ctaScene.body ?? '', 'cta'));
+  }
+  // Garante minimo 2 conteudos do meio
+  const middleScenes = scenes.filter((s: any) => s.idx !== 0 && s.idx !== lastIdx);
+  const middleWithPrompt = middleScenes.filter((s: any) => byIdx.has(s.idx)).length;
+  if (middleWithPrompt < 2) {
+    const need = 2 - middleWithPrompt;
+    const missing = middleScenes.filter((s: any) => !byIdx.has(s.idx)).slice(0, need);
+    for (const s of missing) byIdx.set(s.idx, fallbackPrompt(s.body ?? '', 'conteudo'));
+  }
+
   let updated = 0;
   let skipped = 0;
-  for (const p of result.prompts ?? []) {
-    const scene = scenes.find((s: any) => s.idx === p.idx);
-    if (!scene) continue;
+  let forced = 0;
+  for (const scene of scenes as any[]) {
     if (scene.design?.imagePrompt) { skipped++; continue; }
-    const newDesign = {
-      ...(scene.design ?? {}),
-      ...(p.imagePrompt?.trim() ? { imagePrompt: p.imagePrompt.trim() } : {}),
-    };
+    const claudePrompt = (result.prompts ?? []).find((p) => p.idx === scene.idx)?.imagePrompt?.trim();
+    const finalPrompt = byIdx.get(scene.idx);
+    if (!finalPrompt) continue;
+    if (!claudePrompt && finalPrompt) forced++;
+    const newDesign = { ...(scene.design ?? {}), imagePrompt: finalPrompt };
     await supabase.from('content_slides').update({ design: newDesign }).eq('id', scene.id);
-    if (p.imagePrompt?.trim()) updated++;
+    updated++;
   }
 
   return NextResponse.json({
-    ok: true, code: item.code, updated, skipped, totalScenes: scenes.length,
+    ok: true, code: item.code, updated, skipped, forced, totalScenes: scenes.length,
   });
 }
