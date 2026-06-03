@@ -38,6 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link href="/admin/metricool">Metricool</Link>
               <Link href="/admin/render-jobs">Render jobs</Link>
               <Link href="/admin/testes">Testes de fluxo</Link>
+              <Link href="/admin/diagnostics">Diagnóstico</Link>
             </nav>
             <div className="admin-foot">
               <span className="muted">{email}</span>

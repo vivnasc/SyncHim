@@ -8,6 +8,7 @@ import { BulkGenerateImagesButton } from './BulkGenerateImagesButton';
 import { BulkReusePoolImagesButton } from './BulkReusePoolImagesButton';
 import { FullPipelineButton } from './FullPipelineButton';
 import { ThemeMusicUploadCard } from './ThemeMusicUploadCard';
+import { DiagnosticsBanner } from './DiagnosticsBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -115,6 +116,7 @@ export default async function VideosList() {
         </div>
       </div>
 
+      <DiagnosticsBanner />
       <ThemeMusicUploadCard />
 
       <div className="row" style={{ marginTop: 14, gap: 6 }}>
