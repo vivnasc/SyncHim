@@ -46,9 +46,51 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!items?.length) return NextResponse.json({ error: 'nenhum reel para processar' }, { status: 400 });
 
-  // Dry-run: devolve quantos vai processar sem disparar workflow
+  // Dry-run: devolve quantos vai processar e custo real baseado no estado actual
   if (body?.dryRun) {
-    return NextResponse.json({ dryRun: true, totalReels: items.length });
+    const ids = items.map((i: any) => i.id);
+
+    // Cenas dos reels-alvo: contar quantas precisam de imagem / voz
+    const { data: scenes } = await supabase
+      .from('content_slides')
+      .select('item_id, design, voice_url, body')
+      .in('item_id', ids);
+    let scenesWithoutImage = 0;
+    let scenesWithoutVoice = 0;
+    (scenes ?? []).forEach((s: any) => {
+      if (!s.design?.imageUrl) scenesWithoutImage++;
+      if (!s.voice_url && s.body?.trim()) scenesWithoutVoice++;
+    });
+
+    // Tema musical configurado?
+    const { data: themeRow } = await supabase
+      .from('settings').select('value').eq('key', 'theme-music').maybeSingle();
+    const hasTheme = !!(themeRow?.value as any)?.musicUrl;
+
+    // Reels sem música própria nem tema → precisariam de Suno
+    const { data: itemsFull } = await supabase
+      .from('content_items').select('id, metadata').in('id', ids);
+    const reelsNeedingSuno = hasTheme ? 0
+      : (itemsFull ?? []).filter((i: any) => !i.metadata?.musicUrl).length;
+
+    const costReplicate = scenesWithoutImage * 0.04;
+    const costElevenLabs = scenesWithoutVoice * 0.05;
+    const costSuno = reelsNeedingSuno * 0.20; // estimativa apibox
+
+    return NextResponse.json({
+      dryRun: true,
+      totalReels: items.length,
+      scenesWithoutImage,
+      scenesWithoutVoice,
+      hasTheme,
+      reelsNeedingSuno,
+      cost: {
+        replicate: costReplicate,
+        elevenlabs: costElevenLabs,
+        suno: costSuno,
+        total: costReplicate + costElevenLabs + costSuno,
+      },
+    });
   }
 
   const jobId = `reels-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

@@ -43,13 +43,18 @@ export function FullPipelineButton() {
       const n = pre.totalReels ?? 0;
       if (n === 0) { setMsg('Sem reels em draft.'); return; }
 
-      if (!confirm(
-        `🚀 Processar ${n} reels em draft end-to-end?\n\n` +
-        `Por reel: backfill prompts + Replicate imagens + ElevenLabs vozes + aplica tema musica + render dispatch.\n` +
-        `Browser pode fechar. Status em /admin/campaign-jobs.\n\n` +
-        `⚠️ Requer musica tema configurada.\n` +
-        `Tempo estimado: ~${Math.ceil(n * 1.5)} min · Custo: ~$${(n * 0.6).toFixed(2)}`
-      )) return;
+      const c = pre.cost ?? { replicate: 0, elevenlabs: 0, suno: 0, total: n * 0.6 };
+      const lines = [
+        `🚀 Processar ${n} reels em draft end-to-end?`,
+        '',
+        `Cenas sem imagem: ${pre.scenesWithoutImage ?? '?'} → ${c.replicate > 0 ? `Replicate ~$${c.replicate.toFixed(2)}` : '✓ pool (custo $0)'}`,
+        `Cenas sem voz:    ${pre.scenesWithoutVoice ?? '?'} → ElevenLabs ~$${c.elevenlabs.toFixed(2)}`,
+        `Música:           ${pre.hasTheme ? '✓ tema da campanha (custo $0)' : `${pre.reelsNeedingSuno ?? n} reels precisam Suno ~$${c.suno.toFixed(2)}`}`,
+        '',
+        `Total estimado: ~$${c.total.toFixed(2)} · ~${Math.ceil(n * 1.5)} min`,
+        `Browser pode fechar. Status em /admin/campaign-jobs.`,
+      ];
+      if (!confirm(lines.join('\n'))) return;
 
       const res = await fetch('/api/admin/videos/bulk-pipeline/start', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
