@@ -5,6 +5,7 @@ import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { uploadJson, publicUrl } from '@/lib/admin/storage';
 import { dispatchWorkflow } from '@/lib/admin/dispatch';
 import { BRAND, FORMATO_VIDEO } from '@/lib/admin/brand';
+import { ttsWithTimestamps } from '@/lib/admin/elevenlabs-timestamps';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -39,44 +40,24 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const result: any = { code: item.code, voiceGenerated: 0, voiceSkipped: 0, musicApplied: false, rendered: false };
 
-  // 1. Vozes em falta — chamada interna ao /voice
+  // 1. Vozes em falta — usa ElevenLabs with-timestamps para guardar wordTimes
   for (const scene of scenes) {
     if (scene.voice_url) { result.voiceSkipped++; continue; }
     if (!scene.body?.trim()) continue;
     try {
-      const apiKey = process.env.ELEVENLABS_API_KEY;
-      const voiceId = process.env.ELEVENLABS_VOICE_ID;
-      const model = process.env.ELEVENLABS_TTS_MODEL || 'eleven_multilingual_v2';
-      if (!apiKey || !voiceId) {
-        return NextResponse.json({ error: 'ELEVENLABS env em falta', step: 'voice', ...result }, { status: 503 });
-      }
-      const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-        method: 'POST',
-        headers: {
-          'xi-api-key': apiKey,
-          'Accept': 'audio/mpeg',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: scene.body,
-          model_id: model,
-          voice_settings: { stability: 0.55, similarity_boost: 0.8, style: 0.15 },
-        }),
-      });
-      if (!ttsRes.ok) {
-        const err = await ttsRes.text().catch(() => '');
-        return NextResponse.json({ error: `ElevenLabs HTTP ${ttsRes.status}: ${err.slice(0, 200)}`, step: 'voice', scene: scene.idx, ...result }, { status: 500 });
-      }
-      const audioBuf = new Uint8Array(await ttsRes.arrayBuffer());
+      const tts = await ttsWithTimestamps(scene.body);
       const audioPath = `videos/${item.id}/voice/cena-${String(scene.idx + 1).padStart(2, '0')}.mp3`;
       const { error: upErr } = await supabase.storage.from(process.env.SUPABASE_STORAGE_BUCKET || 'synchim-assets')
-        .upload(audioPath, audioBuf, { contentType: 'audio/mpeg', upsert: true });
+        .upload(audioPath, tts.audio, { contentType: 'audio/mpeg', upsert: true });
       if (upErr) {
         return NextResponse.json({ error: `Storage upload: ${upErr.message}`, step: 'voice', ...result }, { status: 500 });
       }
       const audioUrl = publicUrl(audioPath);
-      const durationSec = audioBuf.length / 16000; // estimativa @ 128kbps
-      await supabase.from('content_slides').update({ voice_url: audioUrl, duration_sec: durationSec }).eq('id', scene.id);
+      await supabase.from('content_slides').update({
+        voice_url: audioUrl,
+        duration_sec: tts.durationSec,
+        design: { ...(scene.design ?? {}), wordTimes: tts.wordTimes },
+      }).eq('id', scene.id);
       result.voiceGenerated++;
     } catch (e: any) {
       return NextResponse.json({ error: `voice cena ${scene.idx + 1}: ${e.message}`, step: 'voice', ...result }, { status: 500 });

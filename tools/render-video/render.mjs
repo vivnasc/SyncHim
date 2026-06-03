@@ -42,29 +42,8 @@ async function main() {
 
   const tmp = await fs.mkdtemp('/tmp/synchim-video-');
 
-  // 1. Renderiza um PNG por cena (template kinetic).
-  await writeResult(bucket, storage.resultPath, { status: 'running', progress: 10, message: 'a gerar frames', jobId });
-  const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none'],
-    headless: 'new'
-  });
-  const templateUrl = pathToFileURL(path.join(__dirname, 'kinetic.html')).href;
-  const pngs = [];
-  for (let i = 0; i < scenes.length; i++) {
-    const page = await browser.newPage();
-    await page.setViewport({ width, height, deviceScaleFactor: 1 });
-    await page.evaluateOnNewDocument((d) => { window.SCENE_DATA = d; }, { ...scenes[i], brand, subtype });
-    await page.goto(templateUrl, { waitUntil: 'networkidle0' });
-    await page.waitForFunction("document.body.dataset.ready === '1'", { timeout: 20000 });
-    const f = path.join(tmp, `scene-${String(i + 1).padStart(2, '0')}.png`);
-    await page.screenshot({ path: f, type: 'png' });
-    await page.close();
-    pngs.push(f);
-  }
-  await browser.close();
-
-  // 2. Descarrega narrações.
-  await writeResult(bucket, storage.resultPath, { status: 'running', progress: 35, message: 'a descarregar narração', jobId });
+  // 2. Descarrega narrações primeiro (precisamos da duração para calcular timings).
+  await writeResult(bucket, storage.resultPath, { status: 'running', progress: 10, message: 'a descarregar narração', jobId });
   const voices = [];
   for (let i = 0; i < scenes.length; i++) {
     const s = scenes[i];
@@ -78,7 +57,7 @@ async function main() {
     voices.push(voicePath);
   }
 
-  // 3. Durações por cena: voice + 0.8s respiração, ou override, ou 3.5s.
+  // 3. Durações por cena.
   const durations = [];
   for (let i = 0; i < scenes.length; i++) {
     const override = scenes[i].durationSec;
@@ -91,17 +70,69 @@ async function main() {
     }
   }
 
-  // 4. Concatena PNGs em segmentos individuais (cada um 1 mp4 sem som).
+  // 1. Renderiza frames por cena. Se a cena tem design.wordTimes, gera 1 PNG
+  //    por estado (pre + por palavra activa + post). Senao, 1 PNG estatico.
+  await writeResult(bucket, storage.resultPath, { status: 'running', progress: 25, message: 'a gerar frames', jobId });
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none'],
+    headless: 'new'
+  });
+  const templateUrl = pathToFileURL(path.join(__dirname, 'kinetic.html')).href;
+  // sceneFrames[i] = [{ png, duration }] — uma lista de frames com duração.
+  const sceneFrames = [];
+  for (let i = 0; i < scenes.length; i++) {
+    const scene = scenes[i];
+    const wordTimes = scene.design?.wordTimes;
+    const totalDur = durations[i];
+    const frames = computeFrameTimings(wordTimes, totalDur);
+
+    const page = await browser.newPage();
+    await page.setViewport({ width, height, deviceScaleFactor: 1 });
+    // Carrega a cena com activeWordIdx inicial (null → modo no-karaoke se nao houver wordTimes)
+    const initIdx = wordTimes?.length ? -1 : null;
+    await page.evaluateOnNewDocument((d) => { window.SCENE_DATA = d; }, {
+      ...scene, brand, subtype, activeWordIdx: initIdx,
+    });
+    await page.goto(templateUrl, { waitUntil: 'networkidle0' });
+    await page.waitForFunction("document.body.dataset.ready === '1'", { timeout: 20000 });
+
+    const frameList = [];
+    for (let f = 0; f < frames.length; f++) {
+      await page.evaluate((idx) => window.setActiveWord(idx), frames[f].activeWordIdx);
+      const pngPath = path.join(tmp, `scene-${String(i + 1).padStart(2, '0')}-f${String(f).padStart(3, '0')}.png`);
+      await page.screenshot({ path: pngPath, type: 'png' });
+      frameList.push({ png: pngPath, duration: frames[f].duration });
+    }
+    await page.close();
+    sceneFrames.push(frameList);
+  }
+  await browser.close();
+
+  // 4. Para cada cena, monta 1 mp4 a partir da sequencia de frames com
+  //    duracoes por palavra, via concat demuxer (suporta `duration` por
+  //    entrada para imagens estaticas).
   await writeResult(bucket, storage.resultPath, { status: 'running', progress: 55, message: 'a montar segmentos', jobId });
   const segs = [];
   for (let i = 0; i < scenes.length; i++) {
     const seg = path.join(tmp, `seg-${String(i + 1).padStart(2, '0')}.mp4`);
+    const frames = sceneFrames[i];
+    const concatTxt = path.join(tmp, `concat-cena-${String(i + 1).padStart(2, '0')}.txt`);
+    const lines = [];
+    for (const f of frames) {
+      lines.push(`file '${f.png.replace(/'/g, "'\\''")}'`);
+      lines.push(`duration ${f.duration.toFixed(3)}`);
+    }
+    // O concat demuxer ignora a duracao da ultima entrada, por isso
+    // repetimos a ultima sem duration para fechar o stream.
+    lines.push(`file '${frames[frames.length - 1].png.replace(/'/g, "'\\''")}'`);
+    await fs.writeFile(concatTxt, lines.join('\n'));
+
+    const dur = durations[i];
     await runFfmpeg([
-      '-y', '-loop', '1', '-framerate', String(fps), '-i', pngs[i],
-      '-t', String(durations[i]),
-      '-vf', `scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height},format=yuv420p,fade=t=in:st=0:d=0.4,fade=t=out:st=${(durations[i] - 0.4).toFixed(2)}:d=0.4,fps=${fps}`,
+      '-y', '-f', 'concat', '-safe', '0', '-i', concatTxt,
+      '-vf', `fps=${fps},scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height},format=yuv420p,fade=t=in:st=0:d=0.4,fade=t=out:st=${(dur - 0.4).toFixed(2)}:d=0.4`,
       '-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p',
-      seg
+      seg,
     ]);
     segs.push(seg);
   }
@@ -243,6 +274,37 @@ function runFfmpeg(args) {
     p.on('exit', (code) => code === 0 ? resolve() : reject(new Error(`ffmpeg exit ${code}`)));
     p.on('error', reject);
   });
+}
+
+/**
+ * A partir de wordTimes [{text,start,end}] e da duracao total da cena,
+ * devolve a sequencia de frames com {activeWordIdx, duration}:
+ *   - activeWordIdx = -1  → ainda nenhuma palavra dita (todas apagadas)
+ *   - activeWordIdx = i   → palavra i activa
+ *   - activeWordIdx = N   → todas ditas (todas em creme cheio)
+ *   - activeWordIdx = null → cena sem wordTimes (modo no-karaoke estatico)
+ */
+function computeFrameTimings(wordTimes, totalDur) {
+  if (!wordTimes || !wordTimes.length) {
+    return [{ activeWordIdx: null, duration: totalDur }];
+  }
+  const frames = [];
+  const pre = wordTimes[0].start;
+  if (pre > 0.08) frames.push({ activeWordIdx: -1, duration: pre });
+
+  for (let i = 0; i < wordTimes.length; i++) {
+    const nextStart = i < wordTimes.length - 1
+      ? wordTimes[i + 1].start
+      : wordTimes[i].end;
+    const dur = Math.max(0.08, nextStart - wordTimes[i].start);
+    frames.push({ activeWordIdx: i, duration: dur });
+  }
+
+  const sumSoFar = frames.reduce((a, f) => a + f.duration, 0);
+  const post = Math.max(0.4, totalDur - sumSoFar);
+  frames.push({ activeWordIdx: wordTimes.length, duration: post });
+
+  return frames;
 }
 
 function ffprobeDuration(file) {

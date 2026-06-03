@@ -223,22 +223,38 @@ export function VideoEditor({
               <div className="layer center" style={{ position: 'relative', zIndex: 1 }}>
                 <div style={{
                   fontFamily: 'var(--serif)',
-                  fontSize: 22, lineHeight: 1.35, whiteSpace: 'pre-wrap',
+                  fontSize: 22, lineHeight: 1.35,
                   textShadow: current.design?.imageUrl ? '0 2px 12px rgba(0,0,0,0.6)' : 'none',
                   padding: '0 30px',
                   textAlign: 'center',
                 }}>
-                  {current.body}
+                  {(() => {
+                    const stripped = current.body.replace(/\*\*(.+?)\*\*/g, '$1').replace(/_(.+?)_/g, '$1').replace(/[*_]/g, '');
+                    const words = stripped.split(/\s+/).filter(Boolean);
+                    const hasKaraoke = Array.isArray(current.design?.wordTimes) && current.design.wordTimes.length > 0;
+                    const activeIdx = hasKaraoke ? Math.floor(words.length / 2) : null;
+                    return words.map((w: string, i: number) => {
+                      const color = activeIdx == null ? '#F2E8DC'
+                        : i < activeIdx ? '#F2E8DC'
+                        : i === activeIdx ? '#D4A857'
+                        : 'rgba(242,232,220,0.32)';
+                      return <span key={i} style={{ color, marginRight: 6 }}>{w}</span>;
+                    });
+                  })()}
                 </div>
               </div>
-              {!current.design?.imageUrl && (
-                <div style={{
-                  position: 'absolute', bottom: 20, left: 0, right: 0,
-                  textAlign: 'center', fontSize: 10, color: 'var(--texto-suave)',
-                }}>
-                  sem imagem · gradiente bordeaux
-                </div>
-              )}
+              <div style={{
+                position: 'absolute', bottom: 20, left: 0, right: 0,
+                textAlign: 'center', fontSize: 10, color: 'var(--texto-suave)',
+              }}>
+                {current.design?.imageUrl ? '' : 'sem imagem · gradiente bordeaux'}
+                {current.design?.imageUrl && Array.isArray(current.design?.wordTimes) && current.design.wordTimes.length > 0 && ' · '}
+                {Array.isArray(current.design?.wordTimes) && current.design.wordTimes.length > 0
+                  ? `karaokê: ${current.design.wordTimes.length} palavras`
+                  : current.voice_url
+                    ? '⚠ voz sem timestamps (regerar para karaokê)'
+                    : ''}
+              </div>
             </div>
           )}
         </div>

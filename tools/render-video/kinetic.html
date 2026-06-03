@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <title>SyncHim · kinetic scene</title>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=block" rel="stylesheet">
 <style>
   :root {
     --bg: #1A1410;
@@ -24,14 +24,14 @@
   #bg-image {
     position: absolute; inset: 0; z-index: 0;
     background-size: cover; background-position: center;
-    filter: brightness(0.55) contrast(1.05);
+    filter: brightness(0.5) contrast(1.05);
   }
   #bg-image::after {
     content: ''; position: absolute; inset: 0;
     background: linear-gradient(to bottom,
-      rgba(26,20,16,0.25) 0%,
-      rgba(26,20,16,0.55) 50%,
-      rgba(26,20,16,0.85) 100%);
+      rgba(26,20,16,0.30) 0%,
+      rgba(26,20,16,0.60) 50%,
+      rgba(26,20,16,0.88) 100%);
   }
   body::before {
     content: '';
@@ -48,16 +48,26 @@
     text-align: center;
   }
   #scene .body {
-    font-size: 78px;
-    line-height: 1.25;
-    color: var(--texto);
+    font-size: 86px;
+    line-height: 1.28;
     letter-spacing: -0.005em;
+    font-weight: 500;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.55);
   }
-  #scene .body strong { color: var(--ouro-folha); font-weight: 500; }
-  #scene .body em     { color: var(--ouro); font-style: italic; }
+  /* Palavra ainda por dizer */
+  #scene .body .w { color: rgba(242, 232, 220, 0.32); transition: color 0.18s ease, text-shadow 0.18s ease; }
+  /* Palavra já dita */
+  #scene .body .w.spoken { color: var(--texto); }
+  /* Palavra a ser pronunciada AGORA — só cor + glow para evitar reflow */
+  #scene .body .w.active {
+    color: var(--ouro-folha);
+    text-shadow: 0 0 28px rgba(212, 168, 87, 0.55), 0 3px 16px rgba(0,0,0,0.7);
+  }
+  /* Quando NÃO há wordTimes (preview estático ou cena sem voz) — mostra tudo em creme. */
+  #scene.no-karaoke .body .w { color: var(--texto); }
 
-  #scene.cta .body { color: var(--ouro-folha); font-size: 72px; }
-  #scene.capa .body { font-weight: 500; font-size: 88px; }
+  #scene.cta .body { color: var(--ouro-folha); font-size: 78px; }
+  #scene.capa .body { font-size: 96px; font-weight: 600; }
 
   .mark { position: absolute; bottom: 110px; color: var(--ouro-folha); font-size: 38px; letter-spacing: 0.2em; }
   .estrela { color: var(--ouro-folha); font-size: 46px; margin-top: 60px; }
@@ -67,15 +77,27 @@
 <div id="bg-image" style="display:none"></div>
 <div id="scene"><div class="body"></div></div>
 <script>
+  function stripMarkdown(s) {
+    return (s || '')
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/_(.+?)_/g, '$1')
+      .replace(/[*_]/g, '');
+  }
   function escapeHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-  function renderBody(src) {
-    return (src || '').split(/\n\n+/).map((par) => {
-      const inline = escapeHtml(par)
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/_(.+?)_/g, '<em>$1</em>')
-        .replace(/\n/g, '<br/>');
-      return '<p style="margin:0 0 20px">' + inline + '</p>';
-    }).join('');
+  function splitWords(text) {
+    // Mesma lógica do alignmentToWordTimes: separa por whitespace,
+    // pontuação fica colada à palavra anterior.
+    return text.split(/\s+/).filter(Boolean);
+  }
+  function renderWords(text, activeIdx) {
+    const words = splitWords(stripMarkdown(text));
+    return words.map((w, i) => {
+      const cls = activeIdx == null ? 'w' :
+        i < activeIdx ? 'w spoken' :
+        i === activeIdx ? 'w active' :
+        'w';
+      return '<span class="' + cls + '">' + escapeHtml(w) + '</span>';
+    }).join(' ');
   }
   function fitToHeight(el, maxH, minPx) {
     let size = parseFloat(getComputedStyle(el).fontSize);
@@ -95,8 +117,6 @@
   const d = window.SCENE_DATA || {};
   applyBrand(d.brand);
 
-  // Imagem de fundo opcional — runner injecta scene.imageUrl quando ha
-  // imagePrompt no design e Replicate ja gerou.
   const imageUrl = d.imageUrl || (d.design && d.design.imageUrl);
   if (imageUrl) {
     const bg = document.getElementById('bg-image');
@@ -107,8 +127,14 @@
   const root = document.getElementById('scene');
   const layout = d.layout || 'kinetic-line';
   root.classList.add(layout === 'cta' ? 'cta' : (layout === 'capa' ? 'capa' : 'kinetic'));
+
+  // activeWordIdx: índice (0-based) da palavra actualmente pronunciada.
+  // Se null/undefined, modo "sem karaoke" — todas as palavras em creme cheio.
+  const activeIdx = (d.activeWordIdx == null) ? null : Number(d.activeWordIdx);
+  if (activeIdx == null) root.classList.add('no-karaoke');
+
   const body = root.querySelector('.body');
-  body.innerHTML = renderBody(d.body);
+  body.innerHTML = renderWords(d.body || '', activeIdx);
 
   if (layout === 'cta' || layout === 'capa') {
     const star = document.createElement('div');
@@ -116,8 +142,6 @@
     star.textContent = '✦';
     root.appendChild(star);
   }
-
-  // marca discreta no rodapé excepto na capa
   if (layout !== 'capa') {
     const m = document.createElement('div');
     m.className = 'mark';
@@ -125,8 +149,16 @@
     root.appendChild(m);
   }
 
+  // Permite que o renderer mude o estado sem recarregar a página inteira.
+  window.setActiveWord = function(idx) {
+    const i = (idx == null) ? null : Number(idx);
+    if (i == null) root.classList.add('no-karaoke');
+    else root.classList.remove('no-karaoke');
+    body.innerHTML = renderWords(d.body || '', i);
+  };
+
   document.fonts.ready.then(() => {
-    fitToHeight(body, root.clientHeight - 400, 32);
+    fitToHeight(body, root.clientHeight - 400, 36);
     document.body.dataset.ready = '1';
   });
 </script>
