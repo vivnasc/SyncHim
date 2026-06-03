@@ -244,13 +244,20 @@ export function VideoEditor({
                   background: 'linear-gradient(to bottom, rgba(26,20,16,0.25) 0%, rgba(26,20,16,0.6) 50%, rgba(26,20,16,0.85) 100%)',
                 }} />
               )}
-              <div className="layer center" style={{ position: 'relative', zIndex: 1 }}>
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 1,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '40px 24px',
+                boxSizing: 'border-box',
+              }}>
                 <div style={{
                   fontFamily: 'var(--serif)',
-                  fontSize: 22, lineHeight: 1.35,
+                  fontSize: 18, lineHeight: 1.35,
                   textShadow: current.design?.imageUrl ? '0 2px 12px rgba(0,0,0,0.6)' : 'none',
-                  padding: '0 30px',
                   textAlign: 'center',
+                  wordSpacing: '0.15em',
+                  wordBreak: 'normal', overflowWrap: 'break-word', whiteSpace: 'normal',
+                  maxWidth: '100%',
                 }}>
                   {(() => {
                     const stripped = current.body.replace(/\*\*(.+?)\*\*/g, '$1').replace(/_(.+?)_/g, '$1').replace(/[*_]/g, '');
@@ -262,7 +269,7 @@ export function VideoEditor({
                         : i < activeIdx ? '#F2E8DC'
                         : i === activeIdx ? '#D4A857'
                         : 'rgba(242,232,220,0.32)';
-                      return <span key={i} style={{ color, marginRight: 6 }}>{w}</span>;
+                      return <span key={i} style={{ color }}>{w}{i < words.length - 1 ? ' ' : ''}</span>;
                     });
                   })()}
                 </div>

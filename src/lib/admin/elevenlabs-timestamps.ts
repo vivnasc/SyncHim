@@ -12,7 +12,8 @@ export type TtsResult = {
   durationSec: number;
 };
 
-const TTS_MODEL = process.env.ELEVENLABS_TTS_MODEL || 'eleven_multilingual_v2';
+const TTS_MODEL = process.env.ELEVENLABS_TTS_MODEL || 'eleven_v3';
+const TTS_LANGUAGE = process.env.ELEVENLABS_LANGUAGE || 'pt';
 
 /** Remove markdown leve (asteriscos, underscores) que o TTS leria à letra. */
 export function stripMarkdownForTts(text: string): string {
@@ -67,7 +68,18 @@ export async function ttsWithTimestamps(rawText: string): Promise<TtsResult> {
       body: JSON.stringify({
         text,
         model_id: TTS_MODEL,
-        voice_settings: { stability: 0.55, similarity_boost: 0.8, style: 0.15 },
+        language_code: TTS_LANGUAGE,
+        // Settings para preservar o clone tal como ele existe:
+        //   similarity_boost: 1.0 → puxa ao máximo para o original gravado
+        //   style: 0              → zero exagero/dramatização artificial
+        //   stability: 0.5        → equilíbrio (acima distorce timbre)
+        //   use_speaker_boost     → clareza sem alterar sotaque
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 1.0,
+          style: 0,
+          use_speaker_boost: true,
+        },
       }),
     },
   );
