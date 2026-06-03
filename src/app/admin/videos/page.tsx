@@ -10,31 +10,16 @@ import { FullPipelineButton } from './FullPipelineButton';
 
 export const dynamic = 'force-dynamic';
 
-const TARGET_LABELS: Record<string, string> = {
-  casada: 'casadas',
-  solteira: 'solteiras',
-  ambos: 'ambas'
-};
-
-export default async function VideosList({
-  searchParams
-}: {
-  searchParams?: { target?: string };
-}) {
+export default async function VideosList() {
   if (!getAdminEmailFromCookies()) redirect('/admin/login');
   const supabase = createSupabaseAdmin();
-  const filter = searchParams?.target;
 
-  let q = supabase
+  const { data: items } = await supabase
     .from('content_items')
-    .select('id, code, title, subtype, target, status, scheduled_at, platforms, updated_at')
+    .select('id, code, title, subtype, status, scheduled_at, platforms, updated_at')
     .eq('type', 'video')
     .order('code', { ascending: true })
     .limit(500);
-  if (filter && ['casada', 'solteira', 'ambos'].includes(filter)) {
-    q = q.eq('target', filter);
-  }
-  const { data: items } = await q;
 
   // Detecta drafts sem nenhum imagePrompt nas cenas (necessitam backfill).
   const draftIds = (items ?? []).filter((i: any) => i.status === 'draft').map((i: any) => i.id);
@@ -111,11 +96,7 @@ export default async function VideosList({
   }
   const estImageCost = pendingImageCount * 0.04;
 
-  const counts = { casada: 0, solteira: 0, ambos: 0, total: 0 };
-  (items ?? []).forEach((i: any) => {
-    counts[(i.target ?? 'casada') as 'casada' | 'solteira' | 'ambos']++;
-    counts.total++;
-  });
+  const total = (items ?? []).length;
 
   return (
     <>
@@ -134,10 +115,7 @@ export default async function VideosList({
       </div>
 
       <div className="row" style={{ marginTop: 14, gap: 6 }}>
-        <Link href="/admin/videos" className={`btn ${!filter ? 'primary' : ''}`}>todos · {counts.total}</Link>
-        <Link href="/admin/videos?target=casada"   className={`btn ${filter === 'casada' ? 'primary' : ''}`}>casadas · {counts.casada}</Link>
-        <Link href="/admin/videos?target=solteira" className={`btn ${filter === 'solteira' ? 'primary' : ''}`}>solteiras · {counts.solteira}</Link>
-        <Link href="/admin/videos?target=ambos"    className={`btn ${filter === 'ambos' ? 'primary' : ''}`}>ambas · {counts.ambos}</Link>
+        <span className="muted" style={{ fontSize: 12 }}>total · {total}</span>
       </div>
 
       <table className="t" style={{ marginTop: 18 }}>
@@ -146,7 +124,6 @@ export default async function VideosList({
             <th>código</th>
             <th>título</th>
             <th>subtipo</th>
-            <th style={{ width: 90 }}>público</th>
             <th style={{ width: 80 }}>imagens</th>
             <th style={{ width: 60 }}>voz</th>
             <th>estado</th>
@@ -157,23 +134,22 @@ export default async function VideosList({
         <tbody>
           {(items ?? []).map((i) => {
             const stats = sceneStatsByItem.get(i.id);
-            const total = stats?.total ?? 0;
+            const totalScenes = stats?.total ?? 0;
             const withImg = stats?.withImage ?? 0;
             const withVoice = stats?.hasVoice ?? 0;
-            const ready = total > 0 && withImg === total && withVoice === total && i.status === 'draft';
-            const imgComplete = total > 0 && withImg === total;
-            const voiceComplete = total > 0 && withVoice === total;
+            const ready = totalScenes > 0 && withImg === totalScenes && withVoice === totalScenes && i.status === 'draft';
+            const imgComplete = totalScenes > 0 && withImg === totalScenes;
+            const voiceComplete = totalScenes > 0 && withVoice === totalScenes;
             return (
               <tr key={i.id} style={ready ? { background: 'rgba(60, 140, 80, 0.08)' } : undefined}>
                 <td><code>{i.code}</code></td>
                 <td><Link href={`/admin/videos/${i.id}`}>{i.title}</Link></td>
                 <td className="muted">{i.subtype ? (VIDEO_SUBTIPOS as any)[i.subtype] ?? i.subtype : '—'}</td>
-                <td className="muted">{TARGET_LABELS[i.target ?? 'casada']}</td>
                 <td style={{ color: imgComplete ? '#3c8c50' : 'var(--muted)', fontWeight: imgComplete ? 600 : 400 }}>
-                  {total > 0 ? `${withImg}/${total}` : '—'}
+                  {totalScenes > 0 ? `${withImg}/${totalScenes}` : '—'}
                 </td>
                 <td style={{ color: voiceComplete ? '#3c8c50' : 'var(--muted)', fontWeight: voiceComplete ? 600 : 400 }}>
-                  {total > 0 ? `${withVoice}/${total}` : '—'}
+                  {totalScenes > 0 ? `${withVoice}/${totalScenes}` : '—'}
                 </td>
                 <td><span className={`pill ${i.status}`}>{i.status}</span></td>
                 <td className="muted">{i.scheduled_at ? new Date(i.scheduled_at).toLocaleDateString('pt-PT') : '—'}</td>
@@ -183,7 +159,7 @@ export default async function VideosList({
           })}
         </tbody>
       </table>
-      {(!items || items.length === 0) && <p className="muted" style={{ marginTop: 20 }}>Sem vídeos {filter ? `para "${filter}"` : 'ainda'}.</p>}
+      {(!items || items.length === 0) && <p className="muted" style={{ marginTop: 20 }}>Sem vídeos ainda.</p>}
     </>
   );
 }

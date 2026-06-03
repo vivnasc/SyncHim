@@ -28,6 +28,7 @@ export function VideoEditor({
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [job, setJob] = useState<Job | null>(initialJob);
   const [voicing, setVoicing] = useState<number | null>(null);
+  const [backfilling, setBackfilling] = useState(false);
   const dirtyRef = useRef(false);
 
   useEffect(() => {
@@ -97,21 +98,15 @@ export function VideoEditor({
     setVoicing(null);
   }
 
-  async function duplicateAs(target: 'casada' | 'solteira' | 'ambos') {
-    if (!confirm(target === 'solteira'
-      ? 'Duplicar como solteira? Texto será amaciado como ponto de partida — revê.'
-      : `Duplicar como ${target}?`)) return;
-    await fetch(`/api/admin/videos/${item.id}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ item, scenes })
-    });
-    const res = await fetch(`/api/admin/items/${item.id}/duplicate`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target })
-    });
-    const j = await res.json();
-    if (!res.ok) { alert(j.error || 'falhou'); return; }
-    window.location.href = `/admin/videos/${j.id}`;
+  async function backfillPrompts() {
+    setBackfilling(true);
+    try {
+      const res = await fetch(`/api/admin/videos/${item.id}/backfill-image-prompts`, { method: 'POST' });
+      const j = await res.json();
+      if (!res.ok) { alert(j.error || 'falhou'); return; }
+      alert(`Prompts gerados: ${j.updated} (skipped ${j.skipped}, forçados ${j.forced ?? 0}). A recarregar.`);
+      window.location.reload();
+    } finally { setBackfilling(false); }
   }
 
   async function submitRender() {
@@ -129,30 +124,13 @@ export function VideoEditor({
     <>
       <div className="row between">
         <div>
-          <div className="mini">{item.code ?? 'sem código'} · vídeo · {item.subtype} · público: {item.target}</div>
+          <div className="mini">{item.code ?? 'sem código'} · vídeo · {item.subtype}</div>
           <input className="input" value={item.title} onChange={(e) => patchItem('title', e.target.value)}
             style={{ background: 'transparent', border: 'none', fontFamily: 'var(--serif)', fontSize: 26, padding: 0, marginTop: 4 }} />
         </div>
         <div className="row">
           <span className={`pill ${item.status}`}>{item.status}</span>
           {savedAt && <span className="muted" style={{ fontSize: 12 }}>guardado às {savedAt}</span>}
-          <select
-            className="input"
-            value={item.target}
-            onChange={(e) => patchItem('target', e.target.value as Item['target'])}
-            style={{ width: 130 }}
-            title="Público alvo"
-          >
-            <option value="casada">casadas</option>
-            <option value="solteira">solteiras</option>
-            <option value="ambos">ambas</option>
-          </select>
-          {item.target !== 'solteira' && (
-            <button className="btn" onClick={() => duplicateAs('solteira')}>duplicar como solteira →</button>
-          )}
-          {item.target !== 'casada' && (
-            <button className="btn" onClick={() => duplicateAs('casada')}>duplicar como casada →</button>
-          )}
           <Link href="/admin/videos" className="btn">voltar</Link>
         </div>
       </div>
@@ -161,6 +139,18 @@ export function VideoEditor({
       <div className="card" style={{ marginTop: 16, padding: 12, borderColor: 'var(--ouro)' }}>
         <div className="mini" style={{ marginBottom: 6 }}>Pipeline rapido</div>
         <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+          {(() => {
+            const lastIdx = scenes.length - 1;
+            const capaPrompt = !!scenes[0]?.design?.imagePrompt;
+            const ctaPrompt = !!scenes[lastIdx]?.design?.imagePrompt;
+            const middleCount = scenes.slice(1, lastIdx).filter((s: any) => s.design?.imagePrompt).length;
+            const needBackfill = !capaPrompt || !ctaPrompt || middleCount < 2;
+            return needBackfill ? (
+              <button className="btn" onClick={backfillPrompts} disabled={backfilling}>
+                {backfilling ? '…' : `Repreencher prompts (capa${capaPrompt ? '✓' : '✗'} cta${ctaPrompt ? '✓' : '✗'} meio ${middleCount}/2)`}
+              </button>
+            ) : null;
+          })()}
           {(() => {
             const pendingImages = scenes.filter((s: any) => s.design?.imagePrompt && !s.design?.imageUrl).length;
             return pendingImages > 0 ? (
