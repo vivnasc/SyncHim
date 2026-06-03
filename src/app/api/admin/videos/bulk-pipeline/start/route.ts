@@ -106,12 +106,21 @@ export async function POST(req: NextRequest) {
     message: `queued: ${items.length} reels para pipeline completo`,
   });
 
-  // Resolve URL pública: NEXT_PUBLIC_SITE_URL → VERCEL_URL (auto-injectada) → host header
-  const rawSite = process.env.NEXT_PUBLIC_SITE_URL
+  // Resolve URL pública: host header (sempre certo) > VERCEL_URL > NEXT_PUBLIC_SITE_URL
+  // O host header reflecte o domínio real onde estás (synchim.viviannedossantos.com
+  // ou sync-him.vercel.app), evitando depender de env mal configurada.
+  const host = req.headers.get('host');
+  const rawSite = (host ? `https://${host}` : '')
     || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '')
-    || (req.headers.get('host') ? `https://${req.headers.get('host')}` : '');
+    || process.env.NEXT_PUBLIC_SITE_URL
+    || '';
   const siteUrl = rawSite.replace(/\/$/, '');
-  if (!siteUrl) return NextResponse.json({ error: 'não consegui resolver URL pública (NEXT_PUBLIC_SITE_URL/VERCEL_URL/host header todos vazios)' }, { status: 500 });
+  if (!siteUrl) return NextResponse.json({ error: 'não consegui resolver URL pública' }, { status: 500 });
+
+  // Sanity check: rejeita URLs que claramente não são o admin Next.js
+  if (siteUrl.includes('supabase.co') || siteUrl.includes('supabase.in')) {
+    return NextResponse.json({ error: `siteUrl mal resolvido (${siteUrl}) — aponta para Supabase, não para o admin` }, { status: 500 });
+  }
 
   try {
     await dispatchWorkflow({
