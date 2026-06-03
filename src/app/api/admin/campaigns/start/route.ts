@@ -72,9 +72,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `BD: ${insertErr.message}` }, { status: 500 });
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
+  const rawSite = process.env.NEXT_PUBLIC_SITE_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '')
+    || (req.headers.get('host') ? `https://${req.headers.get('host')}` : '');
+  const siteUrl = rawSite.replace(/\/$/, '');
   if (!siteUrl) {
-    return NextResponse.json({ error: 'NEXT_PUBLIC_SITE_URL em falta' }, { status: 500 });
+    return NextResponse.json({ error: 'não consegui resolver URL pública' }, { status: 500 });
   }
 
   try {

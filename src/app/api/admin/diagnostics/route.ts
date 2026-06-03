@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     { name: 'ADMIN_PASSWORD', group: 'core', present: env('ADMIN_PASSWORD'), required: true, hint: 'password única partilhada para login admin' },
 
     // PIPELINE — bulk reels não funciona sem isto
-    { name: 'NEXT_PUBLIC_SITE_URL', group: 'pipeline', present: env('NEXT_PUBLIC_SITE_URL'), required: true, hint: 'URL pública da app (https://sync-him.vercel.app)' },
+    { name: 'NEXT_PUBLIC_SITE_URL', group: 'pipeline', present: env('NEXT_PUBLIC_SITE_URL') || env('VERCEL_URL'), required: false, hint: 'opcional — se faltar usa VERCEL_URL auto-injectada' },
     { name: 'CAMPAIGN_WORKER_TOKEN', group: 'pipeline', present: env('CAMPAIGN_WORKER_TOKEN'), required: true, hint: 'token partilhado entre Vercel e GitHub Actions (também em GH repo secrets)' },
     { name: 'GITHUB_DISPATCH_TOKEN', group: 'pipeline', present: env('GITHUB_DISPATCH_TOKEN'), required: true, hint: 'PAT classic com scope workflow para dispatchar workflows' },
     { name: 'GITHUB_REPO_OWNER', group: 'pipeline', present: env('GITHUB_REPO_OWNER'), required: true, hint: 'vivnasc' },
