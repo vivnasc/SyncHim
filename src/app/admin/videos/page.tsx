@@ -5,8 +5,9 @@ import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { VIDEO_SUBTIPOS } from '@/lib/admin/brand';
 import { BackfillImagePromptsButton } from './BackfillButton';
 import { BulkGenerateImagesButton } from './BulkGenerateImagesButton';
-import { BulkProcessAllButton } from './BulkProcessAllButton';
+import { BulkReusePoolImagesButton } from './BulkReusePoolImagesButton';
 import { FullPipelineButton } from './FullPipelineButton';
+import { ThemeMusicUploadCard } from './ThemeMusicUploadCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -108,11 +109,13 @@ export default async function VideosList() {
         <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
           <FullPipelineButton />
           {needBackfill.length > 0 && <BackfillImagePromptsButton items={needBackfill} />}
+          {needImages.length > 0 && <BulkReusePoolImagesButton pendingReels={needImages.length} />}
           {needImages.length > 0 && <BulkGenerateImagesButton items={needImages} estCost={estImageCost} />}
-          {needProcess.length > 0 && <BulkProcessAllButton items={needProcess} />}
           <Link href="/admin/videos/novo" className="btn">+ Novo vídeo</Link>
         </div>
       </div>
+
+      <ThemeMusicUploadCard />
 
       <div className="row" style={{ marginTop: 14, gap: 6 }}>
         <span className="muted" style={{ fontSize: 12 }}>total · {total}</span>
