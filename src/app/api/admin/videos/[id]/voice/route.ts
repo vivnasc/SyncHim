@@ -51,5 +51,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     url,
     durationSec: result.durationSec,
     wordTimes: result.wordTimes,
+    modelUsed: result.modelUsed,
+    language: result.language,
   });
 }

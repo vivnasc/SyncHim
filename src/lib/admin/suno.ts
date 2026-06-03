@@ -52,6 +52,10 @@ function headers(): HeadersInit {
 async function start(args: SunoGenArgs): Promise<string> {
   // Shape unificado: vários providers aceitam combinações destes campos.
   // Os que não reconhecem ignoram silenciosamente.
+  // O apibox.erweima.ai exige callBackUrl (mesmo que nao usado — fazemos
+  // polling depois). Usamos a rota stub ou um endpoint sempre-200.
+  const callbackUrl = process.env.SUNO_CALLBACK_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/api/admin/suno-callback` : 'https://webhook.site/synchim-noop');
   const body: Record<string, unknown> = {
     prompt: args.prompt,
     customMode: false,                          // apibox: livre / não-custom
@@ -59,7 +63,9 @@ async function start(args: SunoGenArgs): Promise<string> {
     make_instrumental: args.instrumental ?? true, // legacy alias
     duration: args.durationSec ?? 90,
     gpt_description_prompt: args.prompt,        // suno.com style
-    tags: args.style ?? 'ambient, contemplative, slow, dark, no vocals'
+    tags: args.style ?? 'ambient, contemplative, slow, dark, no vocals',
+    callBackUrl: callbackUrl,                   // apibox.erweima.ai requirement
+    callback_url: callbackUrl,                  // snake_case alias
   };
   if (process.env.SUNO_MODEL) body.model = process.env.SUNO_MODEL;
 

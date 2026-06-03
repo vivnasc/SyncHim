@@ -79,6 +79,18 @@ export function MusicBlock({
     } finally { setBusy(false); }
   }
 
+  async function uploadFile(file: File) {
+    setBusy(true); setErr(null);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch(`/api/admin/videos/${itemId}/music/upload`, { method: 'POST', body: fd });
+      const j = await res.json();
+      if (!res.ok) { setErr(j.error || `falhou (${res.status})`); return; }
+      onGenerated(j.musicUrl, `upload manual (${j.fileName})`);
+    } finally { setBusy(false); }
+  }
+
   return (
     <div className="card" style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
       {/* Tema da campanha — atalho para reutilizar sem chamar Suno */}
@@ -128,6 +140,24 @@ export function MusicBlock({
         <button className="btn primary" onClick={generate} disabled={busy || !prompt.trim()}>
           {busy ? 'a gerar… (1-3 min)' : (musicUrl ? '↻ regenerar música' : '🎵 gerar música')}
         </button>
+      </div>
+
+      <div style={{ borderTop: '1px dashed var(--linha)', paddingTop: 10, marginTop: 4 }}>
+        <label style={{ fontSize: 11 }}>Ou faz upload de ficheiro próprio (mp3/wav/m4a, &lt;25MB)</label>
+        <input
+          type="file"
+          accept="audio/mpeg,audio/mp3,audio/wav,audio/x-m4a,audio/mp4,audio/aac"
+          disabled={busy}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) uploadFile(f);
+            e.currentTarget.value = '';
+          }}
+          style={{ fontSize: 11, marginTop: 4 }}
+        />
+        <div className="muted" style={{ fontSize: 10, marginTop: 4 }}>
+          Substitui a música actual. Saída de emergência se o Suno falhar.
+        </div>
       </div>
     </div>
   );

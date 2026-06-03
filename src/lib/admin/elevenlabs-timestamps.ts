@@ -10,6 +10,8 @@ export type TtsResult = {
   audio: Uint8Array;
   wordTimes: WordTime[];
   durationSec: number;
+  modelUsed: string;
+  language: string;
 };
 
 const TTS_MODEL = process.env.ELEVENLABS_TTS_MODEL || 'eleven_v3';
@@ -114,5 +116,5 @@ export async function ttsWithTimestamps(rawText: string): Promise<TtsResult> {
     ? wordTimes[wordTimes.length - 1].end + 0.4
     : audio.length / 16000;
 
-  return { audio, wordTimes, durationSec };
+  return { audio, wordTimes, durationSec, modelUsed: TTS_MODEL, language: TTS_LANGUAGE };
 }

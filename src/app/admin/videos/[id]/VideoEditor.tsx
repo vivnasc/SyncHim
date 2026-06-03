@@ -199,16 +199,31 @@ export function VideoEditor({
           {(() => {
             const pendingNew = scenes.filter((s) => !s.voice_url && s.body.trim()).length;
             const missingTimes = scenes.filter((s) => s.voice_url && !(s.design?.wordTimes?.length)).length;
+            const totalWithText = scenes.filter((s) => s.body.trim()).length;
             if (voicing !== null) {
               return <button className="btn primary" disabled>A gerar voz cena {voicing + 1}…</button>;
             }
-            if (pendingNew > 0) {
-              return <button className="btn primary" onClick={() => gerarTodasVozes(false)}>Gerar todas as vozes ({pendingNew} pendentes)</button>;
-            }
-            if (missingTimes > 0) {
-              return <button className="btn primary" onClick={() => gerarTodasVozes(true)}>Re-gerar {missingTimes} voz(es) com karaokê</button>;
-            }
-            return <span className="muted" style={{ fontSize: 12 }}>✓ vozes prontas com karaokê</span>;
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {pendingNew > 0 && (
+                  <button className="btn primary" onClick={() => gerarTodasVozes(false)}>Gerar todas as vozes ({pendingNew} pendentes)</button>
+                )}
+                {pendingNew === 0 && missingTimes > 0 && (
+                  <button className="btn primary" onClick={() => gerarTodasVozes(true)}>Re-gerar {missingTimes} voz(es) com karaokê</button>
+                )}
+                {pendingNew === 0 && missingTimes === 0 && (
+                  <span className="muted" style={{ fontSize: 12 }}>✓ vozes prontas com karaokê</span>
+                )}
+                <button
+                  className="btn"
+                  style={{ fontSize: 11, padding: '4px 8px', opacity: 0.85 }}
+                  onClick={() => gerarTodasVozes(true)}
+                  title="Apaga as vozes actuais (mesmo as boas) e regera todas com o modelo/settings actuais"
+                >
+                  ⟲ Forçar regerar TODAS as {totalWithText} vozes
+                </button>
+              </div>
+            );
           })()}
           <span className="muted" style={{ fontSize: 12 }}>
             Depois afina a musica em baixo e clica &ldquo;Renderizar video&rdquo;.
