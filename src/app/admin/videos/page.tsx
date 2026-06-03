@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getAdminEmailFromCookies } from '@/lib/admin/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { VIDEO_SUBTIPOS } from '@/lib/admin/brand';
+import { BackfillImagePromptsButton } from './BackfillButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,6 +33,20 @@ export default async function VideosList({
   }
   const { data: items } = await q;
 
+  // Detecta drafts sem nenhum imagePrompt nas cenas (necessitam backfill).
+  const draftIds = (items ?? []).filter((i: any) => i.status === 'draft').map((i: any) => i.id);
+  let needBackfill: Array<{ id: string; code: string }> = [];
+  if (draftIds.length > 0) {
+    const { data: slidesWithPrompt } = await supabase
+      .from('content_slides')
+      .select('item_id')
+      .in('item_id', draftIds)
+      .not('design->>imagePrompt', 'is', null);
+    const withPrompt = new Set((slidesWithPrompt ?? []).map((s: any) => s.item_id));
+    needBackfill = (items ?? []).filter((i: any) => i.status === 'draft' && !withPrompt.has(i.id))
+      .map((i: any) => ({ id: i.id, code: i.code }));
+  }
+
   const counts = { casada: 0, solteira: 0, ambos: 0, total: 0 };
   (items ?? []).forEach((i: any) => {
     counts[(i.target ?? 'casada') as 'casada' | 'solteira' | 'ambos']++;
@@ -45,7 +60,10 @@ export default async function VideosList({
           <h1>Vídeos</h1>
           <p className="muted">1080×1920, 30fps. Talking head, kinetic text, hands writing. Tagueados por público.</p>
         </div>
-        <Link href="/admin/videos/novo" className="btn primary">+ Novo vídeo</Link>
+        <div className="row" style={{ gap: 8 }}>
+          {needBackfill.length > 0 && <BackfillImagePromptsButton items={needBackfill} />}
+          <Link href="/admin/videos/novo" className="btn primary">+ Novo vídeo</Link>
+        </div>
       </div>
 
       <div className="row" style={{ marginTop: 14, gap: 6 }}>
