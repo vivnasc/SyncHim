@@ -28,11 +28,33 @@ export default async function VideoPage({ params }: { params: { id: string } }) 
     .limit(1)
     .maybeSingle();
 
+  // Anterior / seguinte por código
+  const [{ data: prevQ }, { data: nextQ }] = await Promise.all([
+    supabase
+      .from('content_items')
+      .select('id, code')
+      .eq('type', 'video')
+      .lt('code', item.code)
+      .order('code', { ascending: false })
+      .limit(1),
+    supabase
+      .from('content_items')
+      .select('id, code')
+      .eq('type', 'video')
+      .gt('code', item.code)
+      .order('code', { ascending: true })
+      .limit(1),
+  ]);
+  const prev = prevQ?.[0] ?? null;
+  const next = nextQ?.[0] ?? null;
+
   return (
     <VideoEditor
       initialItem={item as any}
       initialScenes={(scenes ?? []) as any}
       initialJob={lastJob as any}
+      prev={prev}
+      next={next}
     />
   );
 }

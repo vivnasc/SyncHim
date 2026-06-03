@@ -17,8 +17,12 @@ type Scene = { idx: number; layout: string; body: string; design: any; voice_url
 type Job = { job_id: string; status: string; progress: number; message: string | null; output: any };
 
 export function VideoEditor({
-  initialItem, initialScenes, initialJob
-}: { initialItem: Item; initialScenes: any[]; initialJob: Job | null }) {
+  initialItem, initialScenes, initialJob, prev, next,
+}: {
+  initialItem: Item; initialScenes: any[]; initialJob: Job | null;
+  prev?: { id: string; code: string | null } | null;
+  next?: { id: string; code: string | null } | null;
+}) {
   const [item, setItem] = useState<Item>(initialItem);
   const [scenes, setScenes] = useState<Scene[]>(() => initialScenes.map(r => ({
     idx: r.idx, layout: r.layout || 'kinetic-line', body: r.body || '',
@@ -131,7 +135,17 @@ export function VideoEditor({
         <div className="row">
           <span className={`pill ${item.status}`}>{item.status}</span>
           {savedAt && <span className="muted" style={{ fontSize: 12 }}>guardado às {savedAt}</span>}
-          <Link href="/admin/videos" className="btn">voltar</Link>
+          {prev ? (
+            <Link href={`/admin/videos/${prev.id}`} className="btn" title={`Anterior: ${prev.code}`}>← {prev.code}</Link>
+          ) : (
+            <button className="btn" disabled>← anterior</button>
+          )}
+          <Link href="/admin/videos" className="btn">lista</Link>
+          {next ? (
+            <Link href={`/admin/videos/${next.id}`} className="btn" title={`Seguinte: ${next.code}`}>{next.code} →</Link>
+          ) : (
+            <button className="btn" disabled>seguinte →</button>
+          )}
         </div>
       </div>
 
