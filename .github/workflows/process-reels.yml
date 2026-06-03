@@ -26,12 +26,17 @@ jobs:
           SITE_URL: ${{ inputs.siteUrl }}
           JOB_ID: ${{ inputs.jobId }}
           ITEM_IDS: ${{ inputs.itemIds }}
-          WORKER_TOKEN: ${{ secrets.SYNCHIM_CAMPAIGN_WORKER_TOKEN }}
+          WORKER_TOKEN: ${{ secrets.CAMPAIGN_WORKER_TOKEN }}
         run: |
           set -u
+          if [ -z "$WORKER_TOKEN" ]; then
+            echo "❌ CAMPAIGN_WORKER_TOKEN não definido em GitHub repo secrets."
+            echo "Vai a github.com/vivnasc/synchim/settings/secrets/actions e adiciona."
+            exit 1
+          fi
           IFS=',' read -ra IDS <<< "$ITEM_IDS"
           total=${#IDS[@]}
-          echo "Processing $total reels"
+          echo "Processing $total reels against $SITE_URL"
 
           done=0
           failed=0
@@ -47,23 +52,29 @@ jobs:
 
             # 1. Backfill imagePrompts (idempotente)
             resp=$(curl -sS -w "\n%{http_code}" -X POST "$SITE_URL/api/admin/videos/$ID/backfill-image-prompts" \
-              -H "X-Worker-Token: $WORKER_TOKEN" || true)
+              -H "X-Worker-Token: $WORKER_TOKEN") || resp="curl-failed\n000"
             status=$(echo "$resp" | tail -n1)
             echo "backfill: HTTP $status"
+            if [ "$status" != "200" ] && [ "$status" != "201" ]; then
+              echo "$resp" | sed '$d' | head -c 500
+            fi
 
-            # 2. Generate images (Replicate, idempotente)
+            # 2. Generate images (Replicate, idempotente — só toca cenas sem imageUrl)
             resp=$(curl -sS -w "\n%{http_code}" -X POST "$SITE_URL/api/admin/generate-images" \
               -H "X-Worker-Token: $WORKER_TOKEN" \
               -H "Content-Type: application/json" \
-              -d "{\"itemId\":\"$ID\",\"reuseStrategy\":\"prefer-existing\"}" || true)
+              -d "{\"itemId\":\"$ID\",\"reuseStrategy\":\"prefer-existing\"}") || resp="curl-failed\n000"
             status=$(echo "$resp" | tail -n1)
             echo "generate-images: HTTP $status"
+            if [ "$status" != "200" ] && [ "$status" != "201" ]; then
+              echo "$resp" | sed '$d' | head -c 500
+            fi
 
             # 3. Process-all: voices + theme music + render dispatch
             resp=$(curl -sS -w "\n%{http_code}" -X POST "$SITE_URL/api/admin/videos/$ID/process-all" \
               -H "X-Worker-Token: $WORKER_TOKEN" \
               -H "Content-Type: application/json" \
-              -d '{}' || true)
+              -d '{}') || resp="curl-failed\n000"
             status=$(echo "$resp" | tail -n1)
             body=$(echo "$resp" | sed '$d')
             if [ "$status" = "200" ]; then
@@ -84,3 +95,9 @@ jobs:
             -H "X-Worker-Token: $WORKER_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"jobId\":\"$JOB_ID\",\"current\":$total,\"total\":$total,\"finished\":true,\"failed\":$failed,\"message\":\"$done ok, $failed failed\"}" || true
+
+          # Falha o workflow se tudo falhou — evita marcar como ✓ verde com 0 reels processados
+          if [ "$done" -eq 0 ] && [ "$failed" -gt 0 ]; then
+            echo "❌ Todos os $total reels falharam — workflow marcado como falhado"
+            exit 1
+          fi
