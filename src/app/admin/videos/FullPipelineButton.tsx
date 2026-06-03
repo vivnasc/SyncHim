@@ -24,7 +24,22 @@ export function FullPipelineButton() {
         body: JSON.stringify({ status: 'draft', dryRun: true }),
       });
       const pre = await preCheck.json();
-      if (!preCheck.ok) { setMsg(`Erro: ${pre.error}`); return; }
+      if (!preCheck.ok) {
+        if (pre.error?.includes('CAMPAIGN_WORKER_TOKEN')) {
+          setMsg(
+            'Falta configurar CAMPAIGN_WORKER_TOKEN (auth entre Vercel e GitHub Actions).\n\n' +
+            '1. Vercel → Settings → Environment Variables → adicionar\n' +
+            '   CAMPAIGN_WORKER_TOKEN = <token gerado>\n\n' +
+            '2. GitHub vivnasc/synchim → Settings → Secrets and variables\n' +
+            '   → Actions → New secret → CAMPAIGN_WORKER_TOKEN = <mesmo token>\n\n' +
+            '3. Re-deploy do Vercel para apanhar a env nova.\n\n' +
+            'Diz-me quando tiveres o passo 1 e 2 feitos.'
+          );
+          return;
+        }
+        setMsg(`Erro: ${pre.error}`);
+        return;
+      }
       const n = pre.totalReels ?? 0;
       if (n === 0) { setMsg('Sem reels em draft.'); return; }
 
@@ -47,11 +62,25 @@ export function FullPipelineButton() {
   }
 
   return (
-    <div style={{ display: 'inline-flex', flexDirection: 'column', gap: 4 }}>
+    <div style={{ display: 'inline-flex', flexDirection: 'column', gap: 4, maxWidth: 420 }}>
       <button className="btn primary" onClick={run} disabled={busy}>
         {busy ? '…' : '🚀 Processar drafts end-to-end (background)'}
       </button>
-      {msg && <span style={{ color: 'var(--bordeaux)', fontSize: 11 }}>{msg}</span>}
+      {msg && (
+        <div style={{
+          color: '#FFE4D6',
+          background: 'rgba(180, 50, 50, 0.25)',
+          border: '1px solid rgba(220, 90, 90, 0.6)',
+          padding: '8px 10px',
+          borderRadius: 4,
+          fontSize: 12,
+          lineHeight: 1.4,
+          marginTop: 6,
+          whiteSpace: 'pre-wrap',
+        }}>
+          ⚠ {msg}
+        </div>
+      )}
     </div>
   );
 }
