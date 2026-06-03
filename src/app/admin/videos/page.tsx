@@ -5,6 +5,7 @@ import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { VIDEO_SUBTIPOS } from '@/lib/admin/brand';
 import { BackfillImagePromptsButton } from './BackfillButton';
 import { BulkGenerateImagesButton } from './BulkGenerateImagesButton';
+import { BulkProcessAllButton } from './BulkProcessAllButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,29 +39,39 @@ export default async function VideosList({
   const draftIds = (items ?? []).filter((i: any) => i.status === 'draft').map((i: any) => i.id);
   let needBackfill: Array<{ id: string; code: string }> = [];
   let needImages: Array<{ id: string; code: string }> = [];
+  let needProcess: Array<{ id: string; code: string }> = [];
   let pendingImageCount = 0;
   if (draftIds.length > 0) {
     const { data: scenesData } = await supabase
       .from('content_slides')
-      .select('item_id, design')
+      .select('item_id, design, voice_url, body')
       .in('item_id', draftIds);
-    const withPromptByItem = new Map<string, { hasPrompt: boolean; pendingImg: number }>();
+    type Acc = { hasPrompt: boolean; pendingImg: number; pendingVoice: number; totalScenes: number };
+    const byItem = new Map<string, Acc>();
     (scenesData ?? []).forEach((s: any) => {
-      const it = withPromptByItem.get(s.item_id) ?? { hasPrompt: false, pendingImg: 0 };
+      const it = byItem.get(s.item_id) ?? { hasPrompt: false, pendingImg: 0, pendingVoice: 0, totalScenes: 0 };
+      it.totalScenes++;
       if (s.design?.imagePrompt) {
         it.hasPrompt = true;
         if (!s.design?.imageUrl) it.pendingImg++;
       }
-      withPromptByItem.set(s.item_id, it);
+      if (!s.voice_url && s.body?.trim()) it.pendingVoice++;
+      byItem.set(s.item_id, it);
     });
     needBackfill = (items ?? []).filter((i: any) =>
-      i.status === 'draft' && !withPromptByItem.get(i.id)?.hasPrompt
+      i.status === 'draft' && !byItem.get(i.id)?.hasPrompt
     ).map((i: any) => ({ id: i.id, code: i.code }));
     (items ?? []).forEach((i: any) => {
-      const it = withPromptByItem.get(i.id);
-      if (i.status === 'draft' && it?.hasPrompt && it.pendingImg > 0) {
+      const it = byItem.get(i.id);
+      if (!it || i.status !== 'draft') return;
+      if (it.hasPrompt && it.pendingImg > 0) {
         needImages.push({ id: i.id, code: i.code });
         pendingImageCount += it.pendingImg;
+      }
+      // Reel pronto para process-all = tem todas as imagens + voz pendente
+      // (process-all e idempotente: gera so voz em falta + aplica tema + render)
+      if (it.hasPrompt && it.pendingImg === 0) {
+        needProcess.push({ id: i.id, code: i.code });
       }
     });
   }
@@ -82,7 +93,8 @@ export default async function VideosList({
         <div className="row" style={{ gap: 8 }}>
           {needBackfill.length > 0 && <BackfillImagePromptsButton items={needBackfill} />}
           {needImages.length > 0 && <BulkGenerateImagesButton items={needImages} estCost={estImageCost} />}
-          <Link href="/admin/videos/novo" className="btn primary">+ Novo vídeo</Link>
+          {needProcess.length > 0 && <BulkProcessAllButton items={needProcess} />}
+          <Link href="/admin/videos/novo" className="btn">+ Novo vídeo</Link>
         </div>
       </div>
 
