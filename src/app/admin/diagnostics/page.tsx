@@ -108,12 +108,26 @@ export default function DiagnosticsPage() {
       })}
 
       <section style={{ marginTop: 24 }}>
-        <h2 style={{ fontSize: 14 }}>Onde configurar</h2>
+        <h2 style={{ fontSize: 15 }}>⚙ GitHub Actions secrets (runner do render)</h2>
+        <p className="muted" style={{ fontSize: 12 }}>
+          A página acima só verifica envs do Vercel. Estas estão configuradas no GitHub, não no Vercel, e o diagnóstico não as consegue ler.
+          Verifica manualmente em <a href="https://github.com/vivnasc/synchim/settings/secrets/actions" target="_blank" rel="noreferrer" style={{ color: 'var(--ouro-folha)' }}>github.com/vivnasc/synchim/settings/secrets/actions</a> que existem:
+        </p>
         <ul style={{ fontSize: 12, lineHeight: 1.7, color: 'var(--texto-suave)' }}>
-          <li>Vercel: <a href="https://vercel.com/dashboard" target="_blank" rel="noreferrer">dashboard</a> → projecto → Settings → Environment Variables</li>
-          <li>GitHub repo secrets: github.com/vivnasc/synchim → Settings → Secrets and variables → Actions</li>
-          <li>Depois de adicionar/mudar envs no Vercel, é preciso <strong>redeploy</strong> para apanhar os novos valores</li>
-          <li>O <code>CAMPAIGN_WORKER_TOKEN</code> tem que ser <strong>igual</strong> no Vercel e no GitHub repo secrets</li>
+          <li><code>SUPABASE_URL</code> — mesma URL que <code>NEXT_PUBLIC_SUPABASE_URL</code></li>
+          <li><code>SUPABASE_SERVICE_ROLE_KEY</code></li>
+          <li><code>CAMPAIGN_WORKER_TOKEN</code> — <strong>tem que ser igual ao do Vercel</strong></li>
+          <li><code>ELEVENLABS_API_KEY</code>, <code>ELEVENLABS_VOICE_ID</code></li>
+          <li><code>SUNO_API_KEY</code>, <code>SUNO_API_URL</code> (opcionais se usares tema MP3 upload)</li>
+        </ul>
+      </section>
+
+      <section style={{ marginTop: 24 }}>
+        <h2 style={{ fontSize: 14 }}>Onde configurar (Vercel)</h2>
+        <ul style={{ fontSize: 12, lineHeight: 1.7, color: 'var(--texto-suave)' }}>
+          <li><a href="https://vercel.com/dashboard" target="_blank" rel="noreferrer" style={{ color: 'var(--ouro-folha)' }}>vercel.com/dashboard</a> → projecto sync-him → Settings → Environment Variables</li>
+          <li>Marcar Production + Preview + Development</li>
+          <li>Depois de adicionar/mudar envs, <strong>redeploy</strong> para apanhar os novos valores</li>
         </ul>
       </section>
     </>

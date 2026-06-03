@@ -27,7 +27,6 @@ export async function GET(req: NextRequest) {
     // CORE — sem isto a app não arranca
     { name: 'NEXT_PUBLIC_SUPABASE_URL', group: 'core', present: env('NEXT_PUBLIC_SUPABASE_URL'), required: true, hint: 'URL do projecto Supabase (https://xxx.supabase.co)' },
     { name: 'NEXT_PUBLIC_SUPABASE_ANON_KEY', group: 'core', present: env('NEXT_PUBLIC_SUPABASE_ANON_KEY'), required: true, hint: 'anon key do Supabase (settings → API)' },
-    { name: 'SUPABASE_URL', group: 'core', present: env('SUPABASE_URL'), required: true, hint: 'mesma URL acima, sem NEXT_PUBLIC_' },
     { name: 'SUPABASE_SERVICE_ROLE_KEY', group: 'core', present: env('SUPABASE_SERVICE_ROLE_KEY'), required: true, hint: 'service_role key (NUNCA exposta no client)' },
     { name: 'ADMIN_EMAILS', group: 'core', present: env('ADMIN_EMAILS'), required: true, hint: 'lista CSV de emails admin (ex: viv.saraiva@gmail.com)' },
     { name: 'ADMIN_PASSWORD', group: 'core', present: env('ADMIN_PASSWORD'), required: true, hint: 'password única partilhada para login admin' },
@@ -59,6 +58,9 @@ export async function GET(req: NextRequest) {
     { name: 'RESEND_API_KEY', group: 'opcional', present: env('RESEND_API_KEY'), required: false, hint: 'newsletters' },
     { name: 'CRON_SECRET', group: 'opcional', present: env('CRON_SECRET'), required: false, hint: 'protege cron endpoints' },
   ];
+  // Nota: SUPABASE_URL (sem prefix) e SUPABASE_SERVICE_ROLE_KEY são usados
+  // pelo runner do render dentro do GitHub Actions — devem estar configurados
+  // em github.com/vivnasc/synchim/settings/secrets/actions, NÃO no Vercel.
 
   // Estado da tabela settings (música tema)
   const supabase = createSupabaseAdmin();
