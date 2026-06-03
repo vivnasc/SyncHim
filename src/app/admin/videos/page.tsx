@@ -42,6 +42,7 @@ export default async function VideosList({
   let needImages: Array<{ id: string; code: string }> = [];
   let needProcess: Array<{ id: string; code: string }> = [];
   let pendingImageCount = 0;
+  const sceneStatsByItem = new Map<string, { withPrompt: number; withImage: number; total: number; hasVoice: number }>();
   if (draftIds.length > 0) {
     const { data: scenesData } = await supabase
       .from('content_slides')
@@ -58,6 +59,14 @@ export default async function VideosList({
       }
       if (!s.voice_url && s.body?.trim()) it.pendingVoice++;
       byItem.set(s.item_id, it);
+
+      // Para coluna de status visual por reel
+      const stats = sceneStatsByItem.get(s.item_id) ?? { withPrompt: 0, withImage: 0, total: 0, hasVoice: 0 };
+      stats.total++;
+      if (s.design?.imagePrompt) stats.withPrompt++;
+      if (s.design?.imageUrl) stats.withImage++;
+      if (s.voice_url) stats.hasVoice++;
+      sceneStatsByItem.set(s.item_id, stats);
     });
     needBackfill = (items ?? []).filter((i: any) =>
       i.status === 'draft' && !byItem.get(i.id)?.hasPrompt
@@ -69,8 +78,6 @@ export default async function VideosList({
         needImages.push({ id: i.id, code: i.code });
         pendingImageCount += it.pendingImg;
       }
-      // Reel pronto para process-all = tem todas as imagens + voz pendente
-      // (process-all e idempotente: gera so voz em falta + aplica tema + render)
       if (it.hasPrompt && it.pendingImg === 0) {
         needProcess.push({ id: i.id, code: i.code });
       }
@@ -109,19 +116,45 @@ export default async function VideosList({
 
       <table className="t" style={{ marginTop: 18 }}>
         <thead>
-          <tr><th>código</th><th>título</th><th>subtipo</th><th style={{ width: 90 }}>público</th><th>estado</th><th>agendado</th></tr>
+          <tr>
+            <th>código</th>
+            <th>título</th>
+            <th>subtipo</th>
+            <th style={{ width: 90 }}>público</th>
+            <th style={{ width: 80 }}>imagens</th>
+            <th style={{ width: 60 }}>voz</th>
+            <th>estado</th>
+            <th>agendado</th>
+            <th style={{ width: 70 }}>pronto</th>
+          </tr>
         </thead>
         <tbody>
-          {(items ?? []).map((i) => (
-            <tr key={i.id}>
-              <td><code>{i.code}</code></td>
-              <td><Link href={`/admin/videos/${i.id}`}>{i.title}</Link></td>
-              <td className="muted">{i.subtype ? (VIDEO_SUBTIPOS as any)[i.subtype] ?? i.subtype : '—'}</td>
-              <td className="muted">{TARGET_LABELS[i.target ?? 'casada']}</td>
-              <td><span className={`pill ${i.status}`}>{i.status}</span></td>
-              <td className="muted">{i.scheduled_at ? new Date(i.scheduled_at).toLocaleDateString('pt-PT') : '—'}</td>
-            </tr>
-          ))}
+          {(items ?? []).map((i) => {
+            const stats = sceneStatsByItem.get(i.id);
+            const total = stats?.total ?? 0;
+            const withImg = stats?.withImage ?? 0;
+            const withVoice = stats?.hasVoice ?? 0;
+            const ready = total > 0 && withImg === total && withVoice === total && i.status === 'draft';
+            const imgComplete = total > 0 && withImg === total;
+            const voiceComplete = total > 0 && withVoice === total;
+            return (
+              <tr key={i.id} style={ready ? { background: 'rgba(60, 140, 80, 0.08)' } : undefined}>
+                <td><code>{i.code}</code></td>
+                <td><Link href={`/admin/videos/${i.id}`}>{i.title}</Link></td>
+                <td className="muted">{i.subtype ? (VIDEO_SUBTIPOS as any)[i.subtype] ?? i.subtype : '—'}</td>
+                <td className="muted">{TARGET_LABELS[i.target ?? 'casada']}</td>
+                <td style={{ color: imgComplete ? '#3c8c50' : 'var(--muted)', fontWeight: imgComplete ? 600 : 400 }}>
+                  {total > 0 ? `${withImg}/${total}` : '—'}
+                </td>
+                <td style={{ color: voiceComplete ? '#3c8c50' : 'var(--muted)', fontWeight: voiceComplete ? 600 : 400 }}>
+                  {total > 0 ? `${withVoice}/${total}` : '—'}
+                </td>
+                <td><span className={`pill ${i.status}`}>{i.status}</span></td>
+                <td className="muted">{i.scheduled_at ? new Date(i.scheduled_at).toLocaleDateString('pt-PT') : '—'}</td>
+                <td>{ready ? <span style={{ color: '#3c8c50', fontWeight: 700 }}>✓ testar</span> : <span className="muted">—</span>}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       {(!items || items.length === 0) && <p className="muted" style={{ marginTop: 20 }}>Sem vídeos {filter ? `para "${filter}"` : 'ainda'}.</p>}
