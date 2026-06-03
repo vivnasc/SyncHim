@@ -4,6 +4,7 @@ import { getAdminEmailFromCookies } from '@/lib/admin/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { VIDEO_SUBTIPOS } from '@/lib/admin/brand';
 import { BackfillImagePromptsButton } from './BackfillButton';
+import { BulkGenerateImagesButton } from './BulkGenerateImagesButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,16 +37,34 @@ export default async function VideosList({
   // Detecta drafts sem nenhum imagePrompt nas cenas (necessitam backfill).
   const draftIds = (items ?? []).filter((i: any) => i.status === 'draft').map((i: any) => i.id);
   let needBackfill: Array<{ id: string; code: string }> = [];
+  let needImages: Array<{ id: string; code: string }> = [];
+  let pendingImageCount = 0;
   if (draftIds.length > 0) {
-    const { data: slidesWithPrompt } = await supabase
+    const { data: scenesData } = await supabase
       .from('content_slides')
-      .select('item_id')
-      .in('item_id', draftIds)
-      .not('design->>imagePrompt', 'is', null);
-    const withPrompt = new Set((slidesWithPrompt ?? []).map((s: any) => s.item_id));
-    needBackfill = (items ?? []).filter((i: any) => i.status === 'draft' && !withPrompt.has(i.id))
-      .map((i: any) => ({ id: i.id, code: i.code }));
+      .select('item_id, design')
+      .in('item_id', draftIds);
+    const withPromptByItem = new Map<string, { hasPrompt: boolean; pendingImg: number }>();
+    (scenesData ?? []).forEach((s: any) => {
+      const it = withPromptByItem.get(s.item_id) ?? { hasPrompt: false, pendingImg: 0 };
+      if (s.design?.imagePrompt) {
+        it.hasPrompt = true;
+        if (!s.design?.imageUrl) it.pendingImg++;
+      }
+      withPromptByItem.set(s.item_id, it);
+    });
+    needBackfill = (items ?? []).filter((i: any) =>
+      i.status === 'draft' && !withPromptByItem.get(i.id)?.hasPrompt
+    ).map((i: any) => ({ id: i.id, code: i.code }));
+    (items ?? []).forEach((i: any) => {
+      const it = withPromptByItem.get(i.id);
+      if (i.status === 'draft' && it?.hasPrompt && it.pendingImg > 0) {
+        needImages.push({ id: i.id, code: i.code });
+        pendingImageCount += it.pendingImg;
+      }
+    });
   }
+  const estImageCost = pendingImageCount * 0.04;
 
   const counts = { casada: 0, solteira: 0, ambos: 0, total: 0 };
   (items ?? []).forEach((i: any) => {
@@ -62,6 +81,7 @@ export default async function VideosList({
         </div>
         <div className="row" style={{ gap: 8 }}>
           {needBackfill.length > 0 && <BackfillImagePromptsButton items={needBackfill} />}
+          {needImages.length > 0 && <BulkGenerateImagesButton items={needImages} estCost={estImageCost} />}
           <Link href="/admin/videos/novo" className="btn primary">+ Novo vídeo</Link>
         </div>
       </div>
