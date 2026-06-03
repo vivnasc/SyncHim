@@ -63,23 +63,51 @@ async function start(args: SunoGenArgs): Promise<string> {
   };
   if (process.env.SUNO_MODEL) body.model = process.env.SUNO_MODEL;
 
-  const res = await fetch(`${endpoint()}/generate`, {
-    method: 'POST',
-    headers: headers(),
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) {
-    const detail = await res.text().catch(() => '');
-    throw new Error(`Suno generate ${res.status}: ${detail}`);
+  // Tenta múltiplas paths conhecidas (providers Suno-compatible mudam path
+  // com regularidade). Para na primeira que devolver 2xx.
+  const base = endpoint();
+  const paths = [
+    '/generate',                  // apibox / sunoapi.com clássico
+    '/api/v1/generate',           // alguns wrappers expõem com prefixo extra
+    '/api/generate',              // suno-api.com
+    '/v1/generate',
+    '/api/v1/song/generate',
+    '/api/v1/music/generate',
+  ];
+
+  const errors: string[] = [];
+  for (const p of paths) {
+    const url = `${base}${p}`;
+    let res: Response;
+    try {
+      res = await fetch(url, { method: 'POST', headers: headers(), body: JSON.stringify(body) });
+    } catch (e: any) {
+      errors.push(`${p}: ${e.message}`);
+      continue;
+    }
+    if (res.status === 404 || res.status === 405) {
+      errors.push(`${p}: ${res.status}`);
+      continue;
+    }
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      throw new Error(`Suno generate ${url} → ${res.status}: ${detail.slice(0, 200)}`);
+    }
+    const j = await res.json() as any;
+    const id =
+      j.taskId ?? j.task_id ?? j.id ??
+      j.data?.taskId ?? j.data?.task_id ?? j.data?.id ??
+      (Array.isArray(j.data) ? j.data[0]?.id : null);
+    if (!id) throw new Error(`Suno ${url}: id não encontrado no response: ${JSON.stringify(j).slice(0, 300)}`);
+    return String(id);
   }
-  const j = await res.json() as any;
-  // Vários shapes para o id da task
-  const id =
-    j.taskId ?? j.task_id ?? j.id ??
-    j.data?.taskId ?? j.data?.task_id ?? j.data?.id ??
-    (Array.isArray(j.data) ? j.data[0]?.id : null);
-  if (!id) throw new Error(`Suno: id não encontrado no response: ${JSON.stringify(j).slice(0, 300)}`);
-  return String(id);
+
+  throw new Error(
+    `Suno generate: nenhuma path conhecida funcionou em ${base}. ` +
+    `Tentativas: ${errors.join(', ')}. ` +
+    `Verifica SUNO_API_URL (deves apontar ao base do provider sem /generate no fim) ` +
+    `e SUNO_API_KEY no Vercel.`,
+  );
 }
 
 /**

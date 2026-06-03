@@ -80,13 +80,23 @@ export function VideoEditor({
     } finally { setVoicing(null); }
   }
 
-  /** Gera vozes para todas as cenas em falta, sequencial. */
-  async function gerarTodasVozes() {
-    const pending = scenes.filter((s) => !s.voice_url && s.body.trim()).length;
-    if (!pending) { alert('Todas as cenas ja teem voz.'); return; }
-    if (!confirm(`Gerar voz para ${pending} cena(s) via ElevenLabs?\n~3s cada · ~${(pending * 0.05).toFixed(2)}$ total.`)) return;
-    for (let i = 0; i < scenes.length; i++) {
-      if (scenes[i].voice_url || !scenes[i].body.trim()) continue;
+  /**
+   * Gera vozes para cenas em falta, sequencial.
+   * forceRegenerate: se true, ignora voice_url existente e regera todas
+   * (útil para apanhar wordTimes em vozes antigas sem timestamps).
+   */
+  async function gerarTodasVozes(forceRegenerate = false) {
+    const targets = scenes
+      .map((s, i) => ({ s, i }))
+      .filter(({ s }) => {
+        if (!s.body.trim()) return false;
+        if (forceRegenerate) return true;
+        return !s.voice_url;
+      });
+    if (!targets.length) { alert('Nada a gerar.'); return; }
+    const label = forceRegenerate ? 'Re-gerar' : 'Gerar';
+    if (!confirm(`${label} voz para ${targets.length} cena(s) via ElevenLabs?\n~3s cada · ~$${(targets.length * 0.05).toFixed(2)} total.`)) return;
+    for (const { i } of targets) {
       setVoicing(i);
       try {
         await fetch(`/api/admin/videos/${item.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ item, scenes }) });
@@ -96,7 +106,10 @@ export function VideoEditor({
         });
         const j = await res.json();
         if (!res.ok) { alert(`Cena ${i + 1}: ${j.error}`); break; }
-        setScenes((arr) => arr.map((s, k) => k === i ? { ...s, voice_url: j.url, duration_sec: j.durationSec } : s));
+        setScenes((arr) => arr.map((s, k) => k === i ? {
+          ...s, voice_url: j.url, duration_sec: j.durationSec,
+          design: { ...(s.design ?? {}), wordTimes: j.wordTimes },
+        } : s));
       } catch (e: any) { alert(`Cena ${i + 1}: ${e.message}`); break; }
     }
     setVoicing(null);
@@ -183,9 +196,20 @@ export function VideoEditor({
               </button>
             ) : null;
           })()}
-          <button className="btn primary" onClick={gerarTodasVozes} disabled={voicing !== null}>
-            {voicing !== null ? `A gerar voz cena ${voicing + 1}…` : `Gerar todas as vozes (${scenes.filter((s) => !s.voice_url && s.body.trim()).length} pendentes)`}
-          </button>
+          {(() => {
+            const pendingNew = scenes.filter((s) => !s.voice_url && s.body.trim()).length;
+            const missingTimes = scenes.filter((s) => s.voice_url && !(s.design?.wordTimes?.length)).length;
+            if (voicing !== null) {
+              return <button className="btn primary" disabled>A gerar voz cena {voicing + 1}…</button>;
+            }
+            if (pendingNew > 0) {
+              return <button className="btn primary" onClick={() => gerarTodasVozes(false)}>Gerar todas as vozes ({pendingNew} pendentes)</button>;
+            }
+            if (missingTimes > 0) {
+              return <button className="btn primary" onClick={() => gerarTodasVozes(true)}>Re-gerar {missingTimes} voz(es) com karaokê</button>;
+            }
+            return <span className="muted" style={{ fontSize: 12 }}>✓ vozes prontas com karaokê</span>;
+          })()}
           <span className="muted" style={{ fontSize: 12 }}>
             Depois afina a musica em baixo e clica &ldquo;Renderizar video&rdquo;.
           </span>
