@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getAdminEmailFromCookies } from '@/lib/admin/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { MetricoolExporter } from './MetricoolExporter';
+import { AuthorTagEditor } from './AuthorTagEditor';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +32,8 @@ export default async function MetricoolPage() {
         apenas peças com render concluído. Caption, hashtags e agendamento vêm do editor;
         ajusta lá antes de exportar.
       </p>
+
+      <AuthorTagEditor />
 
       {ready.length === 0 ? (
         <div className="card"><p className="muted">Sem items prontos. Renderiza um carrossel ou vídeo primeiro.</p></div>

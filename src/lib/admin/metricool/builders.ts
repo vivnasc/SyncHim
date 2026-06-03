@@ -43,12 +43,16 @@ export type CsvVideoPost = {
 };
 
 /**
- * Adiciona a mention (@handle) configurada via env CAPTION_AUTHOR_TAG.
- * Detectada na caption (case-insensitive) — nao duplica se ja la estiver.
- * Vazio ou ausente = no-op.
+ * Adiciona a mention (@handle) configurada — primeiro via opt.authorTag
+ * (vindo de settings.caption-author-tag), depois fallback para env
+ * CAPTION_AUTHOR_TAG. Detectada case-insensitive — nao duplica se ja la
+ * estiver. Vazio = no-op.
  */
+let _runtimeAuthorTag: string | null = null;
+export function setAuthorTag(tag: string | null) { _runtimeAuthorTag = tag?.trim() || null; }
+
 function appendAuthorTag(caption: string): string {
-  const tag = process.env.CAPTION_AUTHOR_TAG?.trim();
+  const tag = _runtimeAuthorTag || process.env.CAPTION_AUTHOR_TAG?.trim();
   if (!tag) return caption;
   const tagNormalized = tag.toLowerCase();
   if (caption.toLowerCase().includes(tagNormalized)) return caption;

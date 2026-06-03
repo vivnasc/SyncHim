@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminEmailFromRequest } from '@/lib/admin/auth';
 import { createSupabaseAdmin } from '@/lib/supabase/admin';
-import { buildCsv, type CsvCarouselPost, type CsvVideoPost, type Platform } from '@/lib/admin/metricool/builders';
+import { buildCsv, setAuthorTag, type CsvCarouselPost, type CsvVideoPost, type Platform } from '@/lib/admin/metricool/builders';
 
 export const runtime = 'nodejs';
 
@@ -33,6 +33,12 @@ export async function POST(req: NextRequest) {
     : null;
 
   const supabase = createSupabaseAdmin();
+
+  // Lê tag de menção configurada (settings.caption-author-tag)
+  const { data: tagRow } = await supabase
+    .from('settings').select('value').eq('key', 'caption-author-tag').maybeSingle();
+  setAuthorTag((tagRow?.value as any)?.tag ?? null);
+
   const { data: items } = await supabase
     .from('content_items')
     .select('id, code, title, type, caption, hashtags, platforms, scheduled_at, output_urls, metadata')
