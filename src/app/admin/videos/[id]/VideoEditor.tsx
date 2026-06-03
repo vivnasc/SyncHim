@@ -190,14 +190,51 @@ export function VideoEditor({
 
       <div className="editor-grid" style={{ marginTop: 20 }}>
         <div className="col">
-          <div className="mini">preview da cena</div>
+          <div className="row between" style={{ marginBottom: 6 }}>
+            <div className="mini">preview da cena {active + 1} / {scenes.length}</div>
+            <div className="row" style={{ gap: 4 }}>
+              <button className="btn" style={{ padding: '4px 10px' }}
+                onClick={() => setActive(Math.max(0, active - 1))} disabled={active === 0}>←</button>
+              <button className="btn" style={{ padding: '4px 10px' }}
+                onClick={() => setActive(Math.min(scenes.length - 1, active + 1))} disabled={active >= scenes.length - 1}>→</button>
+            </div>
+          </div>
           {current && (
-            <div className="slide-canvas" style={{ aspectRatio: '1080 / 1920', height: 600, width: 'auto' }}>
-              <div className="layer center">
-                <div style={{ fontFamily: 'var(--serif)', fontSize: 22, lineHeight: 1.35, whiteSpace: 'pre-wrap' }}>
+            <div className="slide-canvas" style={{
+              aspectRatio: '1080 / 1920',
+              height: 600,
+              width: 'auto',
+              background: current.design?.imageUrl
+                ? `url(${current.design.imageUrl}) center/cover no-repeat`
+                : 'linear-gradient(to bottom, #5A1A2A 0%, var(--bg) 70%)',
+              position: 'relative',
+            }}>
+              {/* darkening overlay para legibilidade quando tem imagem */}
+              {current.design?.imageUrl && (
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(to bottom, rgba(26,20,16,0.25) 0%, rgba(26,20,16,0.6) 50%, rgba(26,20,16,0.85) 100%)',
+                }} />
+              )}
+              <div className="layer center" style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{
+                  fontFamily: 'var(--serif)',
+                  fontSize: 22, lineHeight: 1.35, whiteSpace: 'pre-wrap',
+                  textShadow: current.design?.imageUrl ? '0 2px 12px rgba(0,0,0,0.6)' : 'none',
+                  padding: '0 30px',
+                  textAlign: 'center',
+                }}>
                   {current.body}
                 </div>
               </div>
+              {!current.design?.imageUrl && (
+                <div style={{
+                  position: 'absolute', bottom: 20, left: 0, right: 0,
+                  textAlign: 'center', fontSize: 10, color: 'var(--texto-suave)',
+                }}>
+                  sem imagem · gradiente bordeaux
+                </div>
+              )}
             </div>
           )}
         </div>
