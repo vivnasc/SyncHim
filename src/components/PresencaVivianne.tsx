@@ -13,6 +13,10 @@ const LINHAS: Record<number, { pt: string; en: string }> = {
     pt: 'Antes de tudo, respira. Não vens corrigir-te. Vens ver-te.',
     en: 'Before anything, breathe. You are not here to fix yourself. You are here to see yourself.'
   },
+  2: {
+    pt: 'Responde como és, não como gostarias de ser. Ninguém vê isto — só tu e eu.',
+    en: 'Answer as you are, not as you wish to be. No one sees this — only you and me.'
+  },
   3: {
     pt: 'Chegaste. A partir daqui desço contigo. Não tenhas pressa — eu fico.',
     en: 'You arrived. From here I go down with you. No rush — I stay.'

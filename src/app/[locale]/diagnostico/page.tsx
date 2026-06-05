@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server';
 import { Vesica } from '@/components/marks/Vesica';
 import { EstrelaPersa } from '@/components/marks/EstrelaPersa';
 import { FadeIn } from '@/components/FadeIn';
+import { PresencaVivianne } from '@/components/PresencaVivianne';
 
 export default async function DiagnosticEntry({
   params,
@@ -29,6 +30,10 @@ export default async function DiagnosticEntry({
         <div className="mini-caps text-goldBright mb-4">
           {locale === 'pt' ? 'SESSÃO ZERO · GRÁTIS' : 'SESSION ZERO · FREE'}
         </div>
+      </section>
+
+      <section className="px-6 md:px-10 pb-10">
+        <PresencaVivianne sessao={2} locale={locale} />
       </section>
 
       <FadeIn as="section" className="px-6 md:px-10 pb-16">
