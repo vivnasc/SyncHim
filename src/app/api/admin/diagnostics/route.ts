@@ -12,11 +12,56 @@ export const dynamic = 'force-dynamic';
  */
 type Check = {
   name: string;
-  group: 'core' | 'pipeline' | 'voz' | 'imagens' | 'musica' | 'opcional';
+  group: 'core' | 'pagamentos' | 'pipeline' | 'voz' | 'imagens' | 'musica' | 'opcional';
   present: boolean;
   required: boolean;
   hint?: string;
 };
+
+type PaypalProbe = {
+  mode: 'live' | 'sandbox';
+  authOk: boolean;
+  authStatus: number | null;
+  clientIdsMatch: boolean | null;
+  error?: string;
+};
+
+// Faz auth real no PayPal para confirmar que as credenciais do servidor
+// funcionam e em que modo. É o teste que falta para perceber porque o
+// /checkout dá "Algo correu mal" (a API create-order falha aqui).
+async function probePaypal(): Promise<PaypalProbe> {
+  const mode = process.env.PAYPAL_MODE === 'live' ? 'live' : 'sandbox';
+  const base = mode === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+  const id = process.env.PAYPAL_CLIENT_ID?.trim();
+  const secret = process.env.PAYPAL_CLIENT_SECRET?.trim();
+  const publicId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.trim();
+
+  const clientIdsMatch = id && publicId ? id === publicId : null;
+
+  if (!id || !secret) {
+    return { mode, authOk: false, authStatus: null, clientIdsMatch, error: 'PAYPAL_CLIENT_ID ou PAYPAL_CLIENT_SECRET em falta' };
+  }
+
+  try {
+    const basic = Buffer.from(`${id}:${secret}`).toString('base64');
+    const res = await fetch(`${base}/v1/oauth2/token`, {
+      method: 'POST',
+      headers: { Authorization: `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'grant_type=client_credentials',
+      cache: 'no-store',
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      const hint = res.status === 401
+        ? `auth recusada (401) — credenciais não são do modo ${mode}. Confirma PAYPAL_MODE vs as chaves.`
+        : `PayPal respondeu ${res.status}`;
+      return { mode, authOk: false, authStatus: res.status, clientIdsMatch, error: `${hint} ${text}`.trim() };
+    }
+    return { mode, authOk: true, authStatus: res.status, clientIdsMatch };
+  } catch (e) {
+    return { mode, authOk: false, authStatus: null, clientIdsMatch, error: String(e) };
+  }
+}
 
 export async function GET(req: NextRequest) {
   if (!getAdminEmailFromRequest(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -30,6 +75,14 @@ export async function GET(req: NextRequest) {
     { name: 'SUPABASE_SERVICE_ROLE_KEY', group: 'core', present: env('SUPABASE_SERVICE_ROLE_KEY'), required: true, hint: 'service_role key (NUNCA exposta no client)' },
     { name: 'ADMIN_EMAILS', group: 'core', present: env('ADMIN_EMAILS'), required: true, hint: 'lista CSV de emails admin (ex: viv.saraiva@gmail.com)' },
     { name: 'ADMIN_PASSWORD', group: 'core', present: env('ADMIN_PASSWORD'), required: true, hint: 'password única partilhada para login admin' },
+
+    // PAGAMENTOS — sem isto o /checkout dá "Algo correu mal"
+    { name: 'PAYPAL_MODE', group: 'pagamentos', present: env('PAYPAL_MODE'), required: false, hint: 'live ou sandbox. Vazio = sandbox. TEM de bater com as credenciais abaixo' },
+    { name: 'PAYPAL_CLIENT_ID', group: 'pagamentos', present: env('PAYPAL_CLIENT_ID'), required: true, hint: 'client id da app PayPal (servidor)' },
+    { name: 'PAYPAL_CLIENT_SECRET', group: 'pagamentos', present: env('PAYPAL_CLIENT_SECRET'), required: true, hint: 'secret da app PayPal (servidor)' },
+    { name: 'NEXT_PUBLIC_PAYPAL_CLIENT_ID', group: 'pagamentos', present: env('NEXT_PUBLIC_PAYPAL_CLIENT_ID'), required: true, hint: 'mesmo client id, exposto no browser. Mudar exige redeploy' },
+    { name: 'PAYPAL_WEBHOOK_ID', group: 'pagamentos', present: env('PAYPAL_WEBHOOK_ID'), required: false, hint: 'para confirmar pagamentos via webhook' },
+    { name: 'PRICE_TIER1_USD', group: 'pagamentos', present: env('PRICE_TIER1_USD'), required: false, hint: 'default 39. Valor do nó individual' },
 
     // PIPELINE — bulk reels não funciona sem isto
     { name: 'NEXT_PUBLIC_SITE_URL', group: 'pipeline', present: env('NEXT_PUBLIC_SITE_URL') || env('VERCEL_URL'), required: false, hint: 'opcional — se faltar usa VERCEL_URL auto-injectada' },
@@ -67,6 +120,8 @@ export async function GET(req: NextRequest) {
   const { data: theme } = await supabase.from('settings').select('value').eq('key', 'theme-music').maybeSingle();
   const hasTheme = !!(theme?.value as any)?.musicUrl;
 
+  const paypal = await probePaypal();
+
   const missingRequired = checks.filter((c) => c.required && !c.present);
   const ok = missingRequired.length === 0;
 
@@ -78,6 +133,7 @@ export async function GET(req: NextRequest) {
       hasMusicTheme: hasTheme,
       vercelEnv: process.env.VERCEL_ENV ?? 'unknown',
       gitSha: (process.env.VERCEL_GIT_COMMIT_SHA ?? '').slice(0, 7),
+      paypal,
     },
   });
 }

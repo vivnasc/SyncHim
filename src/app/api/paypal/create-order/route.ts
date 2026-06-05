@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ id: order.id });
   } catch (e: unknown) {
+    console.error('[paypal/create-order] falhou', { tier: body.tier, no: body.no, mode: process.env.PAYPAL_MODE ?? 'sandbox', error: String(e) });
     return NextResponse.json({ error: 'paypal_failed', detail: String(e) }, { status: 500 });
   }
 }
