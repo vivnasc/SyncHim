@@ -15,8 +15,13 @@ export function priceFor(tier: PaypalTier): string {
 }
 
 async function token(): Promise<string> {
-  const id = process.env.PAYPAL_CLIENT_ID!;
-  const secret = process.env.PAYPAL_CLIENT_SECRET!;
+  // O client id é o mesmo no servidor e no browser; se só o NEXT_PUBLIC_
+  // estiver definido, usa-o (não é segredo, ao contrário do secret).
+  const id = process.env.PAYPAL_CLIENT_ID || process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+  const secret = process.env.PAYPAL_CLIENT_SECRET;
+  if (!id || !secret) {
+    throw new Error('PayPal credentials missing: PAYPAL_CLIENT_ID/NEXT_PUBLIC_PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET required');
+  }
   const basic = Buffer.from(`${id}:${secret}`).toString('base64');
   const res = await fetch(`${BASE}/v1/oauth2/token`, {
     method: 'POST',

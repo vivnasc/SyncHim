@@ -32,14 +32,15 @@ type PaypalProbe = {
 async function probePaypal(): Promise<PaypalProbe> {
   const mode = process.env.PAYPAL_MODE === 'live' ? 'live' : 'sandbox';
   const base = mode === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
-  const id = process.env.PAYPAL_CLIENT_ID?.trim();
-  const secret = process.env.PAYPAL_CLIENT_SECRET?.trim();
+  const serverId = process.env.PAYPAL_CLIENT_ID?.trim();
   const publicId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.trim();
+  const id = serverId || publicId; // mesmo fallback que lib/paypal.ts
+  const secret = process.env.PAYPAL_CLIENT_SECRET?.trim();
 
-  const clientIdsMatch = id && publicId ? id === publicId : null;
+  const clientIdsMatch = serverId && publicId ? serverId === publicId : null;
 
   if (!id || !secret) {
-    return { mode, authOk: false, authStatus: null, clientIdsMatch, error: 'PAYPAL_CLIENT_ID ou PAYPAL_CLIENT_SECRET em falta' };
+    return { mode, authOk: false, authStatus: null, clientIdsMatch, error: 'PAYPAL_CLIENT_ID/NEXT_PUBLIC_PAYPAL_CLIENT_ID ou PAYPAL_CLIENT_SECRET em falta' };
   }
 
   try {
