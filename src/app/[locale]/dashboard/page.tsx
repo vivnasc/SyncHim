@@ -6,7 +6,7 @@ import { createSupabaseAdmin } from '@/lib/supabase/admin';
 import { type No } from '@/lib/diagnostic';
 import { Vesica } from '@/components/marks/Vesica';
 import { EstrelaPersa } from '@/components/marks/EstrelaPersa';
-import { InstallBanner } from '@/components/InstallInstructions';
+import { InstallCard } from '@/components/InstallCard';
 
 export default async function DashboardPage({ params }: { params: { locale: string } }) {
   const locale = params.locale as 'pt' | 'en';
@@ -177,7 +177,7 @@ export default async function DashboardPage({ params }: { params: { locale: stri
       {myNos.length > 0 && (
         <section className="px-6 md:px-10 py-6">
           <div className="max-w-[40rem] mx-auto">
-            <InstallBanner locale={locale} />
+            <InstallCard locale={locale} />
           </div>
         </section>
       )}
