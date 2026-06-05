@@ -3,21 +3,30 @@ import { useEffect, useState } from 'react';
 
 type Check = {
   name: string;
-  group: 'core' | 'pipeline' | 'voz' | 'imagens' | 'musica' | 'opcional';
+  group: 'core' | 'pagamentos' | 'pipeline' | 'voz' | 'imagens' | 'musica' | 'opcional';
   present: boolean;
   required: boolean;
   hint?: string;
+};
+
+type PaypalProbe = {
+  mode: 'live' | 'sandbox';
+  authOk: boolean;
+  authStatus: number | null;
+  clientIdsMatch: boolean | null;
+  error?: string;
 };
 
 type Diag = {
   ok: boolean;
   missingRequired: string[];
   checks: Check[];
-  runtime: { hasMusicTheme: boolean; vercelEnv: string; gitSha: string };
+  runtime: { hasMusicTheme: boolean; vercelEnv: string; gitSha: string; paypal?: PaypalProbe };
 };
 
 const GROUP_LABELS: Record<Check['group'], string> = {
   core: '🔐 Core (app + auth)',
+  pagamentos: '💳 Pagamentos (PayPal)',
   pipeline: '🚀 Pipeline bulk (Vercel ↔ GitHub Actions)',
   voz: '🎙 Voz (ElevenLabs)',
   imagens: '🖼 Imagens (Replicate)',
@@ -39,7 +48,8 @@ export default function DiagnosticsPage() {
   if (err) return <p style={{ color: 'var(--bordeaux)' }}>Erro: {err}</p>;
   if (!d) return <p className="muted">A verificar…</p>;
 
-  const groups: Check['group'][] = ['core', 'pipeline', 'voz', 'imagens', 'musica', 'opcional'];
+  const groups: Check['group'][] = ['core', 'pagamentos', 'pipeline', 'voz', 'imagens', 'musica', 'opcional'];
+  const pp = d.runtime.paypal;
 
   return (
     <>
@@ -68,6 +78,33 @@ export default function DiagnosticsPage() {
           Música tema da campanha: {d.runtime.hasMusicTheme ? '✓ definida' : '— não definida (carrega MP3 em /admin/videos)'}
         </div>
       </div>
+
+      {pp && (
+        <div className="card" style={{
+          padding: 14,
+          marginTop: 12,
+          borderColor: pp.authOk ? 'var(--ouro)' : '#C25555',
+          background: pp.authOk ? 'rgba(180, 132, 61, 0.08)' : 'rgba(194, 85, 85, 0.10)',
+        }}>
+          <strong style={{ fontSize: 14 }}>
+            {pp.authOk
+              ? `✓ PayPal liga em modo ${pp.mode}`
+              : `❌ PayPal NÃO autentica (modo ${pp.mode}) — é isto que faz o checkout falhar`}
+          </strong>
+          {pp.error && (
+            <div style={{ fontSize: 12, marginTop: 6, color: '#FFE4D6' }}>{pp.error}</div>
+          )}
+          {pp.clientIdsMatch === false && (
+            <div style={{ fontSize: 12, marginTop: 6, color: '#FFE4D6' }}>
+              ⚠ <code>PAYPAL_CLIENT_ID</code> ≠ <code>NEXT_PUBLIC_PAYPAL_CLIENT_ID</code> — têm de ser o mesmo client id da mesma app.
+            </div>
+          )}
+          <div style={{ fontSize: 12, marginTop: 8 }} className="muted">
+            Modo <code>{pp.mode}</code> = {pp.mode === 'live' ? 'cartões reais' : 'contas de teste sandbox'}.
+            {' '}As credenciais (CLIENT_ID/SECRET) têm de ser desse mesmo modo.
+          </div>
+        </div>
+      )}
 
       {groups.map((g) => {
         const items = d.checks.filter((c) => c.group === g);
