@@ -68,8 +68,12 @@ export async function POST(req: NextRequest) {
     : null;
 
   if (existingAuth?.id) {
+    // Conta já existe (pode ser de OUTRO produto no mesmo projecto Supabase).
+    // Não sobrescrevemos a password — isso mudaria a credencial partilhada
+    // dela nos outros produtos. Reutilizamos a conta tal como está; o login
+    // automático abaixo só funciona se a password coincidir, caso contrário
+    // ela vê o resultado pelo cookie e entra depois pela conta dela.
     userId = existingAuth.id as string;
-    await admin.auth.admin.updateUserById(userId, { password: payload.password });
   } else {
     const { data: created, error } = await admin.auth.admin.createUser({
       email: payload.email,
