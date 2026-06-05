@@ -12,6 +12,7 @@ import { CompleteSessionButton } from '@/components/CompleteSessionButton';
 import { trackEvent } from '@/lib/events';
 import { Vesica } from '@/components/marks/Vesica';
 import { EstrelaPersa } from '@/components/marks/EstrelaPersa';
+import { PresencaVivianne } from '@/components/PresencaVivianne';
 
 export default async function SessionPage({
   params,
@@ -39,6 +40,9 @@ export default async function SessionPage({
           <div className="mini-caps text-goldBright">
             {tSession('sessionLabel', { n: '1' })}
           </div>
+        </section>
+        <section className="px-6 md:px-10 pb-10">
+          <PresencaVivianne sessao={1} locale={locale} />
         </section>
         <section className="px-6 md:px-10 pb-16">
           {session && (
@@ -123,6 +127,10 @@ export default async function SessionPage({
         <div className="mini-caps text-goldBright mb-3">
           {tNo(no)} · {tSession('sessionLabel', { n: String(nNum) })}
         </div>
+      </section>
+
+      <section className="px-6 md:px-10 pb-10">
+        <PresencaVivianne sessao={nNum} locale={locale} />
       </section>
 
       <section className="px-6 md:px-10 pb-16">
