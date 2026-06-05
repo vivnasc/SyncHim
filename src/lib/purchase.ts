@@ -1,7 +1,21 @@
 import { createSupabaseAdmin } from './supabase/admin';
-import { sendMagicLink, sendOnce, notifyAdminPurchase } from './resend';
+import { sendPaidWelcome, sendOnce, notifyAdminPurchase } from './resend';
 import { trackEvent } from './events';
+import { licenseFor } from './license';
 import type { Locale, No } from './diagnostic';
+
+const NO_LABELS: Record<Locale, Record<No, string>> = {
+  pt: {
+    fome: 'Fome', controlo: 'Controlo', inferioridade: 'Inferioridade',
+    desconfianca: 'Desconfiança', salvadora: 'Salvadora', abandono: 'Abandono',
+    invisibilidade: 'Invisibilidade'
+  },
+  en: {
+    fome: 'Hunger', controlo: 'Grip', inferioridade: 'Smallness',
+    desconfianca: 'Suspicion', salvadora: 'Rescuer', abandono: 'Abandonment',
+    invisibilidade: 'Vanishing'
+  }
+};
 
 interface CaptureRaw {
   id: string;
@@ -174,14 +188,20 @@ export async function applyPurchase(orderId: string, capture: CaptureRaw) {
     await notifyAdminPurchase({ email, tier: String(tier), no: no ?? 'biblioteca', amount, locale });
   } catch { /* don't block on admin notification */ }
 
-  // Send paid welcome with magic link.
+  // Send paid welcome: recibo dourado + licença pessoal + magic link.
+  const noLabel = no ? NO_LABELS[locale ?? 'pt'][no] : '';
+  const produto = tier === 2
+    ? (locale === 'pt' ? 'Biblioteca completa · os 7 nós' : 'Full library · all 7 knots')
+    : (locale === 'pt' ? `A travessia do nó ${noLabel}` : `The crossing of ${noLabel}`);
+  const valor = `US$ ${cap.amount?.value ?? '?'}`;
+  const licenca = licenseFor(orderId);
   try {
-    const linkId = await sendMagicLink(email, locale, nome ?? undefined);
+    const linkId = await sendPaidWelcome({ email, locale, nome: nome ?? undefined, produto, valor, licenca });
     await admin.from('emails_enviados').insert({
       user_id: userId,
       tipo: 'boas_vindas_paga',
       resend_id: linkId ?? null
-    }).select();
+    });
   } catch {
     try {
       await sendOnce({
@@ -189,7 +209,11 @@ export async function applyPurchase(orderId: string, capture: CaptureRaw) {
         to: email,
         kind: 'boas_vindas_paga',
         locale,
-        vars: { nome: nome ?? '', link: `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/${locale}/login` }
+        vars: {
+          nome: nome ?? '',
+          link: `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/${locale}/login`,
+          produto, valor, licenca, email
+        }
       });
     } catch { /* */ }
   }

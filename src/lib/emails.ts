@@ -36,6 +36,25 @@ type Tpl = (vars: Record<string, string>) => Rendered;
 
 const LINK_STYLE = 'color:#E08496;text-decoration:none;border-bottom:1px solid #E08496;';
 
+const GOLD = '#D4A857';
+
+const goldButton = (href: string, label: string) =>
+  `<a href="${href}" style="display:inline-block;background:${GOLD};color:#1A1410;text-decoration:none;padding:14px 36px;border-radius:10px;font-size:16px;font-weight:500;">${label}</a>`;
+
+const licenseCard = (licenca: string, email: string, label: string, regLabel: string) =>
+  `<div style="background:#F3E4D6;border-radius:12px;padding:22px;margin:28px 0;text-align:center;color:#3D2B1F;">
+<p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9A5A43;margin:0 0 8px;">${label}</p>
+<p style="font-size:19px;font-family:'Courier New',monospace;font-weight:bold;letter-spacing:2px;margin:0;">${licenca}</p>
+<p style="font-size:12px;color:#9A5A43;margin:8px 0 0;">${regLabel} ${email}</p>
+</div>`;
+
+const contactBlock = (pt: boolean) =>
+  `<p style="margin-top:40px;padding-top:24px;border-top:1px solid #3A2E22;color:#A39B8E;font-size:13px;line-height:1.9;">
+${pt ? 'Precisas de alguma coisa? Estou aqui.' : 'Need anything? I am here.'}<br/>
+<a href="mailto:ola@viviannedossantos.com" style="${LINK_STYLE}">ola@viviannedossantos.com</a><br/>
+<a href="https://wa.me/258845243875" style="${LINK_STYLE}">WhatsApp +258 84 524 3875</a>
+</p>`;
+
 const PT: Record<EmailKind, Tpl> = {
   boas_vindas_t0: ({ nome }) => build(
     'O teu diagnóstico ficou guardado.',
@@ -43,12 +62,16 @@ const PT: Record<EmailKind, Tpl> = {
 <p>O teu diagnóstico está guardado. Podes voltar a ele sempre que precisares.</p>
 <p>Quando estiveres pronta para descer ao que está debaixo do teu nó, há um caminho. Entra na tua conta para o veres.</p>`
   ),
-  boas_vindas_paga: ({ nome, link }) => build(
+  boas_vindas_paga: ({ nome, link, produto, valor, licenca, email }) => build(
     'A tua travessia começa.',
-    `<p style="font-size:18px;">${nome || 'Olá'},</p>
-<p>Recebi o teu pagamento. As sessões 3 a 7 estão à tua espera.</p>
-<p>Sem urgência. Faz a sessão 3 quando puderes estar sozinha durante 30 minutos.</p>
-<p style="margin-top:24px;"><a href="${link}" style="${LINK_STYLE}">Entrar na minha conta →</a></p>`
+    `<p style="font-size:22px;margin:0 0 6px;">Obrigada${nome ? ', ' + nome : ''}.</p>
+<p>Recebi o teu pagamento. A tua travessia começa agora.</p>
+${produto ? `<p style="color:#A39B8E;font-size:14px;margin:18px 0 0;">${produto}${valor ? ' · ' + valor : ''}</p>` : ''}
+${licenca ? licenseCard(licenca, email || '', 'Licença de uso pessoal', 'Registado para') : ''}
+<p>As sessões 3 a 7 estão à tua espera. Sem urgência — faz a sessão 3 quando puderes estar sozinha durante 30 minutos.</p>
+<p style="margin:32px 0 8px;text-align:center;">${goldButton(link || '#', 'Entrar na minha conta →')}</p>
+<p style="color:#A39B8E;font-size:12px;text-align:center;margin:0;">Este link entra-te direto, sem password. Guarda este email.</p>
+${contactBlock(true)}`
   ),
   magic_link: ({ nome, link }) => build(
     'O teu link de entrada.',
@@ -112,12 +135,16 @@ const EN: Record<EmailKind, Tpl> = {
 <p>Your diagnostic is saved. You can return to it whenever you need.</p>
 <p>When you are ready to descend beneath your knot, there is a path. Sign in to see it.</p>`
   ),
-  boas_vindas_paga: ({ nome, link }) => build(
+  boas_vindas_paga: ({ nome, link, produto, valor, licenca, email }) => build(
     'Your crossing begins.',
-    `<p style="font-size:18px;">${nome || 'Hello'},</p>
-<p>I received your payment. Sessions 3 to 7 are waiting.</p>
-<p>No urgency. Do session 3 when you can be alone for half an hour.</p>
-<p style="margin-top:24px;"><a href="${link}" style="${LINK_STYLE}">Enter your account →</a></p>`
+    `<p style="font-size:22px;margin:0 0 6px;">Thank you${nome ? ', ' + nome : ''}.</p>
+<p>I received your payment. Your crossing begins now.</p>
+${produto ? `<p style="color:#A39B8E;font-size:14px;margin:18px 0 0;">${produto}${valor ? ' · ' + valor : ''}</p>` : ''}
+${licenca ? licenseCard(licenca, email || '', 'Personal use license', 'Registered to') : ''}
+<p>Sessions 3 to 7 are waiting. No urgency — do session 3 when you can be alone for half an hour.</p>
+<p style="margin:32px 0 8px;text-align:center;">${goldButton(link || '#', 'Enter your account →')}</p>
+<p style="color:#A39B8E;font-size:12px;text-align:center;margin:0;">This link signs you in directly, no password. Keep this email.</p>
+${contactBlock(false)}`
   ),
   magic_link: ({ nome, link }) => build(
     'Your sign-in link.',

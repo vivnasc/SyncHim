@@ -79,6 +79,44 @@ export async function sendMagicLink(email: string, locale: Locale, nome?: string
   return sendMagicLinkEmail(email, locale, actionLink, nome);
 }
 
+export async function sendPaidWelcome(args: {
+  email: string;
+  locale: Locale;
+  nome?: string;
+  produto: string;
+  valor: string;
+  licenca: string;
+}) {
+  const admin = createSupabaseAdmin();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  // O botão dourado é o magic link: entra direto, sem password. Se a
+  // geração do link falhar, cai para a página de login normal.
+  let link = `${siteUrl}/${args.locale}/login`;
+  try {
+    const { data } = await admin.auth.admin.generateLink({
+      type: 'magiclink',
+      email: args.email,
+      options: {
+        redirectTo: `${siteUrl}/${args.locale}/dashboard`,
+        data: { app: 'synchim', locale: args.locale, nome: args.nome }
+      }
+    });
+    if (data?.properties?.action_link) link = data.properties.action_link;
+  } catch { /* fall back to plain login link */ }
+
+  const { subject, html, text } = renderEmail('boas_vindas_paga', args.locale, {
+    nome: args.nome ?? '',
+    link,
+    produto: args.produto,
+    valor: args.valor,
+    licenca: args.licenca,
+    email: args.email
+  });
+  const r = await client().emails.send({ from: FROM(), to: args.email, subject, html, text });
+  if (r.error) throw new Error(r.error.message);
+  return r.data?.id;
+}
+
 export async function notifyAdminPurchase(vars: {
   email: string; tier: string; no: string; amount: string; locale: Locale;
 }) {
