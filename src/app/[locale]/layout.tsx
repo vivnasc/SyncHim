@@ -5,6 +5,8 @@ import { locales } from '@/i18n';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CookieConsent } from '@/components/CookieConsent';
+import { AppTabBar } from '@/components/AppTabBar';
+import { createSupabaseServer } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
@@ -33,11 +35,18 @@ export default async function LocaleLayout({
   setRequestLocale(params.locale);
   const messages = await getMessages();
 
+  let userPresent = false;
+  try {
+    const { data } = await createSupabaseServer().auth.getUser();
+    userPresent = !!data.user;
+  } catch { /* */ }
+
   return (
     <NextIntlClientProvider locale={params.locale} messages={messages}>
       <Header />
       <main data-page className="flex-1">{children}</main>
       <Footer />
+      <AppTabBar locale={params.locale as 'pt' | 'en'} userPresent={userPresent} />
       <CookieConsent />
     </NextIntlClientProvider>
   );

@@ -3,7 +3,8 @@
     "diagnostic": "Diagnóstico",
     "account": "Conta",
     "enter": "Entrar",
-    "logout": "Sair"
+    "logout": "Sair",
+    "home": "Início"
   },
   "common": {
     "loading": "A carregar.",

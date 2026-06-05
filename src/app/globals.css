@@ -448,3 +448,65 @@ main[data-page] {
 @media (max-width: 768px) {
   .cta-living, .btn, .cta-ghost { min-height: 44px; }
 }
+
+/* ============================================================
+   PWA · experiência de app instalada (display-mode: standalone)
+   No browser normal nada disto se aplica — o site fica idêntico.
+   ============================================================ */
+
+/* Sem highlight cinza ao tocar (sensação nativa), em todo o lado. */
+html { -webkit-tap-highlight-color: transparent; }
+
+/* Barra inferior: escondida por defeito (só visível na app instalada). */
+.app-tabbar { display: none; }
+
+.app-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 9px 0 7px;
+  color: var(--texto-suave);
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 0.18s ease, transform 0.1s ease;
+}
+.app-tab svg { width: 24px; height: 24px; }
+.app-tab.is-active { color: var(--ouro-folha); }
+.app-tab:active { transform: scale(0.92); color: var(--ouro); }
+
+@media (display-mode: standalone) {
+  /* A app não mostra o header/footer de site — usa a tab bar. */
+  [data-site-header],
+  [data-site-footer] { display: none !important; }
+
+  /* Sem bounce/rubber-band: parece app, não página web. */
+  html, body { overscroll-behavior: none; }
+  /* Texto de UI não selecionável; conteúdo de leitura continua a ser. */
+  body { -webkit-user-select: none; user-select: none; }
+  main[data-page] :is(p, li, h1, h2, h3, blockquote, input, textarea) {
+    -webkit-user-select: text; user-select: text;
+  }
+
+  /* Respeita o notch em cima e deixa espaço para a tab bar em baixo. */
+  main[data-page] {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: calc(4.25rem + env(safe-area-inset-bottom));
+  }
+
+  .app-tabbar {
+    display: flex;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--bg-elev) 92%, transparent);
+    -webkit-backdrop-filter: saturate(1.4) blur(12px);
+    backdrop-filter: saturate(1.4) blur(12px);
+    border-top: 1px solid var(--linha);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

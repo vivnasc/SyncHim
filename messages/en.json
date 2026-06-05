@@ -3,7 +3,8 @@
     "diagnostic": "Diagnostic",
     "account": "Account",
     "enter": "Enter",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "home": "Home"
   },
   "common": {
     "loading": "Loading.",

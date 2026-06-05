@@ -16,7 +16,7 @@ export async function Header() {
   } catch { /* */ }
 
   return (
-    <header className="flex items-center justify-between py-6 px-6 md:px-10 border-b border-ash/20">
+    <header data-site-header className="flex items-center justify-between py-6 px-6 md:px-10 border-b border-ash/20">
       <Link
         href={`/${locale}`}
         className="flex items-center gap-3 font-serif text-2xl tracking-wider text-bone hover:text-bone"
