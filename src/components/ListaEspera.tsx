@@ -17,6 +17,7 @@ export function ListaEspera({
   email?: string;
 }) {
   const pt = locale === 'pt';
+  const [nome, setNome] = useState('');
   const [email, setEmail] = useState(initialEmail);
   const [done, setDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -28,7 +29,7 @@ export function ListaEspera({
       await fetch('/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, no, locale })
+        body: JSON.stringify({ email, nome, no, locale })
       });
     } catch { /* */ }
     setDone(true);
@@ -52,24 +53,34 @@ export function ListaEspera({
   }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+    <div className="max-w-md mx-auto">
       <input
-        type="email"
-        className="input flex-1"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder={pt ? 'O teu email' : 'Your email'}
-        autoComplete="email"
+        type="text"
+        className="input w-full mb-3"
+        value={nome}
+        onChange={(e) => setNome(e.target.value)}
+        placeholder={pt ? 'O teu nome (opcional)' : 'Your name (optional)'}
+        autoComplete="given-name"
       />
-      <button
-        type="button"
-        onClick={submit}
-        disabled={submitting || !email}
-        className="cta-living disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        <span>{submitting ? '…' : pt ? 'Avisa-me' : 'Notify me'}</span>
-        {!submitting && <span className="arrow" aria-hidden="true">→</span>}
-      </button>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <input
+          type="email"
+          className="input flex-1"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={pt ? 'O teu email' : 'Your email'}
+          autoComplete="email"
+        />
+        <button
+          type="button"
+          onClick={submit}
+          disabled={submitting || !email}
+          className="cta-living disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <span>{submitting ? '…' : pt ? 'Avisa-me' : 'Notify me'}</span>
+          {!submitting && <span className="arrow" aria-hidden="true">→</span>}
+        </button>
+      </div>
     </div>
   );
 }

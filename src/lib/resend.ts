@@ -117,6 +117,27 @@ export async function sendPaidWelcome(args: {
   return r.data?.id;
 }
 
+export async function sendWaitlistEmails(args: {
+  email: string;
+  nome?: string;
+  no?: string;
+  locale: Locale;
+}) {
+  const c = client();
+  // Confirmação gentil à pessoa.
+  const { subject, html, text } = renderEmail('lista_espera', args.locale, { nome: args.nome ?? '' });
+  await c.emails.send({ from: FROM(), to: args.email, subject, html, text }).catch(() => {});
+  // Aviso para a Vivianne — filtrável pelo assunto.
+  await c.emails.send({
+    from: FROM(),
+    to: ADMIN_EMAIL,
+    subject: `Lista de espera SyncHim: ${args.email}`,
+    html: `<p><strong>Nova inscrição na lista de espera</strong></p>
+<p>Email: ${args.email}<br/>Nome: ${args.nome || '—'}<br/>Nó: ${args.no || '—'}<br/>Idioma: ${args.locale}</p>`,
+    text: `Nova inscrição lista de espera\nEmail: ${args.email}\nNome: ${args.nome || '—'}\nNó: ${args.no || '—'}\nIdioma: ${args.locale}`
+  }).catch(() => {});
+}
+
 export async function notifyAdminPurchase(vars: {
   email: string; tier: string; no: string; amount: string; locale: Locale;
 }) {

@@ -4,6 +4,8 @@ import { trackEvent } from '@/lib/events';
 import { Rosaceo } from '@/components/marks/Rosaceo';
 import { Vesica } from '@/components/marks/Vesica';
 import { InstallInstructions } from '@/components/InstallInstructions';
+import { ListaEspera } from '@/components/ListaEspera';
+import { SALES_OPEN } from '@/lib/flags';
 import { EstrelaPersa } from '@/components/marks/EstrelaPersa';
 import { FadeIn } from '@/components/FadeIn';
 import { NOS } from '@/lib/diagnostic';
@@ -259,6 +261,16 @@ export default async function LandingPage({ params }: { params: { locale: string
                 {d.hero.h1[2]}
               </span>
             </h1>
+
+            {!SALES_OPEN && (
+              <a
+                href="#lista-espera"
+                className="inline-flex items-center gap-2 mt-7 border border-gold/40 rounded-full px-4 py-1.5 text-xs font-body text-goldBright hover:bg-gold/10 transition-colors"
+              >
+                {locale === 'pt' ? 'Em breve · entra na lista de espera' : 'Coming soon · join the waiting list'}
+                <span aria-hidden="true">→</span>
+              </a>
+            )}
 
             <p className="font-body text-bone/85 text-lg md:text-xl mt-10 leading-relaxed max-w-[34rem]">
               {d.hero.sub}
@@ -520,6 +532,29 @@ export default async function LandingPage({ params }: { params: { locale: string
           </div>
         </div>
       </FadeIn>
+
+      {/* ============ LISTA DE ESPERA (modo testes) ============ */}
+      {!SALES_OPEN && (
+        <section id="lista-espera" className="px-6 md:px-10 py-20 md:py-24 bg-coal/40 scroll-mt-20">
+          <div className="max-w-xl mx-auto text-center">
+            <Vesica className="w-20 h-12 text-gold mb-8 mx-auto" />
+            <div className="mini-caps text-goldBright mb-4">
+              {locale === 'pt' ? 'LISTA DE ESPERA' : 'WAITING LIST'}
+            </div>
+            <h2 className="font-serif text-3xl md:text-4xl text-bone mb-5">
+              {locale === 'pt'
+                ? 'Estamos a afinar os últimos detalhes.'
+                : 'We are tuning the last details.'}
+            </h2>
+            <p className="font-body italic text-bone/80 leading-relaxed mb-10 max-w-md mx-auto">
+              {locale === 'pt'
+                ? 'Deixa o teu email e sou eu a avisar-te, em primeira mão, no momento em que abrir.'
+                : 'Leave your email and I will personally let you know the moment it opens.'}
+            </p>
+            <ListaEspera locale={locale} />
+          </div>
+        </section>
+      )}
 
       {/* ============ LEVA CONTIGO ============ */}
       <FadeIn as="section" className="px-6 md:px-10 py-20 md:py-24 bg-coal/60">

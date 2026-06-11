@@ -10,7 +10,8 @@ export type EmailKind =
   | 'sessao_6'
   | 'sessao_7'
   | 'carta_final'
-  | 'compra_admin';
+  | 'compra_admin'
+  | 'lista_espera';
 
 interface Rendered {
   subject: string;
@@ -125,6 +126,13 @@ Tier: ${tier}<br/>
 Nó: ${no || 'biblioteca completa'}<br/>
 Valor: US$ ${amount}</p>
 <p style="color:#A39B8E;font-size:13px;">Este email é gerado automaticamente.</p>`
+  ),
+  lista_espera: ({ nome }) => build(
+    'Estás na lista.',
+    `<p style="font-size:20px;margin:0 0 6px;">Obrigada${nome ? ', ' + nome : ''}.</p>
+<p>Recebi o teu interesse no SyncHim. Estou a afinar os últimos detalhes, e és das primeiras a saber quando abrir.</p>
+<p>Não precisas de fazer mais nada — aviso-te eu, aqui, em primeira mão.</p>
+<p style="color:#E08496;font-style:italic;margin-top:24px;">Até já.</p>`
   )
 };
 
@@ -170,6 +178,13 @@ ${contactBlock(false)}`
     `<p><strong>New SyncHim purchase</strong></p>
 <p>Email: ${email}<br/>Tier: ${tier}<br/>Knot: ${no || 'full library'}<br/>Amount: US$ ${amount}</p>
 <p style="color:#A39B8E;font-size:13px;">This email is generated automatically.</p>`
+  ),
+  lista_espera: ({ nome }) => build(
+    'You are on the list.',
+    `<p style="font-size:20px;margin:0 0 6px;">Thank you${nome ? ', ' + nome : ''}.</p>
+<p>I received your interest in SyncHim. I am tuning the last details, and you are among the first to know when it opens.</p>
+<p>You do not need to do anything else — I will let you know, here, first hand.</p>
+<p style="color:#E08496;font-style:italic;margin-top:24px;">See you soon.</p>`
   )
 };
 
