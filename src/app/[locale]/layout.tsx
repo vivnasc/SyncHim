@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CookieConsent } from '@/components/CookieConsent';
 import { AppTabBar } from '@/components/AppTabBar';
+import { SALES_OPEN } from '@/lib/flags';
 import { createSupabaseServer } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
 
@@ -43,6 +44,15 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={params.locale} messages={messages}>
+      {!SALES_OPEN && (
+        <div className="bg-coal/80 border-b border-gold/30 px-4 py-2 text-center">
+          <span className="font-body text-xs md:text-sm text-bone/85">
+            {params.locale === 'pt'
+              ? 'SyncHim está em testes · o diagnóstico está aberto e grátis. As inscrições abrem em breve.'
+              : 'SyncHim is in testing · the diagnostic is open and free. Enrolment opens soon.'}
+          </span>
+        </div>
+      )}
       <Header />
       <main data-page className="flex-1">{children}</main>
       <Footer />
